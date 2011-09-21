@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+							xmlns:s="library://ns.adobe.com/flex/spark" 
+							creationComplete="init(event)">
+	
+	<fx:Style source="styles/MainStyle.css"/>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.squidzoo.android.eventSystem.EventCentral;
+			import com.squidzoo.android.eventSystem.events.CustomEvent;
+			import com.squidzoo.android.flickr.statics.Keys;
+			
+			import components.MenuPopUp;
+			
+			import mx.events.FlexEvent;
+			
+			import views.BrowseSets;
+			import views.LoginView;
+			import views.SingleSetView;
+			import views.UploadView;		
+			
+			private var _popup:MenuPopUp;
+			
+			public var _service:FlickrService = new FlickrService();
+			
+			private function init(event:FlexEvent):void{
+				_popup = new MenuPopUp();
+				
+				_service = new FlickrService();
+				_service.api_key = Keys.getApiKey();
+				_service.secret = Keys.getSecretKey();
+			
+				addMenuListeners();
+				
+				navigator.pushView(LoginView,_service);
+			}
+			
+			private function addMenuListeners():void{
+				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_UPLOAD, onUpload);
+				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_BROWSE_SETS, onBrowseSets);
+			}
+			
+			private function onUpload(event:CustomEvent):void{
+				navigator.pushView(UploadView,_service);
+			}
+			
+			private function onBrowseSets(event:CustomEvent):void{
+				navigator.pushView(BrowseSets,_service);
+			}
+			
+			public function getService():FlickrService{
+				return _service;
+			}		
+		]]>
+	</fx:Script>
+	
+	<s:actionContent>
+		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
+	</s:actionContent>
+	
+</s:ViewNavigatorApplication>

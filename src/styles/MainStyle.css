@@ -1,0 +1,44 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+
+global{
+	modalTransparency: 0.6;
+	modalTransparencyBlur: 5;
+	modalTransparencyColor: #000000;
+	modalTransparencyDuration: 100;
+}
+
+s|ActionBar
+{
+	chromeColor: #cccccc;
+	color: #cccccc;
+	titleAlign: center;
+	fontSize: 16;
+}
+
+s|ActionBar #titleDisplay
+{
+	color: #ffffff;
+	fontSize: 16;
+}
+
+s|TabbedViewNavigator #tabBar
+{
+	chromeColor: #888888;
+	color: #ffffff;
+	fontSize: 16;
+	titleAlign: center
+}
+
+s|View{
+	backgroundColor: #dddddd;
+}
+
+s|Label{
+	color: #95887a;
+}
+s|Button
+{
+	
+	fontSize: 16;
+}

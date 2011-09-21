@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		title="Browse Sets"
+		destructionPolicy="never"
+		viewActivate="viewActivateHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			//import assets.images.SpeechBubbleGreen;
+			
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.android.flickr.VOs.SetVO;
+			import com.squidzoo.android.flickr.statics.NSID;
+			
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.ViewNavigatorEvent;
+			
+			//import views.SetView;
+			
+			[Bindable]
+			private var _service:FlickrService;
+			[Bindable]
+			private var _setsData:ArrayCollection;
+			[Bindable]
+			private var _setVOs:ArrayCollection;
+			
+			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
+			
+			private function viewActivateHandler(event:ViewNavigatorEvent):void{
+				_service = data as FlickrService;
+				//if(_photosData)_photosData.removeAll();
+				//if(_photoVOs)_photoVOs.removeAll();
+				//trace("viewActiveHandler");
+			}
+			
+			private function onGetSetList(event:MouseEvent):void{
+				
+					if(!_service)_service = data as FlickrService;
+					trace("data: "+data);
+					trace("_service: "+_service);
+					trace("nsid: "+NSID.getNSID());
+					_service.photosets.getList(NSID.getNSID()); 
+					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
+			} 
+				
+			private function handleSetList(e:FlickrResultEvent):void{ 
+				trace("handleSetList");
+					
+				trace("e.data.photoSets: "+e.data.photoSets);
+				
+					var setData:Array = e.data.photoSets as Array; 
+					_setVOs = new ArrayCollection(new Array);
+		
+					for(var i:uint = 0; i < setData.length; i ++){ 
+						var vo:SetVO = new SetVO();
+						vo.id = setData[i].id;
+						vo.title = setData[i].title;
+						vo.service = _service;
+						_setVOs.addItem(vo);
+					}
+					
+					_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList);
+			} 
+			
+		]]>
+	</fx:Script>
+	
+	<s:Button x="10" y="10" width="300" label="Get Your List of Sets" click="onGetSetList(event)"/>
+	<s:List id="setList" 
+			y="61" left="5" 
+			right="5" height="345"
+			change="navigator.pushView(SingleSetView, setList.selectedItem)" 
+			dataProvider="{_setVOs}">
+		
+		<s:itemRenderer>
+			<fx:Component>
+				<s:IconItemRenderer labelField="title"/>
+			</fx:Component>
+		</s:itemRenderer>
+
+	</s:List>
+	
+</s:View>

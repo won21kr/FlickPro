@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		title="Upload"
+		creationComplete="init()"
+		viewActivate="viewActivateHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.squidzoo.android.eventSystem.events.AndroidEvent;
+			import com.squidzoo.android.flickr.GalleryBrowser;
+			import com.squidzoo.android.flickr.Uploader;
+			
+			import spark.events.TextOperationEvent;
+			import spark.events.ViewNavigatorEvent;
+			
+			private var _browser:GalleryBrowser;
+			[Bindable]
+			private var _selectedImage:Bitmap;
+			[Bindable]
+			protected var _service:FlickrService;
+			[Bindable]
+			private var _title:String = "add your title";
+			[Bindable]
+			private var _description:String = "add your description";
+			[Bindable]
+			private var _tags:String = "add your tags:";
+			[Bindable]
+			private var _is_family:Boolean = true;
+			[Bindable]
+			private var _is_public:Boolean = false;
+			[Bindable]
+			private var _is_friend:Boolean = false;
+			
+			private var _uploader:Uploader;
+			
+			private var _fileRef:FileReference;
+			
+			private function viewActivateHandler(event:ViewNavigatorEvent):void{
+				_service = data as FlickrService;
+			}
+			
+			private function init():void{
+				_browser = new GalleryBrowser();
+			}
+			
+			private function onClickPickPhotoButton(event:MouseEvent):void
+			{
+				_browser.addEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+				_browser.browse();
+			}
+			
+			private function onGalleryImageSelected(event:AndroidEvent):void{
+				_browser.removeEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+				trace("onGalleryImageSelected");
+				_fileRef = event.fileReference;
+				trace("_fileRef.name:"+_fileRef.name);
+				_selectedImage = event.image;
+			}
+			
+			private function onClickUploadButton():void{
+				_uploader = new Uploader(_service);
+				trace("_is_public,_is_friend,_is_family: "+_is_public + _is_friend + _is_family);
+				_uploader.upload(_fileRef,_title,_description,_tags,_is_public,_is_friend,_is_family);
+			}
+			
+			private function onChangeTitle(event:TextOperationEvent):void{
+				_title = event.target.text;
+				trace("_title: "+_title);
+			}
+			
+			private function onTagsChange(event:TextOperationEvent):void{
+				_tags = event.target.text;
+			}
+			
+			private function onDescriptionChange(event:TextOperationEvent):void{
+				_description = event.target.text;
+			}
+			
+			private function onRadioButtonClick(event:Event):void{
+				var rb:RadioButton = event.currentTarget as RadioButton;
+				if(rb.label == "family"){
+					_is_family = true;
+					_is_friend = false;
+					_is_public = false;
+				}
+				if(rb.label == "friend"){
+					_is_family = false;
+					_is_friend = true;
+					_is_public = false;
+				}
+				if(rb.label == "public"){
+					_is_family = false;
+					_is_friend = false;
+					_is_public = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="PermissionRadioButtonsGroup"/>
+	</fx:Declarations>
+	
+	<!--<s:actionContent>
+		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
+	</s:actionContent>-->
+	
+	<s:VGroup gap="10" left="20" top="20">
+		
+		<s:Image id="imageContainer" width="173" height="141" source="{_selectedImage}"/>
+		
+		<s:Button width="300" height="40" label="Upload" click="onClickUploadButton()"/>
+		
+		<s:TextInput id="tagsTextArea" width="271" height="21" fontSize="10"
+					 text="{_tags}" change="onTagsChange(event)"/>
+		
+		<s:Button id="pickPhotoButton" width="300" height="40"
+				  label="Pick a photo" click="onClickPickPhotoButton(event)"/>
+		
+		<s:TextArea id="titleTextArea" width="272" height="27" fontSize="10"
+					text="{_title}" change="onChangeTitle(event)"/>
+		
+		<s:TextArea id="descTextArea" width="272" fontSize="10" text="{_description}" change="onDescriptionChange(event)"/>
+		
+		<s:HGroup left="10" top="10">
+			<s:RadioButton id="isFamilyRadioButton" label="family" fontSize="12" groupName="PermissionRadioButtonsGroup" change="onRadioButtonClick(event)"/>
+			<s:RadioButton id="isPublicRadioButton" label="public" fontSize="12" groupName="PermissionRadioButtonsGroup" change="onRadioButtonClick(event)"/>
+			<s:RadioButton id="isFriendRadioButton" label="friend" fontSize="12" groupName="PermissionRadioButtonsGroup" change="onRadioButtonClick(event)"/>
+		</s:HGroup>
+		
+	</s:VGroup>
+	
+</s:View>

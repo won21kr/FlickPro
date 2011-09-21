@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		add="viewAddHandler(event)">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.android.flickr.VOs.PhotoVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			//import views.BrowseSets;
+			
+			private var _setId:String;
+			private var _service: FlickrService;
+			[Bindable]
+			private var _photoVOs:ArrayCollection;
+			
+			protected function viewAddHandler(event:FlexEvent):void
+			{
+				_service = data.service;
+				_setId = data.id;
+				askForSetFromFlickr();
+			}
+			
+			private function askForSetFromFlickr():void{
+				if(!_service)_service = data as FlickrService;
+				trace("SetView data: "+data);
+				trace("SetView _service: "+_service);
+				trace("setId: "+_setId);
+				_service.photosets.getPhotos(_setId); 
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_PHOTOS, onGetPhotos); 
+			} 
+			
+			private function onGetPhotos(event:FlickrResultEvent):void{
+				_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_PHOTOS,onGetPhotos);
+				trace("an array of set data has been retrieved");
+				if(_photoVOs)_photoVOs.removeAll();
+				_photoVOs = new ArrayCollection(new Array());
+				
+				var photos:Array = event.data.photoSet.photos as Array;
+				for(var i:int = 0; i < photos.length;i++){
+					var imageURL:String = 	'http://static.flickr.com/' + 
+						photos[i].server + '/' + 
+						photos[i].id + '_' +
+						photos[i].secret + '_m.jpg';
+					var request:URLRequest = new URLRequest(imageURL);
+					var loader:Loader = new Loader();
+					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onEventComplete);
+					loader.load(request);
+				}
+			}
+			
+			private function onEventComplete(event:Event):void{
+				var image:Bitmap = event.currentTarget.content;
+				var vo:PhotoVO = new PhotoVO();
+				vo.smallImage = image;
+				_photoVOs.addItem(vo);
+			}
+			
+			
+			private function onListClick(event:Event):void{
+				navigator.pushView(SinglePhotoView, photoList.selectedItem);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Button x="238" y="10" label="back" click="navigator.popView()"/>
+	
+	<s:List id="photoList" y="61" left="5" right="5" height="346" dataProvider="{_photoVOs}" click="onListClick(event)">
+		
+		<s:itemRenderer>
+			<fx:Component>
+				<s:IconItemRenderer iconField="smallImage" labelField = " " />
+			</fx:Component>
+		</s:itemRenderer>
+		
+	</s:List>
+	
+</s:View>
