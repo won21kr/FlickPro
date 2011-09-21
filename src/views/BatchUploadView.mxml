@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		title="Upload"
+		creationComplete="init()"
+		viewActivate="viewActivateHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.squidzoo.android.eventSystem.events.AndroidEvent;
+			import com.squidzoo.android.flickr.GalleryBrowser;
+			import com.squidzoo.android.flickr.Uploader;
+			import com.squidzoo.android.flickr.VOs.BatchUploadVO;
+			
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.TextOperationEvent;
+			import spark.events.ViewNavigatorEvent;
+			
+			private var _browser:GalleryBrowser;
+			[Bindable]
+			private var _selectedImage:Bitmap;
+			[Bindable]
+			protected var _service:FlickrService;
+			[Bindable]
+			private var _title:String = "add your title";
+			[Bindable]
+			private var _description:String = "add your description";
+			[Bindable]
+			private var _tags:String = "add your tags:";
+			[Bindable]
+			private var _is_family:Boolean = true;
+			[Bindable]
+			private var _is_public:Boolean = false;
+			[Bindable]
+			private var _is_friend:Boolean = false;
+			
+			private var _uploader:Uploader;
+			
+			private var _fileRef:FileReference;
+			
+			
+			[Bindable]
+			private var _uploadStatus:String = "not started";
+			
+			[Bindable]
+			private var _batchUploadAC:ArrayCollection = new ArrayCollection(new Array());
+			
+			private function viewActivateHandler(event:ViewNavigatorEvent):void{
+				_service = data as FlickrService;
+			}
+			
+			private function init():void{
+				_browser = new GalleryBrowser();
+			}
+			
+			private function onClickPickPhotoButton(event:MouseEvent):void
+			{ 
+				_browser.addEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+				_browser.browse();
+			}
+			
+			private function onGalleryImageSelected(event:AndroidEvent):void{
+				_browser.removeEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+				
+				
+				
+				var vo:BatchUploadVO = new BatchUploadVO(event.fileReference,event.image);
+				_batchUploadAC.addItem(vo);
+				
+				_selectedImage = event.image;
+			}
+			
+			private function onClickUploadListButton():void{
+				
+				_uploader = new Uploader(_service);
+				
+				for(var i:int = 0;i <_batchUploadAC.length;i++){
+					
+					var vo:BatchUploadVO = _batchUploadAC[i];
+					
+					_uploader.upload(vo.file,_title,_description,_tags,_is_public,_is_friend,_is_family);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="PermissionRadioButtonsGroup"/>
+	</fx:Declarations>
+	
+	<!--<s:actionContent>
+		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
+	</s:actionContent>-->
+	<s:HGroup>
+		<s:VGroup gap="10" left="20" top="20">
+		<s:Button id="pickPhotoButton" width="100" height="50" label="Pick a photo"
+				  click="onClickPickPhotoButton(event)"/>
+		<s:Image id="imageContainer" width="173" height="141" source="{_selectedImage}"/>
+		<s:Button width="100" height="30" label="Upload List" click="onClickUploadListButton()"/>
+	</s:VGroup>
+		
+	<s:List id="photoList" width="200" height="600" dataProvider="{_batchUploadAC}"
+			itemRenderer="com.squidzoo.android.flickr.VOs.BatchUploadItemRenderer"/>		
+	
+	</s:HGroup>
+	
+	
+</s:View>

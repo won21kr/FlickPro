@@ -36,6 +36,9 @@
 			
 			private var _fileRef:FileReference;
 			
+			[Bindable]
+			private var _uploadStatus:String = "not started";
+			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				_service = data as FlickrService;
 			}
@@ -59,9 +62,25 @@
 			}
 			
 			private function onClickUploadButton():void{
+				
 				_uploader = new Uploader(_service);
 				trace("_is_public,_is_friend,_is_family: "+_is_public + _is_friend + _is_family);
+				
+				_fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA,onUploadDataComplete);
+				_fileRef.addEventListener(ProgressEvent.PROGRESS,onProgressEvent);
+				
+				_uploadStatus = "upload started";
 				_uploader.upload(_fileRef,_title,_description,_tags,_is_public,_is_friend,_is_family);
+			}
+			
+			private function onUploadDataComplete(event:DataEvent):void{
+				trace("onUploadDataComplete");
+				_uploadStatus = "uploadComplete";
+			}
+			
+			private function onProgressEvent(event:ProgressEvent):void{
+				trace("onProgressEvent");
+				_uploadStatus = "upload in progress"
 			}
 			
 			private function onChangeTitle(event:TextOperationEvent):void{
@@ -131,5 +150,6 @@
 		</s:HGroup>
 		
 	</s:VGroup>
+	<s:Label x="47" y="491" text="upload status:+{_uploadStatus}"/>
 	
 </s:View>

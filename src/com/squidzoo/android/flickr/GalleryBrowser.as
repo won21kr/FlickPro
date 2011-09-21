@@ -35,12 +35,13 @@ package com.squidzoo.android.flickr
 		{
 			cameraRoll.removeEventListener(MediaEvent.SELECT,onImageSelected);
 			var data:MediaPromise = e.data;
-			_fileRef = data.file;
-			trace("_fileRef.name: "+_fileRef.name);
 			
-			trace("file type: " + data.mediaType);
-			trace("file name: " + data.file.name);
-			trace("file url: " + data.file.url);
+			_fileRef = data.file;
+			//trace("_fileRef.name: "+_fileRef.name);
+			
+			//trace("file type: " + data.mediaType);
+			//trace("file name: " + data.file.name);
+			//trace("file url: " + data.file.url);
 			
 			var loader:Loader = new Loader();
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoadComplete);

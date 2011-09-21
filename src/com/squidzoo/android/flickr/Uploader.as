@@ -40,6 +40,11 @@ package com.squidzoo.android.flickr
 								content_type:int = 0,
 								hidden:Boolean = false) : Boolean {
 			
+			//trace("service prereqs to upload: none should be null:");
+			//trace("key :" +_service.api_key);
+			//trace("secret key: "+_service.secret);
+			//trace("token: "+_service.token);
+			
 			// Bail out if missing the necessary authentication parameters
 			if (_service.api_key == "" || _service.secret == "" || _service.token == "") {
 				return false;
@@ -97,7 +102,7 @@ package com.squidzoo.android.flickr
 			
 			// Flickr expects the filename parameter to be named 'photo'
 			fileReference.upload( request, "photo" );
-			
+		//	trace("fileReference.upload called");
 			// Indicate that the upload process started
 			return true;
 		}

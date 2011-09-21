@@ -16,10 +16,11 @@
 			
 			import mx.events.FlexEvent;
 			
+			import views.BatchUploadView;
 			import views.BrowseSets;
 			import views.LoginView;
-			import views.SingleSetView;
-			import views.UploadView;		
+			import views.SinglePhotoUploadView;
+			import views.SingleSetView;		
 			
 			private var _popup:MenuPopUp;
 			
@@ -43,7 +44,7 @@
 			}
 			
 			private function onUpload(event:CustomEvent):void{
-				navigator.pushView(UploadView,_service);
+				navigator.pushView(BatchUploadView,_service);
 			}
 			
 			private function onBrowseSets(event:CustomEvent):void{
