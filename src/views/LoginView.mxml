@@ -2,188 +2,232 @@
 		xmlns:mx="library://ns.adobe.com/flex/mx"
 		xmlns:s="library://ns.adobe.com/flex/spark"
 		xmlns:controls="com.flexcapacitor.controls.*"
-		xmlns:mobile="com.soenkerohde.mobile.*"
-		viewActivate="viewActivateHandler(event)" xmlns:components="components.*">
+		viewActivate="init(event)" >
+	<fx:Script>
+		<![CDATA[
+			import flashx.textLayout.conversion.TextConverter;
+		]]>
+	</fx:Script>
+	
+	<s:actionContent>
+		<s:Button label="Reload login" click="onClickStart()" includeIn="WebViewState"/>
+		<s:Button x="320" y="150" label="Done" 
+				  click="onValidConnection()" includeIn="WebViewState" skinClass="components.DoneButtonSkin"/>
+	</s:actionContent>
+	
+	<fx:Declarations>
+		<fx:XML id="startText" xmlns="">
+			<TextFlow xmlns="http://ns.adobe.com/textLayout/2008">
+				<p>Follow these simple steps to login:</p>
+				<p>1. Click 'Start' and login to Flickr.</p>
+				<p>2. Click the BLUE 'OK, I'll authorize it' button on Flickr.</p>
+				<p>3. Click the 'Done' button.</p>
+			</TextFlow>
+		</fx:XML>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="EstablishConnectionState"/>
+		<s:State name="ConnectionErrorState"/>
+		<s:State name="StartLoginState"/>
+		<s:State name="WebViewState"/>
+		<s:State name="ProcessingAuthState"/>
+		<s:State name="SuccessState"/>
+		<s:State name="AuthErrorState"/>
+	</s:states>
 	
 	<fx:Script>
 		<![CDATA[
+			import mx.core.FlexGlobals;
 			import com.adobe.webapis.flickr.AuthPerm;
 			import com.adobe.webapis.flickr.AuthResult;
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
-			import com.flexcapacitor.controls.WebView;
+			//import com.flexcapacitor.controls.WebView;
+			import components.MenuPopUp;
+			import mx.utils.ObjectUtil;
+			import spark.events.ViewNavigatorEvent;
 			import statics.NSID;
 			
-			import components.MenuPopUp;
-			
-			import mx.utils.ObjectUtil;
-			
-			import spark.events.ViewNavigatorEvent;
-			import spark.managers.PersistenceManager;
-			
-			[Embed (source="/assets/images/progressbar/pbGreenTest.png" )]
-			private var pb25:Class;
-			
-			//[Bindable]
 			private var _service:FlickrService; 
-			//private var _serviceAuthorization:ServiceAuthorization;
-			
-			[Bindable]
-			private var _webView:WebView;
-			
 			private var _frob:String;
+		
+			private var webView:StageWebView = new StageWebView();
 			
-			private var _popup:MenuPopUp;
+			//private var _locationCounter:int = 0;
+			//private var _currentLocation:String = "nowhere";
 			
+			//private var _startClicked:Boolean = false;
 			
-			
-			/**
-			 * This starts the login sequence.  We need to set the secret
-			 * assigned to our particular application, and then get
-			 * a frob used for authentication.
-			 */
-			
-			private function viewActivateHandler(event:ViewNavigatorEvent):void{
-				//_popup = new MenuPopUp();
-				
-				//test
-				//pb.source = new pb25;
+			private function init(event:ViewNavigatorEvent=null):void{
+				currentState = "EstablishConnectionState";	
 				
 				_service = data as FlickrService;	
-				
-				_service.addEventListener( FlickrResultEvent.AUTH_GET_FROB, getFrobResponse );
+				_service.addEventListener( FlickrResultEvent.AUTH_GET_FROB, getFrobResponse ); 
 				_service.auth.getFrob();
+				
+				webView.addEventListener(LocationChangeEvent.LOCATION_CHANGE,onLocationChange);
 			}
 			
 			private function getFrobResponse( event:FlickrResultEvent ):void {
-				trace("getFrobResponse: success = " + event.success + "\n");
 				
 				if ( event.success ) {
-					// Have the service construct a login url for us with the
-					// authentication frob, and request the user that we'd like
-					// to have DELETE access to their data
+					trace("getFrobResponse: success");
+					currentState= "StartLoginState";
 					_frob= String( event.data.frob );
-					var auth_url:String = _service.getLoginURL( _frob, AuthPerm.WRITE );
-					
-					// Open a new browser window to authenticate the user
-					// and grant our application permission
-					
-					_webView = new WebView();
-					_webView.top = 200;
-					_webView.height = 500;
-					addElement(_webView);
-					
-					_webView.load(auth_url);
-					
-					// Show the alert saying  they need to authenticate on the 
-					// flickr site.  when the alert closes, we need to get the 
-					// token then to get their logged-in status
-					/*
-					Alert.show( "This application requires that you authenticate"
-						+ " on Flickr.com before proceeding.  Please log in"
-						+ " to Flickr in the separate browser window that"
-						+ " opened.  After you have successfully logged in,"
-						+ " press 'OK' below to continue",
-						"Authentication Required",
-						Alert.OK | Alert.CANCEL,
-						null,
-						onCloseAuthWindow );*/
 					
 				} else {
+					
 					trace("error code: " + event.data.error.errorCode + "\n");
 					trace("error message: " + event.data.error.errorMessage + "\n");
+					currentState = "ConnectionErrorState";
+				
 				}
+			}			
+			
+			private function onClickStart():void{
+					//_startClicked = true;
+					//_locationCounter++;
+					currentState = "WebViewState";
+					webView.stage = this.stage;
+					webView.viewPort = new Rectangle( 0, 100, stage.stageWidth, 700 ); 
+					var auth_url:String = _service.getLoginURL( _frob, AuthPerm.WRITE );
+					webView.loadURL(auth_url);//webView.load(auth_url)
 			}
 			
-			/**
-			 * After the alert closes, if they pressed the OK button we
-			 * assume that they logged into Flickr, so try to get their
-			 * auth token that we can use throughout the rest of our app
-			 */
+
+			
 			private function onValidConnection():void {
-					// Get their authentication token, and call getTokenResponse
-					// when it's available
-				
-					removeElement(_webView);
-				
-					//var p:PersistenceManager = new PersistenceManager();
-					//var obj:Object = p.getProperty("tokenAndNsid");
-					
-					//if(obj){
-						//_service.token = obj.token;
-						//NSID.setNSID(obj.nsid);
-						//trace("token and nsid retrieved from PersistenceManager: " + _service.token + "\n");
-					//}else{
+				webView.stage = null;//newly added
+				currentState = "ProcessingAuthState";
 						_service.addEventListener( FlickrResultEvent.AUTH_GET_TOKEN, getTokenResponse );
 						_service.auth.getToken( _frob ); 
-					//}
 			}
 			
-			/**
-				* This completes the login process.  When the user is successfully
-			* authenticated and the application has permission to use their
-			* data, there will be a token that flickr assigns to us.
-				*/
 			private function getTokenResponse( event:FlickrResultEvent ):void {
 				trace("getTokenResponse: success = " + event.success + "\n");
 				
 				if ( event.success ) {
+					currentState="SuccessState";
+					
 					var authResult:AuthResult = AuthResult( event.data.auth );
-					// dump the object internals for debugging
 					trace(ObjectUtil.toString( authResult ) + "\n");
 					
-					//make nsid accessible to other views
 					NSID.setNSID(authResult.user.nsid);
 					
-					// Assign the token and permission to the service so that
-					// all calls that require authentication have their values
-					// populated
 					_service.token = authResult.token;
 					_service.permission = authResult.perms;
 					
-					// Save the token in a shared object so that when the application
-					// loads again we can re-authenticate automatically
-					/*
-					var p:PersistenceManager = new PersistenceManager();
-					var obj:Object = new Object();
-					obj.token = _service.token;
-					obj.nsid = authResult.user.nsid;
-					p.setProperty("tokenAndNsid", obj);
-					*/
-					
-					// Update the UI to show the currently logged in username
 					username.text = authResult.user.username + " (" + authResult.user.fullname + " )";
-					permission.text = _service.permission;
 					
 					trace("token: " + _service.token + "\n");
 					trace("perms: " + _service.permission + "\n");
 					
-					// Toggle the login/logout buttons
-					//login.visible = false;
-					//logout.visible = true;
-					
 				} else {
+					currentState="AuthErrorState";
 					trace("error code: " + event.data.errorCode + "\n");
 					trace("error message: " + event.data.errorMessage + "\n");
 				}
 			}
 			
+			
+			/**
+			 * @copy mx.core.UIComponent#updateDisplayList()
+			 * */
+			/*
+			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
+				var runtimeDPI:int = FlexGlobals.topLevelApplication.runtimeDPI;
+				var applicationDPI:int = FlexGlobals.topLevelApplication.applicationDPI;
+				var point:Point;
+				var scaledWidth:int;
+				var scaledHeight:int;
+				var scaleFactor:Number;
+				var scaledY:int;
+				
+				// NOTE: IF THE WEBVIEW IS NOT BEING SIZED CORRECTLY
+				// check if focusEnabled is true. If it is then the soft keyboard may not be dispatching the
+				// deactivate event because the webview has focus when it is dispatched. set to false
+				// position according to the container rather than the stage
+				if (webView) {
+					point = localToGlobal(new Point());
+					scaleFactor = runtimeDPI / applicationDPI;
+					
+					scaledWidth = width * scaleFactor;
+					scaledHeight = height * scaleFactor;
+					
+					webView.viewPort = new Rectangle(point.x, point.y, scaledWidth, scaledHeight);
+					
+					
+				}
+				
+			}
+			*/
+			
+			protected function onLocationChange(event:LocationChangeEvent):void
+			{
+				//onClickStart();
+			}
+			
 		]]>
 	</fx:Script>
+
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~EstablishConnectionState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="EstablishConnectionState">
+		<s:BusyIndicator scaleX = "3" scaleY="3"/>
+		<s:Label text="Connecting"/>
+		<s:Label text="to Flickr.com"/>
+	</s:VGroup>
 	
-	<!--<s:actionContent>
-		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
-	</s:actionContent>-->
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ConnectionErrorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:HGroup left="5" right="5">
-	</s:HGroup>
-	<s:HGroup id="loginInfoTextDisplay">
-		<s:Label id="username"/>
-		<s:Label id="permission"/>
-	</s:HGroup>
-	<s:Image x="226" y="179"/>
-	<s:Button x="411" y="9" label="OK" click="onValidConnection()"/>
-	<s:TextArea x="10" y="8" width="390" fontSize="14"
-				text="This application requires that you authenticate on Flickr.com before proceeding.       Please log in to Flickr in the separate browser window that opened.        After you have successfully logged in and authorized the app, press 'OK' to continue"/>
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="ConnectionErrorState">
+		<s:Label text="Connection Error"/>
+		<s:Button label="Try Again" click="init()"/>
+	</s:VGroup>	
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~StartState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup id="LoginExplanation" includeIn="StartLoginState, WebViewState" 
+			 fontSize="18" left="20" top="20" right="20">
+		<s:RichText textFlow="{TextConverter.importToFlow(startText,TextConverter.TEXT_LAYOUT_FORMAT)}" height="300"/>
+	</s:VGroup>
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="StartLoginState">
+		<s:Button label="Start" click="onClickStart()" skinClass="components.StartButtonSkin"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WebViewState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+
+	<!--<controls:WebView id="webView" y="100" width="100%" height="700" includeIn="WebViewState"/>-->
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="WebViewState">		
+		<s:Label text="Loading Flickr login page..."/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ProcessingAuthState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="ProcessingAuthState">
+		<s:BusyIndicator scaleX = "3" scaleY="3"/>
+		<s:Label text="authorization"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SuccessState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="SuccessState">
+		<s:Label text="You have logged in as"/>
+		<s:Label id="username" text="username"/>
+		<s:Label text="and have authorized Flickit to"/>
+		<s:Label text="access your Flickr photos"/>
+		<s:Button label="Start uploading" click="navigator.pushView(BatchUploadView, _service)" />		 
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~AuthErrorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="AuthErrorState">
+		<s:Label text="The authorization was not"/>
+		<s:Label text="completed."/>
+		<s:Button label="Try Again"/>
+	</s:VGroup>
 	
 </s:View>

@@ -103,6 +103,12 @@
 				}
 			}
 			
+			protected function onClickPrivacySettingsButton(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -122,9 +128,13 @@
 					  click="onClickPickPhotoButton(event)" 
 					  skinClass="components.PickaPhotoButtonSkin"/>
 			
-			<s:Button id="ChooseSetButton" 
+			<!--<s:Button id="ChooseSetButton" 
 					click="onChooseSet()"
-					skinClass="components.ChooseSetButtonSkin"/> 
+					skinClass="components.ChooseSetButtonSkin"/>-->
+			
+				<s:Button id="PrivacySettingsButton"
+						  click="onClickPrivacySettingsButton(event)"
+						  skinClass="components.PrivacySettingsButtonSkin"/>
 			
 			<s:Button click="onClickUploadListButton()" 
 					  skinClass="components.UploadButtonSkin"/>
