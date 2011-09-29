@@ -1,4 +1,4 @@
-package com.squidzoo.android.flickr.statics
+package statics
 {
 	public class NSID
 	{

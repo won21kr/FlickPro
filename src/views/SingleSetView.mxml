@@ -10,7 +10,7 @@
 		<![CDATA[
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
-			import com.squidzoo.android.flickr.VOs.PhotoVO;
+			import VOs.PhotoVO;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;

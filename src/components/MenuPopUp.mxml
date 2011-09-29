@@ -5,8 +5,8 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.squidzoo.android.eventSystem.EventCentral;
-			import com.squidzoo.android.eventSystem.events.CustomEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomEvent;
 			
 			import spark.components.View;
 			private var activeView:View;

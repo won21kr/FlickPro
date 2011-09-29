@@ -1,4 +1,4 @@
-package com.squidzoo.android.eventSystem {
+package com.squidzoo.eventSystem {
 	
 	import flash.events.*;
 	

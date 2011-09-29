@@ -11,8 +11,8 @@
 			
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
-			import com.squidzoo.android.flickr.VOs.SetVO;
-			import com.squidzoo.android.flickr.statics.NSID;
+			import VOs.SetVO;
+			import statics.NSID;
 			
 			import mx.collections.ArrayCollection;
 			

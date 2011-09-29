@@ -8,9 +8,9 @@
 	<fx:Script>
 		<![CDATA[
 			import com.adobe.webapis.flickr.FlickrService;
-			import com.squidzoo.android.eventSystem.EventCentral;
-			import com.squidzoo.android.eventSystem.events.CustomEvent;
-			import com.squidzoo.android.flickr.statics.Keys;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomEvent;
+			import statics.Keys;
 			
 			import components.MenuPopUp;
 			

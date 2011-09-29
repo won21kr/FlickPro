@@ -3,18 +3,20 @@
 		xmlns:s="library://ns.adobe.com/flex/spark" 
 		title="Upload"
 		creationComplete="init()"
-		viewActivate="viewActivateHandler(event)">
+		viewActivate="viewActivateHandler(event)" xmlns:debug="com.squidzoo.debug.*">
 	<fx:Script>
 		<![CDATA[
+			import VOs.BatchUploadVO;
+			
 			import com.adobe.webapis.flickr.FlickrService;
-			import com.squidzoo.android.eventSystem.events.AndroidEvent;
-			import com.squidzoo.android.flickr.GalleryBrowser;
-			import com.squidzoo.android.flickr.Uploader;
-			import com.squidzoo.android.flickr.VOs.BatchUploadVO;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import helpers.GalleryBrowser;
+			import helpers.Uploader;
 			
 			import mx.collections.ArrayCollection;
 			
-			import spark.events.TextOperationEvent;
 			import spark.events.ViewNavigatorEvent;
 			
 			private var _browser:GalleryBrowser;
@@ -47,7 +49,12 @@
 			private var _batchUploadAC:ArrayCollection = new ArrayCollection(new Array());
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
+				
+				photoList.scroller.setStyle('horizontalScrollPolicy', 'ScrollPolicy.OFF');
+				
 				_service = data as FlickrService;
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.REMOVE_IMAGE_FROM_UPLOAD_LIST,onRemoveImageFromList);
 			}
 			
 			private function init():void{
@@ -56,19 +63,19 @@
 			
 			private function onClickPickPhotoButton(event:MouseEvent):void
 			{ 
-				_browser.addEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+				_browser.addEventListener(CustomDataEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
 				_browser.browse();
 			}
 			
-			private function onGalleryImageSelected(event:AndroidEvent):void{
-				_browser.removeEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+			private function onGalleryImageSelected(event:CustomDataEvent):void{
+				_browser.removeEventListener(CustomDataEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
 				
-				
-				
-				var vo:BatchUploadVO = new BatchUploadVO(event.fileReference,event.image);
-				_batchUploadAC.addItem(vo);
-				
-				_selectedImage = event.image;
+				var selectedImage:Bitmap = event.image;
+			
+				var vo:BatchUploadVO = new BatchUploadVO(event.fileReference,selectedImage);
+				vo.fileName = event.fileReference.name;
+				_batchUploadAC.addItemAt(vo,0);
+				_selectedImage = selectedImage;
 			}
 			
 			private function onClickUploadListButton():void{
@@ -83,10 +90,21 @@
 				}
 			}
 			
+			private function onChooseSet():void{
+				
+			}
+			
+			protected function onRemoveImageFromList(event:CustomDataEvent):void
+			{
+				for(var i:int = i; i < _batchUploadAC.length; i++){
+					if(event.string == _batchUploadAC[i].fileName){
+						_batchUploadAC.removeItemAt(i);
+					}
+				}
+			}
+			
 		]]>
 	</fx:Script>
-	
-	
 	
 	<fx:Declarations>
 		<s:RadioButtonGroup id="PermissionRadioButtonsGroup"/>
@@ -95,16 +113,30 @@
 	<!--<s:actionContent>
 		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
 	</s:actionContent>-->
-	<s:HGroup>
-		<s:VGroup gap="10" left="20" top="20">
-		<s:Button id="pickPhotoButton" width="100" height="50" label="Pick a photo"
-				  click="onClickPickPhotoButton(event)"/>
-		<s:Image id="imageContainer" width="173" height="141" source="{_selectedImage}"/>
-		<s:Button width="100" height="30" label="Upload List" click="onClickUploadListButton()"/>
-	</s:VGroup>
+	<s:HGroup paddingLeft="20" paddingRight="0" paddingTop="40" width="100%" height="100%">
+		<s:VGroup gap="10">
+			
+			<!--<s:Image id="imageContainer" width="173" height="141" source="{_selectedImage}"/>-->
+			
+			<s:Button id="pickPhotoButton"
+					  click="onClickPickPhotoButton(event)" 
+					  skinClass="components.PickaPhotoButtonSkin"/>
+			
+			<s:Button id="ChooseSetButton" 
+					click="onChooseSet()"
+					skinClass="components.ChooseSetButtonSkin"/> 
+			
+			<s:Button click="onClickUploadListButton()" 
+					  skinClass="components.UploadButtonSkin"/>
+			<!--<debug:DebugTextArea width="200" height="200"/>-->
+		</s:VGroup>
 		
-	<s:List id="photoList" width="200" height="600" dataProvider="{_batchUploadAC}"
-			itemRenderer="com.squidzoo.android.flickr.VOs.BatchUploadItemRenderer"/>		
+	<s:List id="photoList" width="210" height="740" dataProvider="{_batchUploadAC}"  useVirtualLayout="false"
+			itemRenderer="ItemRenderers.BatchUploadItemRenderer" contentBackgroundColor="#58595b">
+		<s:layout >
+			<s:VerticalLayout paddingTop="10" paddingLeft="10" paddingRight="10" paddingBottom="10" gap="5"/>
+		</s:layout>
+	</s:List>
 	
 	</s:HGroup>
 	

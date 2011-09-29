@@ -1,4 +1,4 @@
-package com.squidzoo.android.flickr.VOs
+package VOs
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -35,18 +35,20 @@ package com.squidzoo.android.flickr.VOs
 		private var _bytesLoaded:int;
 		//have to be public so itemrenderer can read them
 		public var file:FileReference;
+		public var fileName:String;
 		public var image:Bitmap;
 		public var uploadStatus:String = UPLOAD_NOT_STARTED;
 		public var uploadPercentage:int = 0;
 		public var thumbnail:Bitmap;
 		public var progressBar:Bitmap = new pb25;
+		private var _imageWidth:int = 180;
 		
 		public function BatchUploadVO(file:FileReference, image:Bitmap){
 			this.file = file;
 			
 			this._bytesInFile = file.size;
 			this.image = image;
-			this.thumbnail = scaleBitmapData(image.bitmapData,80);
+			//this.image = scaleBitmapData(image.bitmapData,_imageWidth);
 			file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA,onUploadDataComplete);
 			file.addEventListener(ProgressEvent.PROGRESS,onProgressEvent);
 			uploadStatus = UPLOAD_NOT_STARTED;
@@ -83,15 +85,15 @@ package com.squidzoo.android.flickr.VOs
 										 targetContainerWidth:Number, targetContainerHeight:Number=0):Bitmap { 
 			//set matrix sx & sy 
 			var sx:Number = targetContainerWidth / _bmd.width; 
-			var sy:Number = sx;
+			var sy:Number = 0;
 			
 			if(targetContainerHeight==0){
-				sy = sx;				
-				targetContainerHeight = _bmd.height * sx;
+				sy = sx;			
+				targetContainerHeight = _bmd.height * sy;
+				
 			}else{
 				sy = targetContainerHeight / _bmd.height; 				
 			}
-			
 			
 			//instantiate new matrix, and set scaling 
 			var m:Matrix = new Matrix(); 
@@ -99,19 +101,15 @@ package com.squidzoo.android.flickr.VOs
 			
 			//create new bitmapdata	
 			var newBmd:BitmapData = new BitmapData(targetContainerWidth, targetContainerHeight); 
-			
 			//draw new bitmapdata with matrix	
 			newBmd.draw(_bmd, m); 
-			
 			//create final bitmap with new bitmapdata 
 			var newBmp:Bitmap = new Bitmap(newBmd); 
-			
 			//set smooting to true 
 			newBmp.smoothing = true; 
 			
-			//boom! 
 			return newBmp; 
-		} 
+		}
 				
 	}
 }

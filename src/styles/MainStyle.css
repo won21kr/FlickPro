@@ -10,16 +10,16 @@ global{
 
 s|ActionBar
 {
-	chromeColor: #cccccc;
-	color: #cccccc;
+	chromeColor: #6b8eb2;
+	color: #6b8eb2;
 	titleAlign: center;
-	fontSize: 16;
+	fontSize: 20;
 }
 
 s|ActionBar #titleDisplay
 {
 	color: #ffffff;
-	fontSize: 16;
+	fontSize: 24;
 }
 
 s|TabbedViewNavigator #tabBar
@@ -31,7 +31,7 @@ s|TabbedViewNavigator #tabBar
 }
 
 s|View{
-	backgroundColor: #dddddd;
+	backgroundColor: #ffffff;
 }
 
 s|Label{

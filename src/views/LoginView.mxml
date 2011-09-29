@@ -3,7 +3,7 @@
 		xmlns:s="library://ns.adobe.com/flex/spark"
 		xmlns:controls="com.flexcapacitor.controls.*"
 		xmlns:mobile="com.soenkerohde.mobile.*"
-		viewActivate="viewActivateHandler(event)">
+		viewActivate="viewActivateHandler(event)" xmlns:components="components.*">
 	
 	<fx:Script>
 		<![CDATA[
@@ -12,7 +12,7 @@
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
 			import com.flexcapacitor.controls.WebView;
-			import com.squidzoo.android.flickr.statics.NSID;
+			import statics.NSID;
 			
 			import components.MenuPopUp;
 			
@@ -47,7 +47,7 @@
 				//_popup = new MenuPopUp();
 				
 				//test
-				pb.source = new pb25;
+				//pb.source = new pb25;
 				
 				_service = data as FlickrService;	
 				
@@ -176,18 +176,14 @@
 	</s:actionContent>-->
 	
 	<s:HGroup left="5" right="5">
-		<s:TextArea fontSize="14" width="592"
-					text="This application requires that you authenticate on Flickr.com before proceeding. 
-					Please log in to Flickr in the separate browser window that opened.  
-					After you have successfully logged in and authorized the app, press 'OK' to continue"/>
 	</s:HGroup>
 	<s:HGroup id="loginInfoTextDisplay">
 		<s:Label id="username"/>
 		<s:Label id="permission"/>
 	</s:HGroup>
-	<s:Image x="10" y="115" source="assets/images/bluebuttontest.png"/>
-	<s:Image x="216" y="88" source="assets/images/greenbuttontest.png"/>
-	<s:Button x="414" y="113" label="OK" click="onValidConnection()"/>
-	<s:Image id="pb" x="60" y="78"/>
+	<s:Image x="226" y="179"/>
+	<s:Button x="411" y="9" label="OK" click="onValidConnection()"/>
+	<s:TextArea x="10" y="8" width="390" fontSize="14"
+				text="This application requires that you authenticate on Flickr.com before proceeding.       Please log in to Flickr in the separate browser window that opened.        After you have successfully logged in and authorized the app, press 'OK' to continue"/>
 	
 </s:View>

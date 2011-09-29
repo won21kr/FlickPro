@@ -1,4 +1,4 @@
-package com.squidzoo.android.flickr.VOs
+package VOs
 {
 	import com.adobe.webapis.flickr.FlickrService;
 	

@@ -7,9 +7,9 @@
 	<fx:Script>
 		<![CDATA[
 			import com.adobe.webapis.flickr.FlickrService;
-			import com.squidzoo.android.eventSystem.events.AndroidEvent;
-			import com.squidzoo.android.flickr.GalleryBrowser;
-			import com.squidzoo.android.flickr.Uploader;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			import helpers.GalleryBrowser;
+			import helpers.Uploader;
 			
 			import spark.events.TextOperationEvent;
 			import spark.events.ViewNavigatorEvent;
@@ -49,12 +49,12 @@
 			
 			private function onClickPickPhotoButton(event:MouseEvent):void
 			{
-				_browser.addEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+				_browser.addEventListener(CustomDataEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
 				_browser.browse();
 			}
 			
-			private function onGalleryImageSelected(event:AndroidEvent):void{
-				_browser.removeEventListener(AndroidEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
+			private function onGalleryImageSelected(event:CustomDataEvent):void{
+				_browser.removeEventListener(CustomDataEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
 				trace("onGalleryImageSelected");
 				_fileRef = event.fileReference;
 				trace("_fileRef.name:"+_fileRef.name);

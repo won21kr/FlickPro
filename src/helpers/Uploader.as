@@ -1,4 +1,4 @@
-package com.squidzoo.android.flickr
+package helpers
 {
 	import com.adobe.crypto.MD5;
 	import com.adobe.utils.StringUtil;
