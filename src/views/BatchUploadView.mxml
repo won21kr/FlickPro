@@ -126,18 +126,23 @@
 			
 			<s:Button id="pickPhotoButton"
 					  click="onClickPickPhotoButton(event)" 
-					  skinClass="components.PickaPhotoButtonSkin"/>
-			
+					  skinClass="components.PickaPhotoButtonDarkBorder"/>
+			<s:VGroup paddingLeft="5">
+				
+				<s:Label text="Press Pick button again" fontSize="14"/>
+				<s:Label text="to add more photos" fontSize="14"/>
+				<s:Label text="to batch upload" fontSize="14"/>
+			</s:VGroup>
 			<!--<s:Button id="ChooseSetButton" 
 					click="onChooseSet()"
 					skinClass="components.ChooseSetButtonSkin"/>-->
 			
 				<s:Button id="PrivacySettingsButton"
 						  click="onClickPrivacySettingsButton(event)"
-						  skinClass="components.PrivacySettingsButtonSkin"/>
+						  skinClass="components.privacySettingsButtonBlackBorder"/>
 			
 			<s:Button click="onClickUploadListButton()" 
-					  skinClass="components.UploadButtonSkin"/>
+					  skinClass="components.UploadButtonBlackBorder"/>
 			<!--<debug:DebugTextArea width="200" height="200"/>-->
 		</s:VGroup>
 		

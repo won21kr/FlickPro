@@ -19,8 +19,8 @@
 			}
 				
 			public function center():void{
-					this.width = 310; //activeView.width * 0.7;
-					this.height = 385; //activeView.height * 0.6;
+					this.width = 210; //activeView.width * 0.7;
+					this.height = 260; //activeView.height * 0.6;
 					
 					var newX:Number = (activeView.width / 2) - (this.width /2);
 					var newY:Number = (activeView.height / 2) - (this.height/2);
@@ -38,6 +38,9 @@
 					case "browseSets":
 						EventCentral.getInstance().dispatchEvent(new CustomEvent(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_BROWSE_SETS));
 						break;
+					case "stream":
+						EventCentral.getInstance().dispatchEvent(new CustomEvent(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM));
+						break;
 				}
 				
 				this.close();
@@ -47,8 +50,10 @@
 	
 	<!-- Also uses the MyPopupSkin.mxml class -->
 	<s:VGroup left="4" right="4" top="4" horizontalAlign="right">
-		<s:Button id="upload" label="upload" click="onClick(event)"/>
-		<s:Button id="browseSets" label="browseSets" click="onClick(event)"/>
+		<s:Button id="upload" label="upload" click="onClick(event)" skinClass="components.MenuUploadButtonSkin"/>
+		<s:Button id="browseSets" label="browseSets" click="onClick(event)" skinClass="components.MenuSetsButtonSkin"/>
+		<s:Button id="stream" label="stream" click="onClick(event)" skinClass="components.MenuStreamButtonSkin"/>
+		<s:Button id="search" label="search" skinClass="components.MenuSearchButtonSkin"/>
 		<s:Button label="Close" click="this.close()"/>
 	</s:VGroup>
 </s:SkinnablePopUpContainer>

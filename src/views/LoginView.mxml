@@ -38,6 +38,7 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import statics.Service;
 			import mx.core.FlexGlobals;
 			import com.adobe.webapis.flickr.AuthPerm;
 			import com.adobe.webapis.flickr.AuthResult;
@@ -51,7 +52,7 @@
 			
 			private var _service:FlickrService; 
 			private var _frob:String;
-		
+			
 			private var webView:StageWebView = new StageWebView();
 			
 			//private var _locationCounter:int = 0;
@@ -62,7 +63,8 @@
 			private function init(event:ViewNavigatorEvent=null):void{
 				currentState = "EstablishConnectionState";	
 				
-				_service = data as FlickrService;	
+				//_service = data as FlickrService;	
+				_service = Service.getService();
 				_service.addEventListener( FlickrResultEvent.AUTH_GET_FROB, getFrobResponse ); 
 				_service.auth.getFrob();
 				
@@ -81,27 +83,27 @@
 					trace("error code: " + event.data.error.errorCode + "\n");
 					trace("error message: " + event.data.error.errorMessage + "\n");
 					currentState = "ConnectionErrorState";
-				
+					
 				}
 			}			
 			
 			private function onClickStart():void{
-					//_startClicked = true;
-					//_locationCounter++;
-					currentState = "WebViewState";
-					webView.stage = this.stage;
-					webView.viewPort = new Rectangle( 0, 100, stage.stageWidth, 700 ); 
-					var auth_url:String = _service.getLoginURL( _frob, AuthPerm.WRITE );
-					webView.loadURL(auth_url);//webView.load(auth_url)
+				//_startClicked = true;
+				//_locationCounter++;
+				currentState = "WebViewState";
+				webView.stage = this.stage;
+				webView.viewPort = new Rectangle( 0, 100, stage.stageWidth, 700 ); 
+				var auth_url:String = _service.getLoginURL( _frob, AuthPerm.WRITE );
+				webView.loadURL(auth_url);//webView.load(auth_url)
 			}
 			
-
+			
 			
 			private function onValidConnection():void {
 				webView.stage = null;//newly added
 				currentState = "ProcessingAuthState";
-						_service.addEventListener( FlickrResultEvent.AUTH_GET_TOKEN, getTokenResponse );
-						_service.auth.getToken( _frob ); 
+				_service.addEventListener( FlickrResultEvent.AUTH_GET_TOKEN, getTokenResponse );
+				_service.auth.getToken( _frob ); 
 			}
 			
 			private function getTokenResponse( event:FlickrResultEvent ):void {
@@ -136,30 +138,30 @@
 			 * */
 			/*
 			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
-				var runtimeDPI:int = FlexGlobals.topLevelApplication.runtimeDPI;
-				var applicationDPI:int = FlexGlobals.topLevelApplication.applicationDPI;
-				var point:Point;
-				var scaledWidth:int;
-				var scaledHeight:int;
-				var scaleFactor:Number;
-				var scaledY:int;
-				
-				// NOTE: IF THE WEBVIEW IS NOT BEING SIZED CORRECTLY
-				// check if focusEnabled is true. If it is then the soft keyboard may not be dispatching the
-				// deactivate event because the webview has focus when it is dispatched. set to false
-				// position according to the container rather than the stage
-				if (webView) {
-					point = localToGlobal(new Point());
-					scaleFactor = runtimeDPI / applicationDPI;
-					
-					scaledWidth = width * scaleFactor;
-					scaledHeight = height * scaleFactor;
-					
-					webView.viewPort = new Rectangle(point.x, point.y, scaledWidth, scaledHeight);
-					
-					
-				}
-				
+			var runtimeDPI:int = FlexGlobals.topLevelApplication.runtimeDPI;
+			var applicationDPI:int = FlexGlobals.topLevelApplication.applicationDPI;
+			var point:Point;
+			var scaledWidth:int;
+			var scaledHeight:int;
+			var scaleFactor:Number;
+			var scaledY:int;
+			
+			// NOTE: IF THE WEBVIEW IS NOT BEING SIZED CORRECTLY
+			// check if focusEnabled is true. If it is then the soft keyboard may not be dispatching the
+			// deactivate event because the webview has focus when it is dispatched. set to false
+			// position according to the container rather than the stage
+			if (webView) {
+			point = localToGlobal(new Point());
+			scaleFactor = runtimeDPI / applicationDPI;
+			
+			scaledWidth = width * scaleFactor;
+			scaledHeight = height * scaleFactor;
+			
+			webView.viewPort = new Rectangle(point.x, point.y, scaledWidth, scaledHeight);
+			
+			
+			}
+			
 			}
 			*/
 			
@@ -170,9 +172,9 @@
 			
 		]]>
 	</fx:Script>
-
+	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~EstablishConnectionState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-
+	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="EstablishConnectionState">
 		<s:BusyIndicator scaleX = "3" scaleY="3"/>
 		<s:Label text="Connecting"/>
@@ -183,23 +185,23 @@
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="ConnectionErrorState">
 		<s:Label text="Connection Error"/>
-		<s:Button label="Try Again" click="init()"/>
+		<s:Button label="Try Again" click="init()" skinClass="components.TryAgainButtonSkin2"/>
 	</s:VGroup>	
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~StartState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
 	<s:VGroup id="LoginExplanation" includeIn="StartLoginState, WebViewState" 
-			 fontSize="18" left="20" top="20" right="20">
+			  fontSize="18" left="20" top="20" right="20">
 		<s:RichText textFlow="{TextConverter.importToFlow(startText,TextConverter.TEXT_LAYOUT_FORMAT)}" height="300"/>
 	</s:VGroup>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="StartLoginState">
-		<s:Button label="Start" click="onClickStart()" skinClass="components.StartButtonSkin"/>
+		<s:Button label="Start" click="onClickStart()" skinClass="components.StartButtonSkin2"/>
 	</s:VGroup>
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WebViewState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-
+	
 	<!--<controls:WebView id="webView" y="100" width="100%" height="700" includeIn="WebViewState"/>-->
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="WebViewState">		
 		<s:Label text="Loading Flickr login page..."/>
@@ -227,7 +229,7 @@
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="AuthErrorState">
 		<s:Label text="The authorization was not"/>
 		<s:Label text="completed."/>
-		<s:Button label="Try Again"/>
+		<s:Button label="Try Again" click="init()"/>
 	</s:VGroup>
 	
 </s:View>

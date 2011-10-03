@@ -4,21 +4,27 @@
 		title="Browse Sets"
 		destructionPolicy="never"
 		viewActivate="viewActivateHandler(event)">
+
+	<s:states>
+			<s:State name="loadingState"/>
+			<s:State name="errorState"/>
+			<s:State name="completeState"/>
+	</s:states>
 	
 	<fx:Script>
 		<![CDATA[
-			//import assets.images.SpeechBubbleGreen;
+			import VOs.DataObject;
+			import VOs.SetVO;
 			
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
-			import VOs.SetVO;
-			import statics.NSID;
 			
 			import mx.collections.ArrayCollection;
 			
 			import spark.events.ViewNavigatorEvent;
 			
-			//import views.SetView;
+			import statics.NSID;
+			import statics.ViewTypes;
 			
 			[Bindable]
 			private var _service:FlickrService;
@@ -34,27 +40,25 @@
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				_service = data as FlickrService;
-				//if(_photosData)_photosData.removeAll();
-				//if(_photoVOs)_photoVOs.removeAll();
-				//trace("viewActiveHandler");
+				getSetList();
 			}
 			
-			private function onGetSetList(event:MouseEvent):void{
-				
+			private function onClickTryAgain():void{
+				getSetList();
+			}
+			
+			private function getSetList(event:MouseEvent=null):void{
+					currentState = "loadingState";
 					if(!_service)_service = data as FlickrService;
-					trace("data: "+data);
-					trace("_service: "+_service);
-					trace("nsid: "+NSID.getNSID());
-					_service.photosets.getList(NSID.getNSID()); 
+					trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
+					_service.photosets.getList(NSID.getNSID());
 					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
 			} 
 				
-			private function handleSetList(e:FlickrResultEvent):void{ 
-				trace("handleSetList");
-					
-				trace("e.data.photoSets: "+e.data.photoSets);
-				
-					var setData:Array = e.data.photoSets as Array; 
+			private function handleSetList(event:FlickrResultEvent):void{ 
+				trace("handleSetList: e.data.photoSets: "+event.data.photoSets);
+				if(event.success){
+					var setData:Array = event.data.photoSets as Array; 
 					_setVOs = new ArrayCollection(new Array);
 		
 					for(var i:uint = 0; i < setData.length; i ++){ 
@@ -65,17 +69,49 @@
 						_setVOs.addItem(vo);
 					}
 					
+					currentState = "completeState";
 					_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList);
+				
+				}else{
+					
+					currentState = "errorState";
+				
+				}
 			} 
+			
+			private function onClickList():void{
+				trace("id" +setList.selectedItem.id);
+				var dataObject:DataObject = new DataObject();
+				dataObject.selectedSet = setList.selectedItem;
+				dataObject.viewType = ViewTypes.SET;
+				navigator.pushView(MultiplePhotosView,dataObject);
+			}
 			
 		]]>
 	</fx:Script>
 	
-	<s:Button x="10" y="10" width="300" label="Get Your List of Sets" click="onGetSetList(event)"/>
-	<s:List id="setList" 
-			y="61" left="5" 
-			right="5" height="345"
-			change="navigator.pushView(SingleSetView, setList.selectedItem)" 
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~State~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3"/>
+		<s:Label text="Loading..."/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~errorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="errorState">
+		<s:Label text="Error loading list"/>
+		<s:Button label="Try again" click="onClickTryAgain()"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~completeState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup width="100%" height="100%" 
+			  paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5"
+			  includeIn="completeState">
+		
+	<s:List id="setList" width="100%" height="100%"
+			change="onClickList()" 
 			dataProvider="{_setVOs}">
 		
 		<s:itemRenderer>
@@ -85,5 +121,6 @@
 		</s:itemRenderer>
 
 	</s:List>
+	</s:VGroup>
 	
 </s:View>

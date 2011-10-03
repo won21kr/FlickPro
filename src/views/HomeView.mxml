@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		actionBarVisible="false">
+
+	<fx:Declarations>
+		<s:DropShadowFilter id="shadowFilter" blurX="4" blurY="4" alpha="50"/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			
+		]]>
+	</fx:Script>
+	
+
+	<!--use this logo for other pages: FastrLP6-->
+	<!--<s:navigationContent>
+		<s:Button icon="@Embed('assets/images/FastrLP6.png')"/>
+	</s:navigationContent>-->
+	<s:VGroup width="102%">
+	<s:SkinnableContainer width="100%" height="180" skinClass="skins.BlueBox" >
+		
+	<s:HGroup  width="100%">
+		<s:Image source="@Embed('assets/images/FastrsforFlickrBig.png')"/>
+	</s:HGroup>
+		
+	</s:SkinnableContainer>	
+	
+	<s:TileGroup requestedColumnCount="2" columnAlign="justifyUsingGap"
+				 horizontalGap="20" verticalGap="20"
+				 paddingLeft="25" paddingRight="25" paddingTop="25" paddingBottom="25">
+		
+		<s:Button id="upload" skinClass="components.StartUploadingButtonSkin"/>
+		<s:Button id="sets" skinClass="components.BrowseYourSetsButtonSkin"/>
+		<s:Button id="stream" skinClass="components.PhotoStreamButtonSkin"/>
+		<s:Button id="about" skinClass="components.AboutButtonSkin"/>
+		<s:Button id="account" skinClass="components.ChangeAccountButtonSkin"/>
+		<s:Button id="search" skinClass="components.SearchButtonSkin"/>		  
+
+	</s:TileGroup>
+	</s:VGroup>
+</s:View>
+

@@ -1,46 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 							xmlns:s="library://ns.adobe.com/flex/spark" 
-							creationComplete="init(event)">
+							creationComplete="init(event)"
+							splashScreenImage="@Embed('assets/images/splashScreen.png')"
+							splashScreenMinimumDisplayTime="1000"
+							splashScreenScaleMode="zoom">
 	
 	<fx:Style source="styles/MainStyle.css"/>
 	
 	<fx:Script>
 		<![CDATA[
+			import VOs.DataObject;
+			
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomEvent;
-			import statics.Keys;
 			
 			import components.MenuPopUp;
 			
 			import mx.events.FlexEvent;
 			
+			import statics.Keys;
+			import statics.Service;
+			import statics.ViewTypes;
+			
 			import views.BatchUploadView;
 			import views.BrowseSets;
+			import views.HomeView;
 			import views.LoginView;
-			import views.SinglePhotoUploadView;
-			import views.SingleSetView;		
+			import views.MultiplePhotosView;
 			
 			private var _popup:MenuPopUp;
 			
-			public var _service:FlickrService = new FlickrService();
+			public var _service:FlickrService;
 			
 			private function init(event:FlexEvent):void{
 				_popup = new MenuPopUp();
 				
 				_service = new FlickrService();
+				
+				Service.setService(_service);
+				
 				_service.api_key = Keys.getApiKey();
 				_service.secret = Keys.getSecretKey();
 			
 				addMenuListeners();
-				
-				navigator.pushView(LoginView,_service);
+				navigator.pushView(HomeView);
+				//navigator.pushView(LoginView,_service);
 			}
 			
 			private function addMenuListeners():void{
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_UPLOAD, onUpload);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_BROWSE_SETS, onBrowseSets);
+				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM, onPhotostream);
 			}
 			
 			private function onUpload(event:CustomEvent):void{
@@ -54,6 +66,14 @@
 			public function getService():FlickrService{
 				return _service;
 			}		
+			
+			protected function onPhotostream(event:Event):void
+			{
+				var dataObject:DataObject = new DataObject();
+				dataObject.viewType = ViewTypes.PHOTO_STREAM;
+				navigator.pushView(MultiplePhotosView,dataObject);
+			}
+			
 		]]>
 	</fx:Script>
 	

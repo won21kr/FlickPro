@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="PhotoStreamView"
+		destructionPolicy="never"
+		creationComplete="init(event)">
+	
+	<s:states>
+		<s:State name="loadingState"/>
+		<s:State name="errorState"/>
+		<s:State name="completeState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import Interfaces.IPhotoQuery;
+			
+			import VOs.DataObject;
+			
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import queries.SetQuery;
+			import queries.StreamQuery;
+			
+			import statics.ViewTypes;
+			
+			[Bindable]
+			private var _photoVOs:ArrayCollection = new ArrayCollection();			
+			private var _photoQuery:IPhotoQuery;
+			private var _service:FlickrService;
+			private var _viewType:String;
+	
+			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
+			
+			private function init(event:FlexEvent=null):void{
+				
+				currentState = "loadingState";						
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,onPhotosRetrieved);
+				
+				_viewType = (data as DataObject).viewType;
+				
+				switch(_viewType){
+					
+					case ViewTypes.PHOTO_STREAM :
+					_photoQuery = new StreamQuery();
+					break;
+					
+					case ViewTypes.SET :
+					_photoQuery = new SetQuery();
+					_photoQuery.setParams(data as DataObject);
+					break;
+					
+					case ViewTypes.SEARCH :
+					//_photoQuery = new SearchQuery();
+					break;
+					
+					default:
+					//_photoQuery = new PhotostreamQuery;
+				}
+				
+				_photoQuery.execute();
+			}
+			
+			private function onPhotosRetrieved(event:CustomDataEvent):void
+			{
+				_photoVOs.removeAll();
+				currentState  = "completeState";
+				trace("psv onPhotosRetrieved");
+				_photoVOs = event.list;
+				
+				EventCentral.getInstance().removeEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,onPhotosRetrieved);
+			}
+			
+			private function onListClick(event:Event):void{
+				navigator.pushView(SinglePhotoView, photoList.selectedItem);
+			}
+		]]>
+	</fx:Script>
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0"
+			  includeIn="errorState">
+		<s:Label text="Error loading list"/>
+		<s:Button label="Try again" click="init()"/>
+	</s:VGroup>
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3"/>
+		<s:Label text="Loading..."/>
+	</s:VGroup>
+	
+	<s:List width="100%" height="100%" id="photoList" 
+			includeIn="completeState"
+			left="5" right="5" top="5" bottom="5" 
+			dataProvider="{_photoVOs}" click="onListClick(event)">
+		
+		<s:itemRenderer>
+			<fx:Component>
+				<s:IconItemRenderer iconField="smallImage" labelField = " " />
+			</fx:Component>
+		</s:itemRenderer>
+		
+	</s:List>
+	
+</s:View>
