@@ -6,9 +6,10 @@ package Interfaces
 	
 	public interface IPhotoQuery
 	{
-		function execute():void;
+		function execute(str:String):void;
 		function setParams(dataObject:DataObject):void;
 		function dispatchCustomDataEvent():void;
+		function dispatchError():void;
 	}
 	
 }

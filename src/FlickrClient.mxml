@@ -4,7 +4,8 @@
 							creationComplete="init(event)"
 							splashScreenImage="@Embed('assets/images/splashScreen.png')"
 							splashScreenMinimumDisplayTime="1000"
-							splashScreenScaleMode="zoom">
+							splashScreenScaleMode="zoom"
+							>
 	
 	<fx:Style source="styles/MainStyle.css"/>
 	
@@ -19,6 +20,10 @@
 			import components.MenuPopUp;
 			
 			import mx.events.FlexEvent;
+			
+			import spark.transitions.ViewTransitionDirection;
+			import spark.transitions.ZoomViewTransition;
+			import spark.transitions.ZoomViewTransitionMode;
 			
 			import statics.Keys;
 			import statics.Service;
@@ -44,8 +49,14 @@
 				_service.api_key = Keys.getApiKey();
 				_service.secret = Keys.getSecretKey();
 			
-				addMenuListeners();
-				navigator.pushView(HomeView);
+				
+				//this.actionBar.alpha=0;
+				//this.actionBar.visible=false;
+				
+				//var zoomTrans:ZoomViewTransition = new ZoomViewTransition();
+				//zoomTrans.direction = ViewTransitionDirection.RIGHT;
+				//zoomTrans.mode = ZoomViewTransitionMode.IN; //or OUT mode
+				navigator.pushView(LoginView);
 				//navigator.pushView(LoginView,_service);
 			}
 			
@@ -77,8 +88,12 @@
 		]]>
 	</fx:Script>
 	
-	<s:actionContent>
+	<s:navigationContent>
+		<s:Image source="@Embed('assets/images/FastrLP6.png')"/>
+	</s:navigationContent>
+	
+	<!--<s:actionContent>
 		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
-	</s:actionContent>
+	</s:actionContent>-->
 	
 </s:ViewNavigatorApplication>

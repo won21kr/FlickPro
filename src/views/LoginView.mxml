@@ -9,8 +9,12 @@
 		]]>
 	</fx:Script>
 	
+	<s:navigationContent>
+		<s:Image source="@Embed('assets/images/FastrLP6.png')"/>
+	</s:navigationContent>
+	
 	<s:actionContent>
-		<s:Button label="Reload login" click="onClickStart()" includeIn="WebViewState"/>
+		<s:Button label="Reload login" click="onClickStart()" includeIn="WebViewState" fontSize="12"/>
 		<s:Button x="320" y="150" label="Done" 
 				  click="onValidConnection()" includeIn="WebViewState" skinClass="components.DoneButtonSkin"/>
 	</s:actionContent>
@@ -92,7 +96,7 @@
 				//_locationCounter++;
 				currentState = "WebViewState";
 				webView.stage = this.stage;
-				webView.viewPort = new Rectangle( 0, 100, stage.stageWidth, 700 ); 
+				webView.viewPort = new Rectangle( 0, 80, stage.stageWidth, 700 ); 
 				var auth_url:String = _service.getLoginURL( _frob, AuthPerm.WRITE );
 				webView.loadURL(auth_url);//webView.load(auth_url)
 			}
@@ -120,10 +124,12 @@
 					_service.token = authResult.token;
 					_service.permission = authResult.perms;
 					
-					username.text = authResult.user.username + " (" + authResult.user.fullname + " )";
+					//username.text = authResult.user.username + " (" + authResult.user.fullname + " )";
 					
 					trace("token: " + _service.token + "\n");
 					trace("perms: " + _service.permission + "\n");
+					
+					navigator.pushView(HomeView);
 					
 				} else {
 					currentState="AuthErrorState";
@@ -215,15 +221,15 @@
 	</s:VGroup>
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SuccessState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-	
+	<!--
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="SuccessState">
 		<s:Label text="You have logged in as"/>
 		<s:Label id="username" text="username"/>
 		<s:Label text="and have authorized Flickit to"/>
 		<s:Label text="access your Flickr photos"/>
-		<s:Button label="Start uploading" click="navigator.pushView(BatchUploadView, _service)" />		 
+		<s:Button click="navigator.pushView(BatchUploadView, _service)" />		 
 	</s:VGroup>
-	
+	-->
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~AuthErrorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="AuthErrorState">

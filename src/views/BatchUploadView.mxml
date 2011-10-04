@@ -12,12 +12,16 @@
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
+			import components.PrivacySettingsPopup;
+			
 			import helpers.GalleryBrowser;
 			import helpers.Uploader;
 			
 			import mx.collections.ArrayCollection;
 			
 			import spark.events.ViewNavigatorEvent;
+			
+			import statics.Service;
 			
 			private var _browser:GalleryBrowser;
 			[Bindable]
@@ -40,6 +44,7 @@
 			private var _uploader:Uploader;
 			
 			private var _fileRef:FileReference;
+			private var _privacyPopup:PrivacySettingsPopup;
 			
 			
 			[Bindable]
@@ -52,9 +57,10 @@
 				
 				photoList.scroller.setStyle('horizontalScrollPolicy', 'ScrollPolicy.OFF');
 				
-				_service = data as FlickrService;
+				_service = Service.getService();
 				
 				EventCentral.getInstance().addEventListener(CustomDataEvent.REMOVE_IMAGE_FROM_UPLOAD_LIST,onRemoveImageFromList);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.PRIVACY_SETTINGS,onPrivacySettings);
 			}
 			
 			private function init():void{
@@ -105,10 +111,26 @@
 			
 			protected function onClickPrivacySettingsButton(event:MouseEvent):void
 			{
-				// TODO Auto-generated method stub
-				
+				_privacyPopup = new PrivacySettingsPopup();
+				_privacyPopup.show();
 			}
 			
+			protected function onPrivacySettings(event:CustomDataEvent):void
+			{
+				if(event.string == "public"){
+					_is_family = false;
+					_is_friend = false;
+					_is_public = true;
+				}else if(event.string == "friend"){
+					_is_family = false;
+					_is_friend = true;
+					_is_public = false;
+				}else{
+					_is_family = true;
+					_is_friend = false;
+					_is_public = false;
+				}
+			}
 		]]>
 	</fx:Script>
 	

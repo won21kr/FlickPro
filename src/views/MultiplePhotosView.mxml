@@ -19,10 +19,12 @@
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			import com.squidzoo.eventSystem.events.CustomEvent;
 			
 			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
 			
+			import queries.PhotoQuery;
 			import queries.SetQuery;
 			import queries.StreamQuery;
 			
@@ -44,29 +46,35 @@
 				currentState = "loadingState";						
 				
 				EventCentral.getInstance().addEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,onPhotosRetrieved);
+				EventCentral.getInstance().addEventListener(CustomEvent.ERROR_RETRIEVING_PHOTOS,onError);
 				
 				_viewType = (data as DataObject).viewType;
+				
+				var type:String = "";
+				
+				_photoQuery = new PhotoQuery();
 				
 				switch(_viewType){
 					
 					case ViewTypes.PHOTO_STREAM :
-					_photoQuery = new StreamQuery();
+					type = "stream";
 					break;
 					
 					case ViewTypes.SET :
-					_photoQuery = new SetQuery();
 					_photoQuery.setParams(data as DataObject);
+					type = "set";
 					break;
 					
 					case ViewTypes.SEARCH :
-					//_photoQuery = new SearchQuery();
+					_photoQuery.setParams(data as DataObject);
+					type = "search";
 					break;
 					
 					default:
 					//_photoQuery = new PhotostreamQuery;
 				}
 				
-				_photoQuery.execute();
+				_photoQuery.execute(type);
 			}
 			
 			private function onPhotosRetrieved(event:CustomDataEvent):void
@@ -82,13 +90,19 @@
 			private function onListClick(event:Event):void{
 				navigator.pushView(SinglePhotoView, photoList.selectedItem);
 			}
+			
+			protected function onError(event:Event):void
+			{
+				currentState = "errorState";				
+			}
+			
 		]]>
 	</fx:Script>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0"
 			  includeIn="errorState">
 		<s:Label text="Error loading list"/>
-		<s:Button label="Try again" click="init()"/>
+		<s:Button label="Try again" click="init()" skinClass="components.TryAgainButtonSkin2"/>
 	</s:VGroup>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="loadingState">
@@ -98,14 +112,23 @@
 	
 	<s:List width="100%" height="100%" id="photoList" 
 			includeIn="completeState"
-			left="5" right="5" top="5" bottom="5" 
-			dataProvider="{_photoVOs}" click="onListClick(event)">
+			left="10" right="10" top="5" bottom="0" 
+			dataProvider="{_photoVOs}" 
+			click="onListClick(event)"
+			itemRenderer="ItemRenderers.PhotoListItemRenderer"
+			contentBackgroundAlpha="0">
+		<s:layout>
+			<s:TileLayout requestedColumnCount="2" 
+						  columnAlign="justifyUsingGap"
+			horizontalGap="10" verticalGap="10"
+			paddingLeft="15" paddingRight="15" paddingTop="5" paddingBottom="5"/>
+		</s:layout>
 		
-		<s:itemRenderer>
+		<!--<s:itemRenderer>
 			<fx:Component>
 				<s:IconItemRenderer iconField="smallImage" labelField = " " />
 			</fx:Component>
-		</s:itemRenderer>
+		</s:itemRenderer>-->
 		
 	</s:List>
 	

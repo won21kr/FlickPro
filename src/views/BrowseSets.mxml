@@ -24,6 +24,7 @@
 			import spark.events.ViewNavigatorEvent;
 			
 			import statics.NSID;
+			import statics.Service;
 			import statics.ViewTypes;
 			
 			[Bindable]
@@ -39,7 +40,7 @@
 			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
-				_service = data as FlickrService;
+				_service = Service.getService();
 				getSetList();
 			}
 			
@@ -49,7 +50,7 @@
 			
 			private function getSetList(event:MouseEvent=null):void{
 					currentState = "loadingState";
-					if(!_service)_service = data as FlickrService;
+					if(!_service)_service = Service.getService();
 					trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
 					_service.photosets.getList(NSID.getNSID());
 					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
@@ -116,7 +117,10 @@
 		
 		<s:itemRenderer>
 			<fx:Component>
-				<s:IconItemRenderer labelField="title"/>
+				<s:IconItemRenderer 
+									
+									labelField="title"
+									/>
 			</fx:Component>
 		</s:itemRenderer>
 

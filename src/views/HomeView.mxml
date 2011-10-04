@@ -9,6 +9,36 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import VOs.DataObject;
+			
+			import statics.ViewTypes;
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				switch(event.target.id){
+					case "upload":
+						navigator.pushView(BatchUploadView);
+						break;
+					case "sets":
+						navigator.pushView(BrowseSets);
+						break;
+					case "stream":
+						var dataObject:DataObject = new DataObject();
+						dataObject.viewType = ViewTypes.PHOTO_STREAM;
+						navigator.pushView(MultiplePhotosView,dataObject);
+						break;
+					case "about":
+						navigator.pushView(AboutView);
+						break;
+					case "account":
+						navigator.pushView(LoginView);
+						break;
+					case "search":
+						navigator.pushView(SearchView);
+						break;
+						
+				}
+			}
 			
 		]]>
 	</fx:Script>
@@ -31,12 +61,12 @@
 				 horizontalGap="20" verticalGap="20"
 				 paddingLeft="25" paddingRight="25" paddingTop="25" paddingBottom="25">
 		
-		<s:Button id="upload" skinClass="components.StartUploadingButtonSkin"/>
-		<s:Button id="sets" skinClass="components.BrowseYourSetsButtonSkin"/>
-		<s:Button id="stream" skinClass="components.PhotoStreamButtonSkin"/>
-		<s:Button id="about" skinClass="components.AboutButtonSkin"/>
-		<s:Button id="account" skinClass="components.ChangeAccountButtonSkin"/>
-		<s:Button id="search" skinClass="components.SearchButtonSkin"/>		  
+		<s:Button id="upload" skinClass="components.StartUploadingButtonSkin" click="onClick(event)"/>
+		<s:Button id="sets" skinClass="components.BrowseYourSetsButtonSkin" click="onClick(event)"/>
+		<s:Button id="stream" skinClass="components.PhotoStreamButtonSkin" click="onClick(event)"/>
+		<s:Button id="about" skinClass="components.AboutButtonSkin" click="onClick(event)"/>
+		<s:Button id="account" skinClass="components.ChangeAccountButtonSkin" click="onClick(event)"/>
+		<s:Button id="search" skinClass="components.SearchButtonSkin" click="onClick(event)"/>		  
 
 	</s:TileGroup>
 	</s:VGroup>

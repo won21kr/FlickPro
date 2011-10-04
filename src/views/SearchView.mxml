@@ -1,7 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark" title="SearchView">
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.DataObject;
+			
+			import spark.events.TextOperationEvent;
+			
+			import statics.ViewTypes;
+			private var _tags:String;
+			protected function onClick(event:MouseEvent):void
+			{
+				var dataObject:DataObject = new DataObject();
+				dataObject.tags = _tags;
+				dataObject.viewType = ViewTypes.SEARCH;
+				navigator.pushView(MultiplePhotosView,dataObject);
+			}
+			
+			protected function onChange(event:TextOperationEvent):void
+			{
+				_tags = event.target.text;
+			}
+			
+		]]>
+	</fx:Script>
+	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
+	
+	<s:VGroup verticalCenter="0" horizontalCenter="0">
+		<s:TextInput change="onChange(event)"/>
+		<s:Button label="search" click="onClick(event)"/>
+	</s:VGroup>
 </s:View>

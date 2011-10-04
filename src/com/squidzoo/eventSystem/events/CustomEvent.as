@@ -8,6 +8,7 @@ package com.squidzoo.eventSystem.events
 		public static const ACTIONBAR_MENU_ICON_CLICKED_UPLOAD:String = "Upload";
 		public static const ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM:String = "Photostream";
 		public static const ACTIONBAR_MENU_ICON_CLICKED_SEARCH:String = "Search";
+		public static const ERROR_RETRIEVING_PHOTOS:String = "Error retrieving photos";
 		
 		public function CustomEvent(type:String):void {
 			super(type);

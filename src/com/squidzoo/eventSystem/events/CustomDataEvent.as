@@ -11,6 +11,7 @@ package com.squidzoo.eventSystem.events
 		public static const GALLERY_IMAGE_SELECTED:String = "galleryImageSelected";
 		public static const REMOVE_IMAGE_FROM_UPLOAD_LIST:String = "Remove image from upload list";
 		public static const PHOTOS_RETRIEVED_FROM_FLICKR:String = "Photos retrieved from Flickr";
+		public static const PRIVACY_SETTINGS:String = "privacy settings";
 
 		private var _image:Bitmap;
 		private var _fileReference:FileReference

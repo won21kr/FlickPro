@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark" title="PhotoView"
-		viewActivate="viewActivateHandler(event)">
+		viewActivate="viewActivateHandler(event)" xmlns:styles="styles.*">
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+	</fx:Declarations>
+	
 	<fx:Script>
 		<![CDATA[
 			import com.adobe.webapis.flickr.FlickrService;
@@ -20,8 +24,7 @@
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				
-				
-				photo.source = data.smallImage;
+				photo.source = data.image;
 				//_title = data.service.photo.title;
 				//_desc = data.service.photo.description;
 				
@@ -32,12 +35,12 @@
 			
 		]]>
 	</fx:Script>
-	<s:Button x="253" y="359" label="back" click="navigator.popView()"/>
-	<s:Image id="photo" x="10" y="10" />
-	<s:Label id="titleLabel" x="10" y="281" text="Title"/>
-	<s:Label id="titleValue" x="72" y="281" width="238" text="{_title}"/>
-	<s:Label id="descLabel" x="10" y="304" text="Desc"/>
-	<s:Label id="descValue" x="72" y="304" width="238" text="{_desc}"/>
-	<s:Label id="tagsLabel" x="10" y="327" text="tags"/>
-	<s:Label id="tagsValue" x="72" y="327" width="238" text="{_tags}"/>
+		<s:VGroup verticalCenter="0" horizontalCenter="0">
+				<s:Image id="photo" width="430" filters="{graphicsLib.getDropShadowFilter()}"/>				
+		<s:Label id="titleLabel" text="Title" color="#ffffff"/>
+		<s:Label id="titleValue" text="{_title}" color="#ffffff"/>
+		<s:Label id="tagsLabel" text="tags" color="#ffffff"/>
+		<s:Label id="tagsValue" text="{_tags}" color="#ffffff"/>
+		</s:VGroup>
+	
 </s:View>

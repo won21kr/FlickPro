@@ -9,6 +9,7 @@ package queries
 	import com.adobe.webapis.flickr.events.FlickrResultEvent;
 	import com.squidzoo.eventSystem.EventCentral;
 	import com.squidzoo.eventSystem.events.CustomDataEvent;
+	import com.squidzoo.eventSystem.events.CustomEvent;
 	
 	import flash.display.Bitmap;
 	import flash.display.Loader;
@@ -40,47 +41,44 @@ package queries
 		public function execute():void{
 			_photoVOs = new ArrayCollection();
 			_service = Service.getService();
-			_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onPhotoSearchResult); 
+			_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotos); 
 			_service.photos.search(NSID.getNSID(),
 				"","any","",null,null,null,null,-1,"date-posted-desc",-1,"",
 				-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",50);
 		}
 		
-		private function onPhotoSearchResult(event:FlickrResultEvent):void{
-			_service.removeEventListener(FlickrResultEvent.PHOTOS_SEARCH,onPhotoSearchResult);
-			trace("an array of set data has been retrieved");
-			if(_photoVOs)_photoVOs.removeAll();
+		private function onGetPhotos(event:FlickrResultEvent):void{
+			_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_PHOTOS,onGetPhotos);
+			trace("an array of set data has been retrieved");			
 			_photoVOs = new ArrayCollection(new Array());
 			
-			var photos:Array = event.data.photos.photos as Array;
-			_numPhotos = photos.length;
-			for(var i:int = 0; i < photos.length;i++){
-				var imageURL:String = 	'http://static.flickr.com/' + 
-					photos[i].server + '/' + 
-					photos[i].id + '_' +
-					photos[i].secret + '_m.jpg';
-				var request:URLRequest = new URLRequest(imageURL);
-				var loader:Loader = new Loader();
-				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onEventComplete);
-				loader.load(request);
-			}
-		}
-		
-		private function onEventComplete(event:Event):void{
-			trace("PhotostreamQuery.onEventComplete()");
-			var image:Bitmap = event.currentTarget.content;
-			var vo:PhotoVO = new PhotoVO();
-			vo.smallImage = image;
-			_photoVOs.addItem(vo);
-			//trace("_photoVOs.length: "+_photoVOs.length, "_numPhotos"+_numPhotos);
-			if(_photoVOs.length > _numPhotos-1){
-				dispatchCustomDataEvent();
+			if(event.success){
+				var photos:Array = event.data.photoSet.photos as Array;
+				_numPhotos = photos.length;
+				trace("_numPhotos: "+_numPhotos + " photos.length: "+photos.length);
+				
+				
+				for(var i:int = 0; i < photos.length;i++){
+					var vo:PhotoVO = new PhotoVO(photos[i]);
+					_photoVOs.addItem(vo);
+					
+					trace(i);
+					if(i >= _numPhotos-1){
+						dispatchCustomDataEvent();
+					}
+				}
 			}
 		}
 		
 		public function dispatchCustomDataEvent():void{
+			trace("sq dispatchingCustomDataEvent");
 			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(
 				CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,null,null,null,_photoVOs));
 		}
+		
+		public function dispatchError():void{
+			EventCentral.getInstance().dispatchEvent(new CustomEvent(CustomEvent.ERROR_RETRIEVING_PHOTOS));
+		}
+		
 	}
 }
