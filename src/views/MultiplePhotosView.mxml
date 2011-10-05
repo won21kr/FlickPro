@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="PhotoStreamView"
+		xmlns:s="library://ns.adobe.com/flex/spark"
 		destructionPolicy="never"
 		creationComplete="init(event)">
 	
@@ -47,6 +47,7 @@
 				
 				EventCentral.getInstance().addEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,onPhotosRetrieved);
 				EventCentral.getInstance().addEventListener(CustomEvent.ERROR_RETRIEVING_PHOTOS,onError);
+				EventCentral.getInstance().addEventListener(CustomEvent.INVALIDATE_DISPLAY_LIST,onInvalidateDisplayList);
 				
 				_viewType = (data as DataObject).viewType;
 				
@@ -57,19 +58,22 @@
 				switch(_viewType){
 					
 					case ViewTypes.PHOTO_STREAM :
-					type = "stream";
+					type = ViewTypes.PHOTO_STREAM;
 					break;
 					
 					case ViewTypes.SET :
 					_photoQuery.setParams(data as DataObject);
-					type = "set";
+					type = ViewTypes.SET;
 					break;
 					
-					case ViewTypes.SEARCH :
+					case ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR :
 					_photoQuery.setParams(data as DataObject);
-					type = "search";
+					type = ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;
 					break;
 					
+					case ViewTypes.SEARCH_ONLY_OWN_PHOTOS :
+					_photoQuery.setParams(data as DataObject);
+					type = ViewTypes.SEARCH_ONLY_OWN_PHOTOS;
 					default:
 					//_photoQuery = new PhotostreamQuery;
 				}
@@ -96,6 +100,19 @@
 				currentState = "errorState";				
 			}
 			
+			/**
+			 * resets the itemRenderer property temporarily and then restores it to trigger a redraw.
+			 */
+			
+			protected function onInvalidateDisplayList(event:Event):void
+			{
+				trace("MPV inval");
+				//photoList.invalidateDisplayList();	
+				var _itemRenderer:IFactory = photoList.itemRenderer;
+				photoList.itemRenderer = null;
+				photoList.itemRenderer = _itemRenderer;
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -118,10 +135,10 @@
 			itemRenderer="ItemRenderers.PhotoListItemRenderer"
 			contentBackgroundAlpha="0">
 		<s:layout>
-			<s:TileLayout requestedColumnCount="2" 
+			<s:TileLayout requestedColumnCount="3" 
 						  columnAlign="justifyUsingGap"
-			horizontalGap="10" verticalGap="10"
-			paddingLeft="15" paddingRight="15" paddingTop="5" paddingBottom="5"/>
+			horizontalGap="5" verticalGap="20"
+			paddingLeft="30" paddingRight="30" paddingTop="5" paddingBottom="5"/>
 		</s:layout>
 		
 		<!--<s:itemRenderer>

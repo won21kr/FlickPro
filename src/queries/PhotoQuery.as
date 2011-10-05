@@ -20,6 +20,7 @@ package queries
 	
 	import statics.NSID;
 	import statics.Service;
+	import statics.ViewTypes;
 	
 	public class PhotoQuery implements IPhotoQuery
 	{
@@ -28,7 +29,7 @@ package queries
 		private var _numPhotos:int;
 		private var _photoVOs:ArrayCollection;
 		private var _id:String;
-		private var _tags;
+		private var _tags:String;
 		
 		public function PhotoQuery(){
 		}
@@ -51,22 +52,29 @@ package queries
 			_service = Service.getService();
 		
 			switch(str){
-				case "set":
+				case ViewTypes.SET:
+					trace("get set");
 					_service.photosets.getPhotos(_id); 
 					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_PHOTOS, onGetPhotoSet);  
 					break;
 			
-				case "stream":
+				case ViewTypes.PHOTO_STREAM:
+					trace("get stream");
+					trace("NSID: "+NSID.getNSID());
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
 					_service.photos.search(NSID.getNSID(),
 						"","any","",null,null,null,null,-1,"date-posted-desc",-1,"",
 						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",50);
 					break;
 					
-				case "search":
+				case ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR:
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
 					_service.photos.search("", _tags);
 					break;
+				
+				case ViewTypes.SEARCH_ONLY_OWN_PHOTOS:
+					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
+					_service.photos.search(NSID.getNSID(), _tags);
 			}
 		}
 		
@@ -96,6 +104,8 @@ package queries
 						dispatchCustomDataEvent();
 					}
 				}
+			}else{
+				dispatchError();
 			}
 		}
 		
@@ -122,11 +132,16 @@ package queries
 						dispatchCustomDataEvent();
 					}
 				}
+			}else{
+				dispatchError();
 			}
 		}
 		
 		public function dispatchCustomDataEvent():void{
 			trace("sq dispatchingCustomDataEvent");
+			
+			//_photoVOs.source.reverse();//to ensure photos on top of list in MultiplePhotosView get rendered first.
+			
 			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(
 				CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,null,null,null,_photoVOs));
 		}

@@ -83,6 +83,8 @@ package com.adobe.webapis.flickr.methodgroups {
 				}
 			}
 			
+			trace("MethodGroupHelper: service.token: "+service.token);
+			
 			// If a user is authenticated, automatically add their token
 			if ( service.permission != AuthPerm.NONE && service.token ) {
 				args.push( new NameValuePair( "auth_token", service.token ) );
@@ -114,6 +116,8 @@ package com.adobe.webapis.flickr.methodgroups {
 			// Use the "internal" flickrservice namespace to be able to
 			// access the urlLoader so we can make the request.
 			var loader:URLLoader = service.flickrservice_internal::urlLoader;
+			
+			trace("MethodGroupHelper: query: "+query);
 			
 			// Construct a url request with our query string and invoke
 			// the Flickr method

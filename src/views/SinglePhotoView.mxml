@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="PhotoView"
+		xmlns:s="library://ns.adobe.com/flex/spark"
 		viewActivate="viewActivateHandler(event)" xmlns:styles="styles.*">
 	<fx:Declarations>
 		<styles:GraphicsLib id="graphicsLib"/>
 	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="loadingState"/>
+		<s:State name="completeState"/>
+	</s:states>
 	
 	<fx:Script>
 		<![CDATA[
@@ -12,6 +17,7 @@
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
 			
 			import spark.events.ViewNavigatorEvent;
+			import spark.transitions.SlideViewTransition;
 			
 			[Bindable]
 			private var _image:Bitmap;
@@ -24,19 +30,60 @@
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				
-				photo.source = data.image;
-				//_title = data.service.photo.title;
-				//_desc = data.service.photo.description;
-				
-				//for(var i:int = 0;i <data.photo.tags.length();i++){
-					//_tags+=	data.photo.tags[i]+" ";	
-				//}
+				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
+				currentState = "loadingState";
+				load();
+			}
+			
+			private function load():void{
+				var request:URLRequest = new URLRequest(data.largeImageString);
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onEventComplete);
+				loader.load(request);
+			}
+			
+			private function onEventComplete(event:Event):void{
+				currentState = "completeState";
+				var image:Bitmap = event.currentTarget.content;
+				this.photo.source = image;
+				trace(image.width,image.height);
+			
+			}
+			
+			private function handleSwipe(event:TransformGestureEvent):void
+			{
+				// Swipe was to the right
+				if (event.offsetX == 1 ) {
+					// push the PreviousView without any data using default
+					// ViewTransition
+					navigator.popView();
+				}
+					// Swipe was to the left
+				/*
+				else if (event.offsetX == -1 ) {
+					// push the NextView withour any data using 
+					navigator.pushView( NextView, null, 
+						new SlideViewTransition( 300, SlideViewTransition.SLIDE_LEFT ) );
+				}
+				*/
 			}
 			
 		]]>
 	</fx:Script>
-		<s:VGroup verticalCenter="0" horizontalCenter="0">
-				<s:Image id="photo" width="430" filters="{graphicsLib.getDropShadowFilter()}"/>				
+	<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" 
+			  includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3"/>
+		<s:Label text="loading photo..."/>
+	</s:VGroup>
+	
+	
+		<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="completeState">
+			<s:SkinnableContainer
+				width="450" height="{photo.height+20}"
+								  skinClass="skins.WhiteBox" 
+								  filters="{graphicsLib.getDropShadowFilter()}">				
+				<s:Image id="photo" width="430" />				
+			</s:SkinnableContainer>
 		<s:Label id="titleLabel" text="Title" color="#ffffff"/>
 		<s:Label id="titleValue" text="{_title}" color="#ffffff"/>
 		<s:Label id="tagsLabel" text="tags" color="#ffffff"/>

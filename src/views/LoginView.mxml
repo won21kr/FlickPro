@@ -42,6 +42,8 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import helpers.NSIDManager;
+			import helpers.TokenManager;
 			import statics.Service;
 			import mx.core.FlexGlobals;
 			import com.adobe.webapis.flickr.AuthPerm;
@@ -121,13 +123,18 @@
 					
 					NSID.setNSID(authResult.user.nsid);
 					
+					trace("LoginView: authResult.token: "+authResult.token);
+					trace("LoginView: authResult.user.nsid: "+authResult.user.nsid);
+					
 					_service.token = authResult.token;
+					TokenManager.setToken(authResult.token);
+					NSIDManager.setNSID(authResult.user.nsid);
 					_service.permission = authResult.perms;
 					
 					//username.text = authResult.user.username + " (" + authResult.user.fullname + " )";
 					
-					trace("token: " + _service.token + "\n");
-					trace("perms: " + _service.permission + "\n");
+					//trace("LoginView: _service.token: " + _service.token + "\n");
+					//trace("perms: " + _service.permission + "\n");
 					
 					navigator.pushView(HomeView);
 					

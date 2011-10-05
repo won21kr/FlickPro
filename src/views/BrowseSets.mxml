@@ -32,7 +32,7 @@
 			[Bindable]
 			private var _setsData:ArrayCollection;
 			[Bindable]
-			private var _setVOs:ArrayCollection;
+			private var _setVOs:ArrayCollection = new ArrayCollection();
 			
 			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
@@ -41,7 +41,9 @@
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				_service = Service.getService();
-				getSetList();
+				if(_setVOs.length<1){
+					getSetList();
+				}
 			}
 			
 			private function onClickTryAgain():void{
@@ -51,24 +53,33 @@
 			private function getSetList(event:MouseEvent=null):void{
 					currentState = "loadingState";
 					if(!_service)_service = Service.getService();
-					trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
-					_service.photosets.getList(NSID.getNSID());
+					
+					trace("BrowseSets: NSID.getNSIS()) "+NSID.getNSID());
+					trace("BrowseSets: _service.token() "+_service.token);
+					//trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
+					var id:String = NSID.getNSID();
+					trace("BrowseSets: id: "+id);
+					_service.photosets.getList(id);
 					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
 			} 
 				
 			private function handleSetList(event:FlickrResultEvent):void{ 
-				trace("handleSetList: e.data.photoSets: "+event.data.photoSets);
+				
+				trace("BrowseSets: handleSetList: e.data.photoSets: "+event.data.photoSets);
 				if(event.success){
+					trace("BrowseSets: success");
 					var setData:Array = event.data.photoSets as Array; 
 					_setVOs = new ArrayCollection(new Array);
-		
+					
 					for(var i:uint = 0; i < setData.length; i ++){ 
+						trace("i:"+i);
 						var vo:SetVO = new SetVO();
 						vo.id = setData[i].id;
 						vo.title = setData[i].title;
 						vo.service = _service;
 						_setVOs.addItem(vo);
 					}
+					trace("BrowseSets: _setVOs.length "+_setVOs.length);
 					
 					currentState = "completeState";
 					_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList);

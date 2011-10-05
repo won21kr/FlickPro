@@ -10,15 +10,21 @@
 			
 			import statics.ViewTypes;
 			private var _tags:String;
-			protected function onClick(event:MouseEvent):void
+			
+			private function onClick(event:MouseEvent):void
 			{
 				var dataObject:DataObject = new DataObject();
 				dataObject.tags = _tags;
-				dataObject.viewType = ViewTypes.SEARCH;
-				navigator.pushView(MultiplePhotosView,dataObject);
+				
+				if(event.target.id == "Flickr"){
+					dataObject.viewType = ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;
+				}else{
+					dataObject.viewType	= ViewTypes.SEARCH_ONLY_OWN_PHOTOS;
+				}
+					navigator.pushView(MultiplePhotosView,dataObject);
 			}
 			
-			protected function onChange(event:TextOperationEvent):void
+			private function onChange(event:TextOperationEvent):void
 			{
 				_tags = event.target.text;
 			}
@@ -32,6 +38,9 @@
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0">
 		<s:TextInput change="onChange(event)"/>
-		<s:Button label="search" click="onClick(event)"/>
+		<s:HGroup>
+			<s:Button id="Flickr" label="search my photos" click="onClick(event)"/>
+			<s:Button id="mine" label="search Flickr" click="onClick(event)"/>
+		</s:HGroup>
 	</s:VGroup>
 </s:View>

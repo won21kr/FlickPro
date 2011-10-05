@@ -13,11 +13,15 @@
 		<![CDATA[
 			import VOs.DataObject;
 			
+			import com.adobe.webapis.flickr.AuthPerm;
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
 			import components.MenuPopUp;
+			
+			import helpers.NSIDManager;
+			import helpers.TokenManager;
 			
 			import mx.events.FlexEvent;
 			
@@ -26,6 +30,7 @@
 			import spark.transitions.ZoomViewTransitionMode;
 			
 			import statics.Keys;
+			import statics.NSID;
 			import statics.Service;
 			import statics.ViewTypes;
 			
@@ -48,7 +53,19 @@
 				
 				_service.api_key = Keys.getApiKey();
 				_service.secret = Keys.getSecretKey();
+				_service.permission = AuthPerm.WRITE;
 			
+				trace("FlickrClient: TokenManager.isValid() :"+TokenManager.isValid());
+				if(TokenManager.isValid()==true){
+					trace("FlickrClient: TokenManager.getToken(): "+TokenManager.getToken());
+					_service.token = TokenManager.getToken();
+					trace("FlickrClient: NSIDManager.getNSID()) "+NSIDManager.getNSID());
+					NSID.setNSID(NSIDManager.getNSID());
+					navigator.pushView(views.HomeView);	
+				}else{
+					("FlickrClient: there is no token");
+					navigator.pushView(views.LoginView);
+				}
 				
 				//this.actionBar.alpha=0;
 				//this.actionBar.visible=false;
@@ -56,7 +73,7 @@
 				//var zoomTrans:ZoomViewTransition = new ZoomViewTransition();
 				//zoomTrans.direction = ViewTransitionDirection.RIGHT;
 				//zoomTrans.mode = ZoomViewTransitionMode.IN; //or OUT mode
-				navigator.pushView(LoginView);
+				//navigator.pushView(LoginView);
 				//navigator.pushView(LoginView,_service);
 			}
 			
