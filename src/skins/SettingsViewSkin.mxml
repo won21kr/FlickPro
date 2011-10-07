@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" xmlns:styles="styles.*">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("spark.components.SkinnableContainer")]
+	</fx:Metadata>
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+	</fx:Declarations>
+	
+	<!-- states -->
+	<s:states>
+		<s:State name="disabled" />
+		<s:State name="normal" />
+	</s:states>
+	
+		<s:Rect top="20" bottom="20" left="20" right="20" radiusX="10" radiusY="10">
+			<s:fill>
+				<s:LinearGradient rotation="90">
+					<s:GradientEntry color="#8ccbf9"/>
+					<s:GradientEntry color="#8ccbf9"/>
+				</s:LinearGradient>
+			</s:fill>
+		</s:Rect>
+	
+	<s:Group id="contentGroup" horizontalCenter="0" top="20"/>
+	
+	<!-- SkinParts
+	name=contentGroup, type=spark.components.Group, required=false
+	-->
+</s:Skin>

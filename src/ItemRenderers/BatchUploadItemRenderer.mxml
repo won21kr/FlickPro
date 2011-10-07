@@ -4,7 +4,8 @@
 				height="100%" width="225"
 				autoDrawBackground="false"
 				contentBackgroundAlpha="0"
-				creationComplete="creationCompleteHandler(event)">
+				creationComplete="creationCompleteHandler(event)" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="components.*">
 	<fx:Script>
 		<![CDATA[
 			import com.squidzoo.eventSystem.EventCentral;
@@ -23,13 +24,11 @@
 			protected function creationCompleteHandler(event:FlexEvent):void{
 				_imageFileName = data.fileName;	
 				_image = scaleBitmapData(data.image.bitmapData,_imageWidth);
-				
-				/*
-				debug.text = _image.height + " " +_image.width;
-				if(_image.height < _image.width){
-					_image = rotateBitmapData(_image,_image.width,_image.height);
-				}
-				*/
+				data.ir = this;
+			}
+			
+			public function update(value:int):void{
+				progressBar.update(value);	
 			}
 			
 			private function onClickRemove():void{
@@ -66,7 +65,7 @@
 				return newBmp; 
 			}
 			
-			
+			/*
 			private function rotateBitmapData(_image:Bitmap, width:Number, height:Number):Bitmap
 			{
 				var m:Matrix = new Matrix();
@@ -78,6 +77,13 @@
 				
 				return newBmp;
 			}
+			*/
+			
+			private function onUploadPercentageChange(event:Event):void
+			{
+				trace("change");
+				progressBar.update(event.currentTarget.amount);	
+			}
 			
 		]]>
 	</fx:Script>
@@ -88,11 +94,12 @@
 		
 	<s:VGroup left="5" top="5" bottom="5" right="5">
 		<s:BitmapImage id="image" source="{_image}" />
-		<s:Label id="debug" />
-		<s:Label id="uploadStatusValue" text="{data.uploadStatus}" color="0x444444" fontSize="16"/>
+		<!--<s:Label id="debug" />-->
+		<s:Label id="uploadStatusValue" text="{data.uploadStatus}" fontSize="14" color="0x666666"/>
 		<!--<s:Label id="filename" text="{data.fileName}"/>-->
-		<s:Label id="percentageUploaded" text="% uploaded {data.uploadPercentage}" color="0x444444" fontSize="16"/>
-		<s:Image id="progressBar" source="{data.progressBar}" />
+		<s:Label id="percentageUploaded" text="% {data.uploadPercentage}" fontSize="14" color="0x66666"/>
+		<!--<s:Image id="progressBar" source="{data.progressBar}" />-->
+		<components:ProgressBar id="progressBar"/>
 		<s:Button skinClass="components.RemoveFromListXIcon" click="onClickRemove()"/>
 	</s:VGroup>
 	</s:SkinnableContainer>

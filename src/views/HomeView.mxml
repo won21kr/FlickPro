@@ -7,6 +7,10 @@
 		<s:DropShadowFilter id="shadowFilter" blurX="4" blurY="4" alpha="50"/>
 	</fx:Declarations>
 	
+	<s:navigationContent>
+		<s:Button icon="@Embed('assets/images/FastrLP6.png')"/>
+	</s:navigationContent>
+	
 	<fx:Script>
 		<![CDATA[
 			import VOs.DataObject;

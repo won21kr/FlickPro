@@ -12,7 +12,10 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import VOs.PhotoVO;
+			
 			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
 			import mx.core.FlexGlobals;
@@ -24,14 +27,14 @@
 			//import views.MultipleShotsView;
 			//import views.SingleShotView;
 			
-			private var _data:Object;
+			private var _data:PhotoVO;
 			
 			private function onCreationComplete():void{
 				
 			}
 			
 			override public function set data(value:Object):void{
-				_data = value;
+				_data = (value as PhotoVO);
 				//var image:Bitmap = value.image;
 				//if(image.height > image.width){
 					//image = scaleBitmapData(image.bitmapData,180);
@@ -114,6 +117,10 @@
 				//this.invalidateDisplayList();
 			}
 			
+			private function onClickImage():void{
+				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.IMAGE_IN_LIST_CLICKED,null,null,null,null,_data));
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -146,7 +153,7 @@
 	</s:Path> -->
 	
 	<s:Image id="photo" enableLoadingState="true"
-				   maxWidth="180" maxHeight="150" verticalCenter="0" horizontalCenter="0"/>
+				   maxWidth="180" maxHeight="150" verticalCenter="0" horizontalCenter="0" click="onClickImage()"/>
 	
 	<!--<s:SkinnableContainer x="2" y="204" width="{avatarImage.width+10}" height="{avatarImage.height+10}" skinClass="skins.WhiteGradientBoxWithDropShadowSkin">
 		<s:Image id="avatarImage" click="onAvatarImageClick()" left="5" top="5"/>

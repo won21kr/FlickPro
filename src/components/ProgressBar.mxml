@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" width="180" height="24" xmlns:mx="library://ns.adobe.com/flex/mx"
+					  creationComplete="init()">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import ItemRenderers.BatchUploadItemRenderer;
+			
+			import VOs.BatchUploadVO;
+			
+			import mx.graphics.LinearGradient;
+			
+			private var bgShape:Shape = new Shape();
+			private var fillShape:Shape = new Shape();
+			private var fillColor:int = 0x8ccbf9;
+			private var bgColor:int = 0x999999;
+			
+			private function init():void{
+				bgShape.graphics.lineStyle(1,0);
+				bgShape.graphics.beginFill(bgColor);
+				bgShape.graphics.drawRect(0,0,180,20);
+				holder.addChild(bgShape);
+				holder.addChild(fillShape);
+			}
+			
+			public function update(value:int):void{
+				bgShape.graphics.clear();
+				fillShape.graphics.clear();
+				
+				value *= Number(this.width/100);
+				
+				bgShape.graphics.lineStyle(1,0);
+				bgShape.graphics.beginFill(bgColor);
+				bgShape.graphics.drawRect(0,0,180,20);
+			
+				if(value == this.width){
+					fillColor = 0xd5efaf;
+				}else{
+					fillColor = 0x8ccbf9;
+				}
+			
+				fillShape.graphics.lineStyle(1,0);
+				fillShape.graphics.beginFill(fillColor);
+				fillShape.graphics.drawRect(0,0,value,20);
+			}
+		]]>
+	</fx:Script>
+	<mx:UIComponent id="holder"/>
+</s:SkinnableContainer>

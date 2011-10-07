@@ -16,6 +16,7 @@
 			import com.adobe.webapis.flickr.AuthPerm;
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
 			import components.MenuPopUp;
@@ -39,6 +40,8 @@
 			import views.HomeView;
 			import views.LoginView;
 			import views.MultiplePhotosView;
+			import views.SearchView;
+			import views.SinglePhotoView;
 			
 			private var _popup:MenuPopUp;
 			
@@ -75,12 +78,15 @@
 				//zoomTrans.mode = ZoomViewTransitionMode.IN; //or OUT mode
 				//navigator.pushView(LoginView);
 				//navigator.pushView(LoginView,_service);
+				addMenuListeners();
 			}
 			
 			private function addMenuListeners():void{
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_UPLOAD, onUpload);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_BROWSE_SETS, onBrowseSets);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM, onPhotostream);
+				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_SEARCH, onSearch);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.IMAGE_IN_LIST_CLICKED,onImageInListClicked);
 			}
 			
 			private function onUpload(event:CustomEvent):void{
@@ -102,15 +108,26 @@
 				navigator.pushView(MultiplePhotosView,dataObject);
 			}
 			
+			protected function onSearch(event:Event):void
+			{
+				navigator.pushView(SearchView);
+			}
+			
+			protected function onImageInListClicked(event:CustomDataEvent):void
+			{
+				// TODO Auto-generated method stub
+				navigator.pushView(SinglePhotoView,event.photoVO);
+			}
+			
 		]]>
 	</fx:Script>
 	
 	<s:navigationContent>
-		<s:Image source="@Embed('assets/images/FastrLP6.png')"/>
+		<s:Button icon="@Embed('assets/images/FastrLP6.png')" click="navigator.pushView(HomeView)"/>
 	</s:navigationContent>
 	
-	<!--<s:actionContent>
+	<s:actionContent>
 		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
-	</s:actionContent>-->
+	</s:actionContent>
 	
 </s:ViewNavigatorApplication>

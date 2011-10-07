@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="SettingsView"
+		actionBarVisible="false" >
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.SettingsVO;
+			
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			private var _title:String;
+			private var _description:String;
+			private var _tags:String;
+			
+			private function onClickOK(event:Event):void{
+				var settingsVO:SettingsVO = new SettingsVO();
+				settingsVO.title = _title;
+				settingsVO.description = _description;
+				settingsVO.tags = _tags;
+				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SETTINGS_SELECTED,null,null,null,null,null,settingsVO));
+				navigator.popView();
+			}
+			
+			private function onClickCancel(event:Event):void{
+				navigator.popView();
+			}
+			
+			private function onTitleChange(event:Event):void{
+				_title = event.currentTarget.text;
+				trace(_title);
+			}
+			
+			private function onDescriptionChange(event:Event):void{
+				_description = event.currentTarget.text;
+				trace(_description);
+			}
+			
+			private function onTagsChange(event:Event):void{
+				_tags = event.currentTarget.text;
+				trace(_tags);
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	<!--<s:SkinnableContainer left="10" right="10" top="10" bottom="10" width="100%" height="100%">-->
+		
+	<s:SkinnableContainer height="100%" left="20" right="20" top="20" bottom="20" skinClass="skins.SettingsViewSkin">
+	
+	<s:VGroup>
+		<s:Label text="title"/>
+		<s:TextInput id="titleInput" width="380" change="onTitleChange(event)"/>
+		<s:Label text="description"/>
+		<s:TextArea id="descriptionInput" width="380" change="onDescriptionChange(event)"/>
+		<s:Label text="tags"/>
+		<s:TextInput id="tagsInput" width="380" change="onTagsChange(event)"/>
+		<s:HGroup horizontalAlign="left">
+			<s:Button label="ok" click="onClickOK(event)" skinClass="components.OKButton"/>
+			<s:Button label="cancel" click="onClickCancel(event)" skinClass="components.CloseButton"/>
+		</s:HGroup>
+	</s:VGroup>
+		
+	</s:SkinnableContainer>
+
+</s:View>

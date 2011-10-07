@@ -19,7 +19,7 @@ s|ActionBar
 s|ActionBar #titleDisplay
 {
 	color: #ffffff;
-	fontSize: 24;
+	fontSize: 20;
 }
 
 s|TabbedViewNavigator #tabBar

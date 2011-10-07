@@ -123,7 +123,7 @@
 	</s:VGroup>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="loadingState">
-		<s:BusyIndicator scaleX="3" scaleY="3"/>
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
 		<s:Label text="Loading..."/>
 	</s:VGroup>
 	

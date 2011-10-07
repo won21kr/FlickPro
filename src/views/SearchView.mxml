@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="SearchView">
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Search">
 	
 	<fx:Script>
 		<![CDATA[
@@ -36,11 +36,9 @@
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 	
-	<s:VGroup verticalCenter="0" horizontalCenter="0">
-		<s:TextInput change="onChange(event)"/>
-		<s:HGroup>
-			<s:Button id="Flickr" label="search my photos" click="onClick(event)"/>
-			<s:Button id="mine" label="search Flickr" click="onClick(event)"/>
-		</s:HGroup>
+	<s:VGroup y="100" horizontalAlign="right" left="20" right="20">
+		<s:TextInput change="onChange(event)" height="70"/>
+			<s:Button id="Flickr" label="search photos" click="onClick(event)" skinClass="components.SearchButtonSkin"/>
+			<!--<s:Button id="mine" label="search Flickr" click="onClick(event)"/>-->
 	</s:VGroup>
 </s:View>

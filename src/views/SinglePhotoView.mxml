@@ -31,6 +31,15 @@
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				
 				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
+				
+				if(data.title){
+					_title = data.title;
+				}
+				
+				if(data.tags){				
+					_tags = data.tags;
+				}
+			
 				currentState = "loadingState";
 				load();
 			}
@@ -72,7 +81,7 @@
 	</fx:Script>
 	<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" 
 			  includeIn="loadingState">
-		<s:BusyIndicator scaleX="3" scaleY="3"/>
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
 		<s:Label text="loading photo..."/>
 	</s:VGroup>
 	
@@ -84,10 +93,9 @@
 								  filters="{graphicsLib.getDropShadowFilter()}">				
 				<s:Image id="photo" width="430" />				
 			</s:SkinnableContainer>
-		<s:Label id="titleLabel" text="Title" color="#ffffff"/>
-		<s:Label id="titleValue" text="{_title}" color="#ffffff"/>
-		<s:Label id="tagsLabel" text="tags" color="#ffffff"/>
-		<s:Label id="tagsValue" text="{_tags}" color="#ffffff"/>
+		<s:Label id="titleLabel" text="title: {_title}" color="#ffffff"/>
+		
+		<s:Label id="tagsLabel" text="tags: {_tags}" color="#ffffff"/>
 		</s:VGroup>
 	
 </s:View>

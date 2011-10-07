@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:SkinnablePopUpContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
 						   xmlns:s="library://ns.adobe.com/flex/spark"
-						    x="70" y="300">
+						    x="70" y="300" backgroundAlpha="0">
 	
 	<fx:Script>
 		<![CDATA[
@@ -19,8 +19,8 @@
 			}
 				
 			public function center():void{
-					this.width = 210; //activeView.width * 0.7;
-					this.height = 260; //activeView.height * 0.6;
+					this.width = 214; //activeView.width * 0.7;
+					this.height = 337; //activeView.height * 0.6;//old value 270
 					
 					var newX:Number = (activeView.width / 2) - (this.width /2);
 					var newY:Number = (activeView.height / 2) - (this.height/2);
@@ -41,6 +41,8 @@
 					case "stream":
 						EventCentral.getInstance().dispatchEvent(new CustomEvent(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM));
 						break;
+					case "search" :
+						EventCentral.getInstance().dispatchEvent(new CustomEvent(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_SEARCH));
 				}
 				
 				this.close();
@@ -49,11 +51,12 @@
 	</fx:Script>	
 	
 	<!-- Also uses the MyPopupSkin.mxml class -->
-	<s:VGroup left="4" right="4" top="4" horizontalAlign="right">
-		<s:Button id="upload" label="upload" click="onClick(event)" skinClass="components.MenuUploadButtonSkin"/>
-		<s:Button id="browseSets" label="browseSets" click="onClick(event)" skinClass="components.MenuSetsButtonSkin"/>
-		<s:Button id="stream" label="stream" click="onClick(event)" skinClass="components.MenuStreamButtonSkin"/>
-		<s:Button id="search" label="search" skinClass="components.MenuSearchButtonSkin"/>
-		<s:Button label="Close" click="this.close()"/>
-	</s:VGroup>
+	<s:SkinnableContainer skinClass="skins.BlueBoxRoundCornersSkin">		
+		<s:Button x="5" y="5" id="upload" label="upload" click="onClick(event)" skinClass="components.MenuUploadButtonSkin"/>
+		<s:Button x="5" y="74" id="browseSets" label="browseSets" click="onClick(event)" skinClass="components.MenuSetsButtonSkin"/>
+		<s:Button x="5" y="143" id="stream" label="stream" click="onClick(event)" skinClass="components.MenuStreamButtonSkin"/>
+		<s:Button x="5" y="212" id="search" label="search" click="onClick(event)" skinClass="components.MenuSearchButtonSkin"/>
+		<s:Button x="159" y="281" label="Close" click="this.close()" skinClass="components.CloseButton"/>
+	</s:SkinnableContainer>
+	
 </s:SkinnablePopUpContainer>

@@ -22,10 +22,10 @@
 	<fx:Declarations>
 		<fx:XML id="startText" xmlns="">
 			<TextFlow xmlns="http://ns.adobe.com/textLayout/2008">
-				<p>Follow these simple steps to login:</p>
-				<p>1. Click 'Start' and login to Flickr.</p>
-				<p>2. Click the BLUE 'OK, I'll authorize it' button on Flickr.</p>
-				<p>3. Click the 'Done' button.</p>
+				<p>3 easy steps to login:</p>
+				<p>Tap 'Start' and login.</p>
+				<p>Tap 'OK, I'll authorize it'.</p>
+				<p>Tap 'Done'.</p>
 			</TextFlow>
 		</fx:XML>
 	</fx:Declarations>
@@ -189,7 +189,7 @@
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~EstablishConnectionState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="EstablishConnectionState">
-		<s:BusyIndicator scaleX = "3" scaleY="3"/>
+		<s:BusyIndicator scaleX = "3" scaleY="3" symbolColor="white"/>
 		<s:Label text="Connecting"/>
 		<s:Label text="to Flickr.com"/>
 	</s:VGroup>
@@ -204,8 +204,8 @@
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~StartState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
 	<s:VGroup id="LoginExplanation" includeIn="StartLoginState, WebViewState" 
-			  fontSize="18" left="20" top="20" right="20">
-		<s:RichText textFlow="{TextConverter.importToFlow(startText,TextConverter.TEXT_LAYOUT_FORMAT)}" height="300"/>
+			  fontSize="24" left="40" top="40" right="40">
+		<s:RichText textFlow="{TextConverter.importToFlow(startText,TextConverter.TEXT_LAYOUT_FORMAT)}" height="300" color="0xffffff" right="10"/>
 	</s:VGroup>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="StartLoginState">
@@ -223,7 +223,7 @@
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ProcessingAuthState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="ProcessingAuthState">
-		<s:BusyIndicator scaleX = "3" scaleY="3"/>
+		<s:BusyIndicator scaleX = "3" scaleY="3" symbolColor="white"/>
 		<s:Label text="authorization"/>
 	</s:VGroup>
 	
@@ -242,7 +242,7 @@
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="AuthErrorState">
 		<s:Label text="The authorization was not"/>
 		<s:Label text="completed."/>
-		<s:Button label="Try Again" click="init()"/>
+		<s:Button label="Try Again" click="init()" skinClass="components.TryAgainButtonSkin2"/>
 	</s:VGroup>
 	
 </s:View>

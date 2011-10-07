@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
 		xmlns:s="library://ns.adobe.com/flex/spark"
-		title="Browse Sets"
+		title="Your sets"
 		destructionPolicy="never"
 		viewActivate="viewActivateHandler(event)">
 
@@ -124,14 +124,11 @@
 		
 	<s:List id="setList" width="100%" height="100%"
 			change="onClickList()" 
-			dataProvider="{_setVOs}">
-		
+			dataProvider="{_setVOs}"
+			contentBackgroundAlpha="0">
 		<s:itemRenderer>
 			<fx:Component>
-				<s:IconItemRenderer 
-									
-									labelField="title"
-									/>
+				<s:IconItemRenderer alternatingItemColors="{[0xbbbbbb,0xcccccc]}" labelField="title" decorator="@Embed('assets/images/greenArrowRight3.png')"/>
 			</fx:Component>
 		</s:itemRenderer>
 

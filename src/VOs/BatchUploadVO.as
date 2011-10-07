@@ -1,5 +1,10 @@
 package VOs
 {
+	import ItemRenderers.BatchUploadItemRenderer;
+	
+	import com.squidzoo.eventSystem.EventCentral;
+	import com.squidzoo.eventSystem.events.CustomDataEvent;
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.events.DataEvent;
@@ -13,6 +18,7 @@ package VOs
 	[Bindable]
 	public class BatchUploadVO extends EventDispatcher {
 		
+		/*
 		[Embed (source="/assets/images/progressbar/pb100.png" )]
 		private var pb100:Class;
 		
@@ -24,6 +30,7 @@ package VOs
 		
 		[Embed (source="/assets/images/progressbar/pb25.png" )]
 		private var pb25:Class;
+		*/
 		
 		public static const UPLOAD_NOT_STARTED:String = "Upload not started";
 		public static const UPLOAD_HAS_STARTED:String = "Upload has started";
@@ -40,8 +47,11 @@ package VOs
 		public var uploadStatus:String = UPLOAD_NOT_STARTED;
 		public var uploadPercentage:int = 0;
 		public var thumbnail:Bitmap;
-		public var progressBar:Bitmap = new pb25;
+		//public var progressBar:Bitmap = new pb25;
 		private var _imageWidth:int = 180;
+		private var forCompiler:BatchUploadVO;//required
+		public var ir:BatchUploadItemRenderer = new BatchUploadItemRenderer();
+	
 		
 		public function BatchUploadVO(file:FileReference, image:Bitmap){
 			this.file = file;
@@ -60,7 +70,8 @@ package VOs
 			_bytesLoaded = event.bytesLoaded;
 			uploadStatus = UPLOAD_IN_PROGRESS;
 			uploadPercentage = (_bytesLoaded/_bytesInFile)*100;
-			
+			ir.update(uploadPercentage);
+			/*
 			if(uploadPercentage >24 && uploadPercentage <50){
 				progressBar = new pb25;
 			}
@@ -73,7 +84,7 @@ package VOs
 			if(uploadPercentage > 99){
 				progressBar = new pb100;
 			}
-			
+			*/
 			
 		}
 		
