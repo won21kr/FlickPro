@@ -3,7 +3,6 @@
 				xmlns:s="library://ns.adobe.com/flex/spark"
 				xmlns:mx="library://ns.adobe.com/flex/mx"
 				xmlns:styles="styles.*"
-				creationComplete="init()"
 				autoDrawBackground="false" contentBackgroundAlpha="0" 
 				>
 	<fx:Declarations>
@@ -13,108 +12,15 @@
 	<fx:Script>
 		<![CDATA[
 			import VOs.PhotoVO;
-			
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
-			import mx.core.FlexGlobals;
-			
-			import spark.components.BusyIndicator;
-			
-			//import valueObjects.PlayerVO;
-			
-			//import views.MultipleShotsView;
-			//import views.SingleShotView;
-			
 			private var _data:PhotoVO;
-			
-			private function onCreationComplete():void{
-				
-			}
 			
 			override public function set data(value:Object):void{
 				_data = (value as PhotoVO);
-				//var image:Bitmap = value.image;
-				//if(image.height > image.width){
-					//image = scaleBitmapData(image.bitmapData,180);
-				//}
 				photo.source = value.image;
-				//teaserImage.source = value.teaserImage;
-				//avatarImage.source = value.player.avatarImage;
-				//titleLabel.text = truncate(value.title);
-				//usernameLabel.text = "by "+ truncate(value.player.username);
-			
-			}
-			
-			private function scaleBitmapData(_bmd:BitmapData, 
-											 targetContainerHeight:Number):Bitmap { 
-				//set matrix sx & sy 
-				
-				var sx:Number = targetContainerHeight / _bmd.height;
-				var sy:Number = sx;
-
-				var targetContainerWidth:Number= _bmd.width * sx;
-				
-				/*
-				var sx:Number = targetContainerWidth / _bmd.width; 
-				var sy:Number = 0;
-				
-				if(targetContainerHeight==0){
-					sy = sx;			
-					targetContainerHeight = _bmd.height * sy;
-					
-				}else{
-					sy = targetContainerHeight / _bmd.height; 				
-				}
-				*/
-				//instantiate new matrix, and set scaling 
-				var m:Matrix = new Matrix(); 
-				m.scale(sx, sy); 
-			
-				
-				//create new bitmapdata	
-				var newBmd:BitmapData = new BitmapData(targetContainerWidth, targetContainerHeight); 
-				//draw new bitmapdata with matrix	
-				newBmd.draw(_bmd, m); 
-				//create final bitmap with new bitmapdata 
-				var newBmp:Bitmap = new Bitmap(newBmd); 
-				//set smooting to true 
-				newBmp.smoothing = true; 
-				
-				return newBmp; 
-			}
-			
-			
-			
-			private function truncate(str:String):String{
-				if(str.length > 30){
-					str = str.slice(0,30);
-					str += "...";
-				}
-				return str;
-			}
-			
-			private function init():void{
-				EventCentral.getInstance().addEventListener(CustomEvent.INVALIDATE_DISPLAY_LIST,onInvalidateDisplayList);
-			}
-			
-			/*
-			private function onTeaserImageClick():void{
-				trace("teaserimage click");
-				FlexGlobals.topLevelApplication.viewNavigator..pushView(SingleShotView, _data);
-			}
-			
-			private function onAvatarImageClick():void{
-				//_data.player.setViewType(PlayerVO.SINGLE_PLAYERS_SHOTS_VIEW);
-				FlexGlobals.topLevelApplication.viewNavigator..pushView(MultipleShotsView, _data.player);
-			}
-			*/
-			
-			protected function onInvalidateDisplayList(event:Event):void
-			{
-				// TODO Auto-generated method stub
-				//this.invalidateDisplayList();
 			}
 			
 			private function onClickImage():void{
@@ -134,32 +40,7 @@
 		</s:fill>
 	</s:Rect>
 	
-	<!--<s:Path x="1" y="1" filters="{[graphicLib.getDropShadowFilter()]}"
-			data = "	M 0 0
-			L 200 0
-			L 200 200
-			L 0 200
-			L 0 0 ">
-		<s:stroke>
-			<s:SolidColorStroke color="0x888888"/>
-		</s:stroke>
-		<s:fill>
-			<s:LinearGradient rotation="90">
-				<s:GradientEntry color="0xffffff"/>
-				<s:GradientEntry color="0xeeeeee"/>
-			</s:LinearGradient>
-		</s:fill>
-		
-	</s:Path> -->
-	
 	<s:Image id="photo" enableLoadingState="true"
 				   maxWidth="180" maxHeight="150" verticalCenter="0" horizontalCenter="0" click="onClickImage()"/>
-	
-	<!--<s:SkinnableContainer x="2" y="204" width="{avatarImage.width+10}" height="{avatarImage.height+10}" skinClass="skins.WhiteGradientBoxWithDropShadowSkin">
-		<s:Image id="avatarImage" click="onAvatarImageClick()" left="5" top="5"/>
-	</s:SkinnableContainer>
-	
-	<s:Label id="titleLabel" x="8" y="163" fontSize="12" color="#222222"/>
-	<s:Label id="usernameLabel" x="100" y="215" fontSize="12" color="#eeeeee" />-->
 	
 </s:ItemRenderer>

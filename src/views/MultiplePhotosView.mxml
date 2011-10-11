@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark"
-		destructionPolicy="never"
-		creationComplete="init(event)">
+		creationComplete="init(event)" xmlns:components="components.*">
 	
 	<s:states>
 		<s:State name="loadingState"/>
 		<s:State name="errorState"/>
-		<s:State name="completeState"/>
+		<s:State name="completeStateSet"/>
+		<s:State name="completeStateSearch"/>
+		<s:State name="completeStateStream"/>
 	</s:states>
 	
 	<fx:Script>
@@ -17,22 +18,33 @@
 			import VOs.DataObject;
 			
 			import com.adobe.webapis.flickr.FlickrService;
+			import com.chewtinfoil.utils.StringUtils;
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
 			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
 			
 			import queries.PhotoQuery;
 			
+			import spark.transitions.SlideViewTransition;
+			
 			import statics.ViewTypes;
 			
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			[Bindable]
+			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
+			[Bindable]
+			private var _setTitle:String;
 			[Bindable]
 			private var _photoVOs:ArrayCollection = new ArrayCollection();			
 			private var _photoQuery:IPhotoQuery;
 			private var _service:FlickrService;
 			private var _viewType:String;
+			private var _completeStateType:String;
 	
 			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
@@ -40,6 +52,8 @@
 			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
 			
 			private function init(event:FlexEvent=null):void{
+				
+				photoList = new List();
 				
 				currentState = "loadingState";						
 				
@@ -53,36 +67,39 @@
 				
 				_photoQuery = new PhotoQuery();
 				
-				switch(_viewType){
+				switch(_viewType){		
 					
 					case ViewTypes.PHOTO_STREAM :
 					type = ViewTypes.PHOTO_STREAM;
+					_completeStateType = "completeStateStream";
 					break;
 					
 					case ViewTypes.SET :
+					_setTitle = StringUtils.truncate((data as DataObject).selectedSet.title,30);
 					_photoQuery.setParams(data as DataObject);
 					type = ViewTypes.SET;
+					_completeStateType = "completeStateSet";
 					break;
 					
 					case ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR :
 					_photoQuery.setParams(data as DataObject);
 					type = ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;
+					_completeStateType = "completeStateSearch";
 					break;
 					
 					case ViewTypes.SEARCH_ONLY_OWN_PHOTOS :
 					_photoQuery.setParams(data as DataObject);
 					type = ViewTypes.SEARCH_ONLY_OWN_PHOTOS;
-					default:
-					//_photoQuery = new PhotostreamQuery;
+					_completeStateType = "completeStateSearch";
+					break;
 				}
-				
 				_photoQuery.execute(type);
 			}
 			
 			private function onPhotosRetrieved(event:CustomDataEvent):void
 			{
 				_photoVOs.removeAll();
-				currentState  = "completeState";
+				currentState  = _completeStateType;
 				trace("psv onPhotosRetrieved");
 				_photoVOs = event.list;
 				
@@ -93,8 +110,7 @@
 				//navigator.pushView(SinglePhotoView, photoList.selectedItem);
 			}
 			
-			protected function onError(event:Event):void
-			{
+			private function onError(event:Event):void{
 				currentState = "errorState";				
 			}
 			
@@ -102,13 +118,17 @@
 			 * resets the itemRenderer property temporarily and then restores it to trigger a redraw.
 			 */
 			
-			protected function onInvalidateDisplayList(event:Event):void
-			{
-				trace("MPV inval");
-				//photoList.invalidateDisplayList();	
+			private function onInvalidateDisplayList(event:Event):void
+			{	
 				var _itemRenderer:IFactory = photoList.itemRenderer;
 				photoList.itemRenderer = null;
 				photoList.itemRenderer = _itemRenderer;
+			}
+			
+			private function onclickYourSets():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				navigator.pushView(BrowseSets,null,null,slideEffect);
 			}
 			
 		]]>
@@ -125,8 +145,24 @@
 		<s:Label text="Loading..."/>
 	</s:VGroup>
 	
-	<s:List width="100%" height="100%" id="photoList" 
-			includeIn="completeState"
+	<s:VGroup>
+	
+		<s:SkinnableContainer id="header" width="{_headerWidth}" height="50" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeStateSet,completeStateStream, completeStateSearch">
+			<s:HGroup>			
+				
+				<components:HTMLLabel text="Your Sets" color="#ffffff" fontSize="24" click="onclickYourSets()" includeIn="completeStateSet"/> 
+				<components:HTMLLabel text=" > " color="#dddddd" fontSize="24" includeIn="completeStateSet"/>
+				<components:HTMLLabel text="{_setTitle}" color="#ffffff" fontSize="24" includeIn="completeStateSet"/>
+				
+				<components:HTMLLabel text="Your PhotoStream" color="#ffffff" fontSize="24" click="onclickYourSets()" includeIn="completeStateStream"/> 
+				
+				<components:HTMLLabel text="Your Search Result" color="#ffffff" fontSize="24" click="onclickYourSets()" includeIn="completeStateSearch"/> 
+				
+			</s:HGroup>
+		</s:SkinnableContainer>	
+		
+	<s:List width="100%" height="{_listHeight}" id="photoList" 
+			includeIn="completeStateSet,completeStateSearch,completeStateStream"
 			left="10" right="10" top="5" bottom="0" 
 			dataProvider="{_photoVOs}" 
 			click="onListClick(event)"
@@ -139,12 +175,7 @@
 			paddingLeft="30" paddingRight="30" paddingTop="5" paddingBottom="5"/>
 		</s:layout>
 		
-		<!--<s:itemRenderer>
-			<fx:Component>
-				<s:IconItemRenderer iconField="smallImage" labelField = " " />
-			</fx:Component>
-		</s:itemRenderer>-->
-		
 	</s:List>
+	</s:VGroup>
 	
 </s:View>

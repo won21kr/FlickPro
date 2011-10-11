@@ -25,6 +25,10 @@ package VOs
 		public var tags:String;
 		public var description:String;
 		public var largeImageString:String;
+		public var previousPhoto:PhotoVO;
+		public var nextPhoto:PhotoVO;
+		public var setTitle:String;
+		public var setId:String;
 		
 		public function PhotoVO(photo:Photo)
 		{

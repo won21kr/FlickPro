@@ -11,11 +11,6 @@ package queries
 	import com.squidzoo.eventSystem.events.CustomDataEvent;
 	import com.squidzoo.eventSystem.events.CustomEvent;
 	
-	import flash.display.Bitmap;
-	import flash.display.Loader;
-	import flash.events.Event;
-	import flash.net.URLRequest;
-	
 	import mx.collections.ArrayCollection;
 	
 	import statics.NSID;
@@ -30,6 +25,8 @@ package queries
 		private var _photoVOs:ArrayCollection;
 		private var _id:String;
 		private var _tags:String;
+		private var _setTitle:String;
+		private var _setId:String;
 		
 		public function PhotoQuery(){
 		}
@@ -37,12 +34,12 @@ package queries
 		public function setParams(dataObject:DataObject):void{
 			if(dataObject.selectedSet){
 				_id = dataObject.selectedSet.id;
+				_setTitle = dataObject.selectedSet.title;
+				_setId = dataObject.selectedSet.id;
 			}
 			if(dataObject.tags){
 				_tags = dataObject.tags;
 			}
-			
-			//trace("SetQuery.set params: _id :"+_id);
 		}
 		
 		
@@ -60,7 +57,6 @@ package queries
 			
 				case ViewTypes.PHOTO_STREAM:
 					trace("get stream");
-					trace("NSID: "+NSID.getNSID());
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
 					_service.photos.search(NSID.getNSID(),
 						"","any","",null,null,null,null,-1,"date-posted-desc",-1,"",
@@ -79,14 +75,10 @@ package queries
 		}
 		
 		private function onGetPhotoSet(event:FlickrResultEvent):void{
-			
 			if(_service.hasEventListener(FlickrResultEvent.PHOTOSETS_GET_PHOTOS)){
 				_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_PHOTOS,onGetPhotoSet);
 			}
-			
-			
-				
-			trace("an array of set data has been retrieved");			
+							
 			_photoVOs = new ArrayCollection(new Array());
 			
 			if(event.success){
@@ -94,14 +86,22 @@ package queries
 				_numPhotos = photos.length;
 				trace("_numPhotos: "+_numPhotos + " photos.length: "+photos.length);
 				
-				
-				for(var i:int = 0; i < photos.length;i++){
+				for(var i:int = 0; i < photos.length;i++){	
 					var vo:PhotoVO = new PhotoVO(photos[i]);
 					vo.title = photos[i].title;
 					vo.tags = photos[i].tags;
-					_photoVOs.addItem(vo);
+					vo.setTitle = _setTitle;
+					vo.setId = _setId;
 					
-					trace(i);
+					_photoVOs.addItem(vo);
+					for(var j:int = 0; j < _photoVOs.length-1; j++){
+						_photoVOs[j].nextPhoto = _photoVOs[j+1];
+					}
+					
+					for(var k:int = 1; k < _photoVOs.length; k++){
+						_photoVOs[k].previousPhoto = _photoVOs[k-1];
+					}
+					
 					if(i >= _numPhotos-1){
 						dispatchCustomDataEvent();
 					}
@@ -115,21 +115,18 @@ package queries
 			if(_service.hasEventListener(FlickrResultEvent.PHOTOS_SEARCH)){
 				_service.removeEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream);
 			}
-			
-			trace("an array of set data has been retrieved");			
+						
 			_photoVOs = new ArrayCollection(new Array());
 			
 			if(event.success){
 				var photos:Array = event.data.photos.photos as Array;
 				_numPhotos = photos.length;
 				trace("_numPhotos: "+_numPhotos + " photos.length: "+photos.length);
-				
-				
+					
 				for(var i:int = 0; i < photos.length;i++){
 					var vo:PhotoVO = new PhotoVO(photos[i]);
 					_photoVOs.addItem(vo);
 					
-					trace(i);
 					if(i >= _numPhotos-1){
 						dispatchCustomDataEvent();
 					}
@@ -140,10 +137,6 @@ package queries
 		}
 		
 		public function dispatchCustomDataEvent():void{
-			trace("sq dispatchingCustomDataEvent");
-			
-			//_photoVOs.source.reverse();//to ensure photos on top of list in MultiplePhotosView get rendered first.
-			
 			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(
 				CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,null,null,null,_photoVOs));
 		}

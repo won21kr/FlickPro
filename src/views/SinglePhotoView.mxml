@@ -1,23 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark"
-		viewActivate="viewActivateHandler(event)" xmlns:styles="styles.*">
+		viewActivate="viewActivateHandler(event)" xmlns:styles="styles.*" xmlns:components="components.*">
 	<fx:Declarations>
 		<styles:GraphicsLib id="graphicsLib"/>
 	</fx:Declarations>
 	
 	<s:states>
 		<s:State name="loadingState"/>
-		<s:State name="completeState"/>
+		<s:State name="completeStateHeader"/>
+		<s:State name="completeStateNoHeader"/>
 	</s:states>
 	
 	<fx:Script>
 		<![CDATA[
-			import com.adobe.webapis.flickr.FlickrService;
-			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import VOs.DataObject;
+			import VOs.PhotoVO;
+			import VOs.SetVO;
+			
+			import com.chewtinfoil.utils.StringUtils;
+			
+			import mx.core.FlexGlobals;
 			
 			import spark.events.ViewNavigatorEvent;
 			import spark.transitions.SlideViewTransition;
+			
+			import statics.Service;
+			import statics.ViewTypes;
 			
 			[Bindable]
 			private var _image:Bitmap;
@@ -28,17 +37,31 @@
 			[Bindable]
 			private var _tags:String = "no tags";
 			
+			private var _previousPhoto:PhotoVO;
+			
+			private var _nextPhoto:PhotoVO;
+			
+			[Bindable]
+			private var _setTitle:String;
+			[Bindable]
+			private var _setId:String;
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			
+			private var _completeState:String = "completeStateNoHeader";
+			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				
 				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
 				
-				if(data.title){
-					_title = data.title;
-				}
+				if(data.setTitle)_completeState = "completeStateHeader"
 				
-				if(data.tags){				
-					_tags = data.tags;
-				}
+				if(data.setTitle)		_setTitle = StringUtils.truncate(data.setTitle,30);
+				if(data.setId)			_setId = data.setId;
+				if(data.title)			_title = StringUtils.truncate(data.title,30);
+				if(data.tags)			_tags = data.tags;	
+				if(data.previousPhoto)	_previousPhoto = data.previousPhoto;
+				if(data.nextPhoto)		_nextPhoto = data.nextPhoto;
 			
 				currentState = "loadingState";
 				load();
@@ -52,49 +75,82 @@
 			}
 			
 			private function onEventComplete(event:Event):void{
-				currentState = "completeState";
+				trace("spv onEventComplete");
+				currentState = _completeState;
 				var image:Bitmap = event.currentTarget.content;
 				this.photo.source = image;
-				trace(image.width,image.height);
-			
 			}
 			
 			private function handleSwipe(event:TransformGestureEvent):void
 			{
-				// Swipe was to the right
-				if (event.offsetX == 1 ) {
-					// push the PreviousView without any data using default
-					// ViewTransition
-					navigator.popView();
+				if (event.offsetX == 1 ) 
+				{
+					//trace("spv if 1");
+					if(_previousPhoto){
+						//trace("spv if prevPhoto exists");
+						var rightSlide:SlideViewTransition = new SlideViewTransition();
+						rightSlide.direction = "right";
+						navigator.pushView(SinglePhotoView,_previousPhoto,null,rightSlide);	
+					}
 				}
-					// Swipe was to the left
-				/*
-				else if (event.offsetX == -1 ) {
-					// push the NextView withour any data using 
-					navigator.pushView( NextView, null, 
-						new SlideViewTransition( 300, SlideViewTransition.SLIDE_LEFT ) );
+				
+				if(event.offsetX == -1){
+					//trace("spv -1");
+					if(_nextPhoto){
+						//trace("spv if nextPhoto exists");
+						var leftSlide:SlideViewTransition = new SlideViewTransition();
+						leftSlide.direction = "left";
+						navigator.pushView(SinglePhotoView,_nextPhoto,null,leftSlide);
+					}
 				}
-				*/
+			}
+			
+			private function onClickYourSets():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				navigator.pushView(BrowseSets,null,null,slideEffect);
+			}
+			
+			private function onSetTitleClick():void{
+				var setVO:SetVO = new SetVO();
+				setVO.title = _setTitle;
+				setVO.id = _setId;
+				setVO.service = Service.getService();
+			
+				var dataObject:DataObject = new DataObject();
+				dataObject.selectedSet = setVO;
+				dataObject.viewType = ViewTypes.SET;
+				navigator.pushView(MultiplePhotosView,dataObject);
 			}
 			
 		]]>
 	</fx:Script>
+	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" 
 			  includeIn="loadingState">
 		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
-		<s:Label text="loading photo..."/>
+		<s:Label text="Loading photo..."/>
 	</s:VGroup>
 	
+		
+	<s:SkinnableContainer width="{_headerWidth}" height="50" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeStateHeader">
+		<s:HGroup>			
+			<components:HTMLLabel text="Your Sets" click="onClickYourSets()" color="#ffffff" fontSize="24"/> 
+			<components:HTMLLabel text=" > " color="#dddddd" fontSize="24"/>
+			<components:HTMLLabel text="{_setTitle}" click="onSetTitleClick()" color="#ffffff" fontSize="24"/>
+		</s:HGroup>
+	</s:SkinnableContainer>
 	
-		<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="completeState">
-			<s:SkinnableContainer y="80"
+		<s:VGroup includeIn="completeStateHeader,completeStateNoHeader" horizontalCenter="0" y.completeStateHeader="90" y.completeStateNoHeader="40">
+			
+			<s:SkinnableContainer
 				width="{photo.width+20}" height="{photo.height+20}"
 								  skinClass="skins.WhiteBox" 
 								  filters="{graphicsLib.getDropShadowFilter()}">				
-				<s:Image id="photo" width="430" />				
+				<s:Image id="photo" maxHeight="450" maxWidth="430"/>				
 			</s:SkinnableContainer>
 			
-			<s:SkinnableContainer width="100%" height="100" skinClass="skins.SpeechBubbleSkin">	
+			<s:SkinnableContainer width="100%" height="300" skinClass="skins.SpeechBubbleSkin">	
 				<s:VGroup>					
 				<s:Label id="titleLabel" text="title: {_title}" color="#ffffff"/>
 				<!--<s:Label id="tagsLabel" text="tags: {_tags}" color="#ffffff"/>-->

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
 		xmlns:s="library://ns.adobe.com/flex/spark"
-		title="Your sets"
-		destructionPolicy="never"
-		viewActivate="viewActivateHandler(event)">
+		viewActivate="viewActivateHandler(event)" xmlns:components="components.*">
 
 	<s:states>
 			<s:State name="loadingState"/>
@@ -16,10 +14,12 @@
 			import VOs.DataObject;
 			import VOs.SetVO;
 			
+			import com.adobe.webapis.flickr.FlickrError;
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
 			
 			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
 			
 			import spark.events.ViewNavigatorEvent;
 			
@@ -27,6 +27,10 @@
 			import statics.Service;
 			import statics.ViewTypes;
 			
+			[Bindable]
+			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
 			[Bindable]
 			private var _service:FlickrService;
 			[Bindable]
@@ -60,8 +64,26 @@
 					var id:String = NSID.getNSID();
 					trace("BrowseSets: id: "+id);
 					_service.photosets.getList(id);
+					
+					/*
+					_service.addEventListener(FlickrError.INSUFFICIENT_PERMISSIONS, onError);
+					_service.addEventListener(FlickrError.FORMAT_NOT_FOUND,onError);
+					_service.addEventListener(FlickrError.INVALID_API_KEY,onError);
+					_service.addEventListener(FlickrError.INVALID_SIGNATURE,onError);
+					_service.addEventListener(FlickrError.INVALID_SOAP_ENVELOPE,onError);
+					_service.addEventListener(FlickrError.INVALID_XML_RPC_CALL,onError);
+					_service.addEventListener(FlickrError.METHOD_NOT_FOUND,onError);
+					_service.addEventListener(FlickrError.MISSING_SIGNATURE, onError);
+					_service.addEventListener(FlickrError.SERVICE_CURRENTLY_UNAVAILABLE, onError);
+					*/
 					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
+					
 			} 
+			
+			private function onError(event:FlickrError):void{
+				trace(event.errorMessage);
+				currentState = "errorState";
+			}
 				
 			private function handleSetList(event:FlickrResultEvent):void{ 
 				
@@ -104,9 +126,10 @@
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~State~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="loadingState">
-		<s:BusyIndicator scaleX="3" scaleY="3"/>
-		<s:Label text="Loading..."/>
+	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+		<s:Label text="Loading"/>
+		<s:Label text="set list"/>
 	</s:VGroup>
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~errorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
@@ -118,11 +141,16 @@
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~completeState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:VGroup width="100%" height="100%" 
-			  paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5"
+	<s:VGroup 
 			  includeIn="completeState">
+
+		<s:SkinnableContainer id="header" width="{_headerWidth}" height="50" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeState">
+			<s:HGroup>			
+				<components:HTMLLabel text="Your Sets" color="#ffffff" fontSize="24"/> 
+			</s:HGroup>
+		</s:SkinnableContainer>		
 		
-	<s:List id="setList" width="100%" height="100%"
+	<s:List id="setList" height="{_listHeight}" width="100%"
 			change="onClickList()" 
 			dataProvider="{_setVOs}"
 			contentBackgroundAlpha="0">
