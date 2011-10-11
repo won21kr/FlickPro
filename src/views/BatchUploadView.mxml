@@ -10,6 +10,8 @@
 			import VOs.BatchUploadVO;
 			
 			import com.adobe.webapis.flickr.FlickrService;
+			import com.chewtinfoil.utils.StringUtils;
+			import com.squidzoo.debug.DebugEvent;
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
@@ -42,6 +44,9 @@
 			[Bindable]
 			private var _is_friend:Boolean = false;
 			
+			[Bindable]
+			private var _privacyLabel:String = "family";
+			
 			private var _uploader:Uploader;
 			
 			private var _fileRef:FileReference;
@@ -70,9 +75,12 @@
 			protected function onSettingsSelected(event:CustomDataEvent):void
 			{
 				
-				_title = event.settingsVO.title;
+				_title = StringUtils.truncate(event.settingsVO.title,30);
 				_description = event.settingsVO.description;
 				_tags = event.settingsVO.tags;
+				_is_family = event.settingsVO.is_family;
+				_is_public = event.settingsVO.is_public;
+				_is_friend = event.settingsVO.is_friend;
 			}
 			
 			private function init():void{
@@ -104,6 +112,545 @@
 					
 					var vo:BatchUploadVO = _batchUploadAC[i];
 					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
 					_uploader.upload(vo.file,_title,_description,_tags,_is_public,_is_friend,_is_family);
 				}
 			}
@@ -134,15 +681,22 @@
 					_is_family = false;
 					_is_friend = false;
 					_is_public = true;
+					_privacyLabel = "Public"
 				}else if(event.string == "friend"){
 					_is_family = false;
 					_is_friend = true;
 					_is_public = false;
+					_privacyLabel = "Friend";
 				}else{
 					_is_family = true;
 					_is_friend = false;
 					_is_public = false;
+					_privacyLabel = "Family";
 				}
+			}
+			
+			private function onDebugMessage(event:DebugEvent):void{
+				//debugger.text = event.message;	
 			}
 		]]>
 	</fx:Script>
@@ -157,40 +711,31 @@
 	<s:HGroup paddingLeft="20" paddingRight="0" paddingTop="15" width="100%" height="100%">
 		<s:VGroup gap="10">
 			
-			<!--<s:Image id="imageContainer" width="173" height="141" source="{_selectedImage}"/>-->
-			
 			<s:Button id="pickPhotoButton"
 					  click="onClickPickPhotoButton(event)" 
 					  skinClass="components.PickaPhotoButtonDarkBorder"/>
+			
 			<s:VGroup paddingLeft="5">
-				
 				<s:Label text="Press Pick button again" fontSize="14" color="#ffffff"/>
-				<s:Label text="to add more photos" fontSize="14" color="#ffffff"/>
-				<s:Label text="to batch upload" fontSize="14" color="#ffffff"/>
+				<s:Label text="to add more photos for upload" fontSize="14" color="#ffffff"/>
 			</s:VGroup>
-			<!--<s:Button id="ChooseSetButton" 
-			click="onChooseSet()"
-			skinClass="components.ChooseSetButtonSkin"/>-->
 			
 			<s:Button id="PrivacySettingsButton"
 					  click="onClickPrivacySettingsButton(event)"
 					  skinClass="components.privacySettingsButtonBlackBorder"/>
-			<s:VGroup paddingLeft="5">
-				<s:Label text="Title: {_title}" maxWidth="180" fontSize="14" color="#ffffff"/>
-				<s:Label text="Desc: {_description}" maxWidth="180" fontSize="14" color="#ffffff"/>
-				<s:Label text="Tags: {_tags}" fontSize="14" maxWidth="180" color="#ffffff"/>
-			</s:VGroup>
+			
 			<s:Button click="onClickUploadListButton()" 
 					  skinClass="components.UploadButtonBlackBorder"/>
 			<s:VGroup paddingLeft="5">
-				<s:Label text="Removing a photo from the" maxWidth="180" fontSize="14" color="#ffffff"/>
-				<s:Label text="upload list will not delete" maxWidth="180" fontSize="14" color="#ffffff"/>
-				<s:Label text="it from the gallery / memory" fontSize="14" maxWidth="180" color="#ffffff"/>
+				<s:Label text="Title: {_title}" maxWidth="180" fontSize="14" color="#ffffff"/>
+				<s:Label text="Description: {_description}" maxWidth="180" fontSize="14" color="#ffffff"/>
+				<s:Label text="Tags: {_tags}" fontSize="14" maxWidth="180" color="#ffffff"/>
+				<s:Label text="Privacy setting: {_privacyLabel}" fontSize="14" color="#ffffff"/>
 			</s:VGroup>
-			<!--<debug:DebugTextArea width="200" height="200"/>-->
+			
 		</s:VGroup>
 		
-		<s:List id="photoList" width="210" height="720" dataProvider="{_batchUploadAC}"  useVirtualLayout="false"
+		<s:List id="photoList" width="210" height="680" dataProvider="{_batchUploadAC}"  useVirtualLayout="false"
 				itemRenderer="ItemRenderers.BatchUploadItemRenderer" contentBackgroundColor="#58595b">
 			<s:layout >
 				<s:VerticalLayout paddingTop="10" paddingLeft="10" paddingRight="10" paddingBottom="10" gap="5"/>

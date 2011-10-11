@@ -2,7 +2,7 @@
 <s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 							xmlns:s="library://ns.adobe.com/flex/spark" 
 							creationComplete="init(event)"
-							splashScreenImage="@Embed('assets/images/splashScreen.png')"
+							splashScreenImage="@Embed('assets/images/splashScreenWithWhite.png')"
 							splashScreenMinimumDisplayTime="1000"
 							splashScreenScaleMode="zoom"
 							>
@@ -48,6 +48,7 @@
 			public var _service:FlickrService;
 			
 			private function init(event:FlexEvent):void{
+				addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 				_popup = new MenuPopUp();
 				
 				_service = new FlickrService();
@@ -79,6 +80,13 @@
 				//navigator.pushView(LoginView);
 				//navigator.pushView(LoginView,_service);
 				addMenuListeners();
+			}
+			
+			private function onAddedToStage(event:Event):void
+			{
+				//removes listener
+				removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, _onKeyDown);
 			}
 			
 			private function addMenuListeners():void{
@@ -119,11 +127,29 @@
 				navigator.pushView(SinglePhotoView,event.photoVO);
 			}
 			
+			private function _onKeyDown(event:KeyboardEvent):void
+			{
+				if(event.keyCode == Keyboard.BACK)
+				{
+					event.preventDefault();
+					trace("\nBack Pressed");
+				} else if(event.keyCode == Keyboard.MENU)
+				{
+					event.preventDefault();
+					trace("\nMenu Pressed");
+					_popup.show();
+				} else if(event.keyCode == Keyboard.SEARCH)
+				{
+					event.preventDefault();
+					trace("\nSearch Pressed");
+				}
+			}
+			
 		]]>
 	</fx:Script>
 	
 	<s:navigationContent>
-		<s:Button icon="@Embed('assets/images/FastrLP6.png')" click="navigator.pushView(HomeView)"/>
+		<s:Button icon="@Embed('assets/images/FastrHome.png')" click="navigator.pushView(HomeView)"/>
 	</s:navigationContent>
 	
 	<s:actionContent>

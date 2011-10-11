@@ -1,5 +1,7 @@
 package VOs
 {
+	import com.adobe.utils.ArrayUtil;
+	import com.adobe.utils.StringUtil;
 	import com.adobe.webapis.flickr.FlickrService;
 	import com.adobe.webapis.flickr.Photo;
 	import com.adobe.webapis.flickr.PhotoContext;
@@ -11,6 +13,8 @@ package VOs
 	import flash.events.Event;
 	import flash.events.ProgressEvent;
 	import flash.net.URLRequest;
+	
+	import mx.utils.ArrayUtil;
 
 	public class PhotoVO
 	{
@@ -19,11 +23,16 @@ package VOs
 		public var photo:Photo;
 		public var title:String;
 		public var tags:String;
+		public var description:String;
 		public var largeImageString:String;
 		
 		public function PhotoVO(photo:Photo)
 		{
 			this.photo = photo;
+			this.title = photo.title;
+			this.description = photo.description;
+			this.tags = photo.tags.toString();
+			
 			createStringForLargeImage();
 			load();
 		}

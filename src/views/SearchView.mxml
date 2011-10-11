@@ -9,7 +9,7 @@
 			import spark.events.TextOperationEvent;
 			
 			import statics.ViewTypes;
-			private var _tags:String;
+			private var _tags:String = "Flickr";
 			
 			private function onClick(event:MouseEvent):void
 			{

@@ -93,7 +93,7 @@
 	<s:SkinnableContainer skinClass="skins.UploadListItemRendererSkin">
 		
 	<s:VGroup left="5" top="5" bottom="5" right="5">
-		<s:BitmapImage id="image" source="{_image}" />
+		<s:BitmapImage id="image" source="{_image}" horizontalCenter="0"/>
 		<!--<s:Label id="debug" />-->
 		<s:Label id="uploadStatusValue" text="{data.uploadStatus}" fontSize="14" color="0x666666"/>
 		<!--<s:Label id="filename" text="{data.fileName}"/>-->

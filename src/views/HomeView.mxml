@@ -56,7 +56,7 @@
 	<s:SkinnableContainer width="100%" height="180" skinClass="skins.BlueBox" >
 		
 	<s:HGroup  width="100%">
-		<s:Image source="@Embed('assets/images/FastrsforFlickrBig.png')"/>
+		<s:Image source="@Embed('assets/images/FastrHomeWithWhite.png')"/><!--FastrsforFlickrBigWithIcon.png'-->
 	</s:HGroup>
 		
 	</s:SkinnableContainer>	

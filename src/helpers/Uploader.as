@@ -6,6 +6,8 @@ package helpers
 	import com.adobe.webapis.flickr.ContentType;
 	import com.adobe.webapis.flickr.FlickrService;
 	import com.adobe.webapis.flickr.SafetyLevel;
+	import com.squidzoo.debug.DebugEvent;
+	import com.squidzoo.eventSystem.EventCentral;
 	
 	import flash.display.BitmapData;
 	import flash.events.EventDispatcher;
@@ -77,6 +79,9 @@ package helpers
 			if ( safety_level != SafetyLevel.DEFAULT ) sig += "safety_level" + safety_level;
 			if ( tags != "" ) sig += "tags" + tags;
 			if ( title != "" ) sig += "title" + title;
+			
+			var msg:String = sig;//"title: " +title+ " descriptipn: " +description+" tags: "+tags;
+			EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,msg)); 
 			
 			var vars:URLVariables = new URLVariables();
 			vars.auth_token = StringUtil.trim( _service.token );

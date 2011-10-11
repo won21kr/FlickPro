@@ -10,13 +10,13 @@
 	</fx:Script>
 	
 	<s:navigationContent>
-		<s:Image source="@Embed('assets/images/FastrLP6.png')"/>
+		<s:Image source="@Embed('assets/images/FastrHome.png')"/>
 	</s:navigationContent>
 	
 	<s:actionContent>
-		<s:Button label="Reload login" click="onClickStart()" includeIn="WebViewState" fontSize="12"/>
+		<s:Button label="Reload login" click="onClickStart()" fontSize="12"/>
 		<s:Button x="320" y="150" label="Done" 
-				  click="onValidConnection()" includeIn="WebViewState" skinClass="components.DoneButtonSkin"/>
+				  click="onValidConnection()" skinClass="components.DoneButtonSkin"/>
 	</s:actionContent>
 	
 	<fx:Declarations>
@@ -61,49 +61,33 @@
 			
 			private var webView:StageWebView = new StageWebView();
 			
-			//private var _locationCounter:int = 0;
-			//private var _currentLocation:String = "nowhere";
-			
-			//private var _startClicked:Boolean = false;
-			
 			private function init(event:ViewNavigatorEvent=null):void{
 				currentState = "EstablishConnectionState";	
-				
-				//_service = data as FlickrService;	
 				_service = Service.getService();
 				_service.addEventListener( FlickrResultEvent.AUTH_GET_FROB, getFrobResponse ); 
-				_service.auth.getFrob();
-				
-				webView.addEventListener(LocationChangeEvent.LOCATION_CHANGE,onLocationChange);
+				_service.auth.getFrob()
 			}
 			
 			private function getFrobResponse( event:FlickrResultEvent ):void {
-				
 				if ( event.success ) {
 					trace("getFrobResponse: success");
 					currentState= "StartLoginState";
 					_frob= String( event.data.frob );
-					
 				} else {
 					
 					trace("error code: " + event.data.error.errorCode + "\n");
 					trace("error message: " + event.data.error.errorMessage + "\n");
 					currentState = "ConnectionErrorState";
-					
 				}
 			}			
 			
 			private function onClickStart():void{
-				//_startClicked = true;
-				//_locationCounter++;
 				currentState = "WebViewState";
 				webView.stage = this.stage;
 				webView.viewPort = new Rectangle( 0, 80, stage.stageWidth, 700 ); 
 				var auth_url:String = _service.getLoginURL( _frob, AuthPerm.WRITE );
-				webView.loadURL(auth_url);//webView.load(auth_url)
+				webView.loadURL(auth_url);
 			}
-			
-			
 			
 			private function onValidConnection():void {
 				webView.stage = null;//newly added
@@ -131,11 +115,6 @@
 					NSIDManager.setNSID(authResult.user.nsid);
 					_service.permission = authResult.perms;
 					
-					//username.text = authResult.user.username + " (" + authResult.user.fullname + " )";
-					
-					//trace("LoginView: _service.token: " + _service.token + "\n");
-					//trace("perms: " + _service.permission + "\n");
-					
 					navigator.pushView(HomeView);
 					
 				} else {
@@ -145,42 +124,21 @@
 				}
 			}
 			
-			
-			/**
-			 * @copy mx.core.UIComponent#updateDisplayList()
-			 * */
-			/*
-			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
-			var runtimeDPI:int = FlexGlobals.topLevelApplication.runtimeDPI;
-			var applicationDPI:int = FlexGlobals.topLevelApplication.applicationDPI;
-			var point:Point;
-			var scaledWidth:int;
-			var scaledHeight:int;
-			var scaleFactor:Number;
-			var scaledY:int;
-			
-			// NOTE: IF THE WEBVIEW IS NOT BEING SIZED CORRECTLY
-			// check if focusEnabled is true. If it is then the soft keyboard may not be dispatching the
-			// deactivate event because the webview has focus when it is dispatched. set to false
-			// position according to the container rather than the stage
-			if (webView) {
-			point = localToGlobal(new Point());
-			scaleFactor = runtimeDPI / applicationDPI;
-			
-			scaledWidth = width * scaleFactor;
-			scaledHeight = height * scaleFactor;
-			
-			webView.viewPort = new Rectangle(point.x, point.y, scaledWidth, scaledHeight);
-			
-			
-			}
-			
-			}
-			*/
-			
-			protected function onLocationChange(event:LocationChangeEvent):void
+			private function _onKeyDown(event:KeyboardEvent):void
 			{
-				//onClickStart();
+				if(event.keyCode == Keyboard.BACK)
+				{
+					event.preventDefault();
+					trace("\nBack Pressed");
+				} else if(event.keyCode == Keyboard.MENU)
+				{
+					event.preventDefault();
+					trace("\nMenu Pressed");
+				} else if(event.keyCode == Keyboard.SEARCH)
+				{
+					event.preventDefault();
+					trace("\nSearch Pressed");
+				}
 			}
 			
 		]]>
@@ -205,7 +163,21 @@
 	
 	<s:VGroup id="LoginExplanation" includeIn="StartLoginState, WebViewState" 
 			  fontSize="24" left="40" top="40" right="40">
-		<s:RichText textFlow="{TextConverter.importToFlow(startText,TextConverter.TEXT_LAYOUT_FORMAT)}" height="300" color="0xffffff" right="10"/>
+		<!--<s:RichText textFlow="{TextConverter.importToFlow(startText,TextConverter.TEXT_LAYOUT_FORMAT)}" 
+		height="300" color="0xffffff" right="10"/>-->
+		<s:Label text="3 easy steps to start:" color="#eeeeee"/>
+		<s:HGroup verticalAlign="middle">
+			<s:Image source="@Embed('assets/images/NumberOne.png')"/>
+			<s:Label text="Tap 'Start' and login." color="#eeeeee"/>
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle">
+			<s:Image source="@Embed('assets/images/NumberTwo.png')"/>
+			<s:Label text="Tap 'OK, I'll authorize it'." color="#eeeeee"/>
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle">
+			<s:Image source="@Embed('assets/images/NumberThree.png')"/>
+			<s:Label text="Tap 'Done'." color="#eeeeee"/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="StartLoginState">
@@ -227,16 +199,6 @@
 		<s:Label text="authorization"/>
 	</s:VGroup>
 	
-	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SuccessState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
-	<!--
-	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="SuccessState">
-		<s:Label text="You have logged in as"/>
-		<s:Label id="username" text="username"/>
-		<s:Label text="and have authorized Flickit to"/>
-		<s:Label text="access your Flickr photos"/>
-		<s:Button click="navigator.pushView(BatchUploadView, _service)" />		 
-	</s:VGroup>
-	-->
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~AuthErrorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="AuthErrorState">

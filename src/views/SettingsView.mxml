@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="SettingsView"
-		actionBarVisible="false" >
+		xmlns:s="library://ns.adobe.com/flex/spark" title="SettingsView">
 	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="privacySetting" 
+							itemClick="onPrivacySelection(event)"/>
 	</fx:Declarations>
 	
 	<fx:Script>
@@ -16,12 +20,19 @@
 			private var _title:String;
 			private var _description:String;
 			private var _tags:String;
+			private var _isPublic:Boolean;
+			private var _isFriend:Boolean;
+			private var _isFamily:Boolean;
 			
 			private function onClickOK(event:Event):void{
 				var settingsVO:SettingsVO = new SettingsVO();
 				settingsVO.title = _title;
 				settingsVO.description = _description;
 				settingsVO.tags = _tags;
+				settingsVO.is_public = _isPublic;
+				settingsVO.is_family = _isFamily;
+				settingsVO.is_friend = _isFriend;
+				
 				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SETTINGS_SELECTED,null,null,null,null,null,settingsVO));
 				navigator.popView();
 			}
@@ -45,27 +56,47 @@
 				trace(_tags);
 			}
 			
+			private function onPrivacySelection(event:Event):void{
+				switch(event.currentTarget.selectedValue){
+					case "family":
+						
+						break;
+					case "friend":
+						break;
+					case "public":
+						break;
+				}
+			}
+			
 			
 		]]>
 	</fx:Script>
 	
+	
 	<!--<s:SkinnableContainer left="10" right="10" top="10" bottom="10" width="100%" height="100%">-->
 		
-	<s:SkinnableContainer height="100%" left="20" right="20" top="20" bottom="20" skinClass="skins.SettingsViewSkin">
+	<!--<s:SkinnableContainer height="100%" left="20" right="20" top="20" bottom="20" verticalCenter="0" horizontalCenter="0" backgroundColor="0xaaaaaa">-->
 	
-	<s:VGroup>
-		<s:Label text="title"/>
+	<s:VGroup horizontalCenter="0" paddingTop="50">
+		<s:Label text="title" color="#ffffff"/>
 		<s:TextInput id="titleInput" width="380" change="onTitleChange(event)"/>
-		<s:Label text="description"/>
+		<s:Label text="description" color="#ffffff"/>
 		<s:TextArea id="descriptionInput" width="380" change="onDescriptionChange(event)"/>
-		<s:Label text="tags"/>
+		<s:Label text="tags" color="#ffffff"/>
 		<s:TextInput id="tagsInput" width="380" change="onTagsChange(event)"/>
-		<s:HGroup horizontalAlign="left">
+		<s:VGroup verticalCenter="0" horizontalCenter="0">	
+			<s:RadioButton id="familyValue" group="{privacySetting}" value="family" label="private"/>
+			<s:RadioButton id="friendValue" group="{privacySetting}" value="friend" label="friend"/>
+			<s:RadioButton id="publicValue" group="{privacySetting}" value="public" label="public"/>
+		</s:VGroup>
+		<s:HGroup verticalAlign="middle">
 			<s:Button label="ok" click="onClickOK(event)" skinClass="components.OKButton"/>
 			<s:Button label="cancel" click="onClickCancel(event)" skinClass="components.CloseButton"/>
 		</s:HGroup>
-	</s:VGroup>
 		
-	</s:SkinnableContainer>
+	</s:VGroup>
+
+	
+	<!--</s:SkinnableContainer>-->
 
 </s:View>

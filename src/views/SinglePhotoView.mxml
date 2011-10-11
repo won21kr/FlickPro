@@ -22,11 +22,11 @@
 			[Bindable]
 			private var _image:Bitmap;
 			[Bindable]
-			private var _title:String;
+			private var _title:String = "no title";
 			[Bindable]
 			private var _desc:String;
 			[Bindable]
-			private var _tags:String;
+			private var _tags:String = "no tags";
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
 				
@@ -86,16 +86,21 @@
 	</s:VGroup>
 	
 	
-		<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="completeState">
-			<s:SkinnableContainer
-				width="450" height="{photo.height+20}"
+		<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="completeState">
+			<s:SkinnableContainer y="80"
+				width="{photo.width+20}" height="{photo.height+20}"
 								  skinClass="skins.WhiteBox" 
 								  filters="{graphicsLib.getDropShadowFilter()}">				
 				<s:Image id="photo" width="430" />				
 			</s:SkinnableContainer>
-		<s:Label id="titleLabel" text="title: {_title}" color="#ffffff"/>
+			
+			<s:SkinnableContainer width="100%" height="100" skinClass="skins.SpeechBubbleSkin">	
+				<s:VGroup>					
+				<s:Label id="titleLabel" text="title: {_title}" color="#ffffff"/>
+				<!--<s:Label id="tagsLabel" text="tags: {_tags}" color="#ffffff"/>-->
+				</s:VGroup>
+			</s:SkinnableContainer>
 		
-		<s:Label id="tagsLabel" text="tags: {_tags}" color="#ffffff"/>
 		</s:VGroup>
 	
 </s:View>

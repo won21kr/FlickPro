@@ -21,16 +21,24 @@
 		<s:State name="normal" />
 	</s:states>
 	
-	<s:Rect width="105%" height="100%" filters="{[graphicsLib.getDropShadowFilter()]}">
+	<s:Rect width="214" height="281" x="0" y="0" radiusX="6" radiusY="6">
 		<s:fill>
-			<s:LinearGradient rotation="90">
+			<s:LinearGradient>
 				<s:GradientEntry color="#8ccbf9"/>
-				<s:GradientEntry color="#3fa9f5"/>
+				<s:GradientEntry color="#7bbae8"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	<s:Rect width="60" height="67" y="271" x="154" radiusX="6" radiusY="6">
+		<s:fill>
+			<s:LinearGradient>
+				<s:GradientEntry color="#8ccbf9"/>
+				<s:GradientEntry color="#7bbae8"/>
 			</s:LinearGradient>
 		</s:fill>
 	</s:Rect>
 	
-	<s:Group id="contentGroup" verticalCenter="0" horizontalCenter="0"/>
+	<s:Group id="contentGroup"/>
 	
 	<!-- SkinParts
 	name=contentGroup, type=spark.components.Group, required=false

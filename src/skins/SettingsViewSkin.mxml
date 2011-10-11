@@ -24,6 +24,10 @@
 			</s:fill>
 		</s:Rect>
 	
+
+	
+	<s:Image id="teaserImage" x="5" y="5" maxHeight="150"/><!-- click="onTeaserImageClick()"/>-->
+	
 	<s:Group id="contentGroup" horizontalCenter="0" top="20"/>
 	
 	<!-- SkinParts
