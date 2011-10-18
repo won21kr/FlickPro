@@ -35,13 +35,13 @@
 			import statics.Service;
 			import statics.ViewTypes;
 			
-			import views.BatchUploadView;
+			import views.upload.BatchUploadView;
 			import views.BrowseSets;
 			import views.HomeView;
-			import views.LoginView;
+			import views.login.LoginView;
 			import views.MultiplePhotosView;
 			import views.SearchView;
-			import views.SinglePhotoView;
+			import views.singlePhoto.SinglePhotoView;
 			
 			private var _popup:MenuPopUp;
 			
@@ -68,7 +68,7 @@
 					navigator.pushView(views.HomeView);	
 				}else{
 					("FlickrClient: there is no token");
-					navigator.pushView(views.LoginView);
+					navigator.pushView(views.login.LoginView);
 				}
 				
 				//this.actionBar.alpha=0;

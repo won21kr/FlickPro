@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:styles="styles.*" 
+		xmlns:components="components.*" 
+		viewActivate="viewActivateHandler(event)" xmlns:mx="library://ns.adobe.com/flex/mx"
+		add="onAdd()">
+	
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="noState"/>
+		<s:State name="loadingState"/>
+		<s:State name="completeStateHeader"/>
+		<s:State name="completeStateNoHeader"/>
+		<!--<s:State name="fullScreen"/>-->
+	</s:states>
+	
+	<!--<s:actionContent>
+		<s:Button label="full screen" click="onFullScreen(event)"/>
+	</s:actionContent>-->
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.DataObject;
+			import VOs.PhotoSizeVO;
+			import VOs.PhotoVO;
+			import VOs.SetVO;
+			
+			import com.adobe.webapis.flickr.Photo;
+			import com.chewtinfoil.utils.StringUtils;
+			import com.squidzoo.imageUtils.ImageCache;
+			import com.squidzoo.imageUtils.ImageUtils;
+			
+			import flash.sensors.Accelerometer;
+			
+			import mx.core.FlexGlobals;
+			
+			import spark.components.ButtonBarButton;
+			import spark.events.ViewNavigatorEvent;
+			import spark.transitions.SlideViewTransition;
+			
+			import statics.Service;
+			import statics.ViewTypes;
+			
+			import views.BrowseSets;
+			import views.MultiplePhotosView;
+			
+			[Bindable]private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			private var _maxImageWidth:int = 420;
+			private var _maxImageHeight:int = 450;
+			
+			private var _previousPhoto:PhotoVO;
+			private var _nextPhoto:PhotoVO;
+			
+			private var _completeState:String = "completeStateNoHeader";
+			
+			[Bindable]private var _setTitle:String;
+			[Bindable]private var _setId:String;
+			[Bindable]private var _title:String = "no title";
+			[Bindable]private var _desc:String;
+			[Bindable]private var _tags:String = "no tags";
+			private var _imgString:String;
+			
+			private var _isFullScreen:Boolean = false;
+			
+			[Bindable]private var _image:Bitmap;
+			[Bindable]private var _photoVO:PhotoVO;
+			private var _orginalBitmapData:BitmapData;
+			private var _removedFromSet:Boolean = false;
+			
+			private var _cache:ImageCache;
+
+			private var _photoImage:Bitmap;
+			
+			[Bindable] private var _description:String;
+			[Bindable] private var _ownerName:String;
+			[Bindable] private var _viewHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 100;
+			
+			private function onAdd():void{
+				if(navigator.poppedViewReturnedObject && 
+					navigator.poppedViewReturnedObject.object && 
+					navigator.poppedViewReturnedObject.object.removedFromList){
+					if(navigator.poppedViewReturnedObject.object.removedFromList == "removed"){
+						_removedFromSet = true;
+						_completeState = "completeStateNoHeader";
+					}
+				}
+			}
+			
+			private function viewActivateHandler(event:ViewNavigatorEvent=null):void{
+				_cache = ImageCache.getInstance();
+				
+				FlexGlobals.topLevelApplication.stage.addEventListener(KeyboardEvent.KEY_DOWN, onBackKeyDown);
+				
+				//navigator.context.isFullScreen is true if the previous view was fullscreen.
+				//if(navigator.context)	_isFullScreen = navigator.context.isFullScreen;
+				
+				//data is a PhotoVO passed from either MultiplePhotoView of sets, of photostream, or of seach results.
+				//if(data.photo)			_photo = data.photo;
+				
+				if(data) _photoVO = data as PhotoVO;
+				
+				if(data.setTitle && (_removedFromSet==false))_completeState = "completeStateHeader"
+				if(data.setTitle)		_setTitle = StringUtils.truncate(data.setTitle,30);
+				if(data.setId)			_setId = data.setId;
+				if(data.title)			_title = StringUtils.truncate(data.title,30);
+				if(data.description) 	_description = StringUtils.truncate(data.description,30);
+				if(data.ownerName)		_ownerName = StringUtils.truncate(data.ownerName, 30);
+				if(data.tags)			_tags = data.tags.toString();	
+				if(data.previousPhoto)	_previousPhoto = data.previousPhoto;
+				if(data.nextPhoto)		_nextPhoto = data.nextPhoto;
+				if(data.largeImageString)_imgString = data.largeImageString;
+				
+				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
+			
+				checkIfImageIsCached();
+			}	
+			
+			private function checkIfImageIsCached():void{
+				if(_cache.hasImageData(_imgString)){
+					trace("is cached");
+					//currentState = _completeState;
+					changeImageSize(_cache.getImageData(_imgString));
+				}else{
+					trace("is not chached");
+					currentState = "loadingState";
+					loadImageFromFlickr();
+				}
+			}
+			
+			private function loadImageFromFlickr():void{
+				var request:URLRequest = new URLRequest(data.largeImageString);
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoadComplete);
+				loader.load(request);
+			}
+			
+			private function onImageLoadComplete(event:Event):void{
+				var image:Bitmap = event.currentTarget.content;
+				_image = image;
+				if(_cache.hasImageData(_imgString)==false){
+					_cache.putImageData(_imgString,image);
+				}
+				changeImageSize(image);
+			}	
+			
+			/*
+			private function decideSize(image:Bitmap):void{
+				_orginalBitmapData = image.bitmapData.clone();
+				if(_isFullScreen == true){
+					onFullScreen(null);
+				}else{
+					notFullScreen(image);
+				}
+			}
+			*/
+			
+			/*
+			* Not full screen
+			*/
+			
+			private function changeImageSize(image:Bitmap):void{
+				_orginalBitmapData = image.bitmapData.clone();
+				if(image.width > image.height){
+					image = ImageUtils.scaleToTargetWidth(image,_maxImageWidth);
+				}else{
+					image = ImageUtils.scaleToTargetHeight(image,_maxImageHeight);				
+				}
+				image = ImageUtils.addBorder(image,10,0xffffff);
+				
+				currentState = _completeState;
+			
+				photo.source = image;
+			}
+			
+			
+			/*
+			* Full Screen State
+			*/
+			
+			/*
+			private function onFullScreen(event:MouseEvent=null):void
+			{
+				var image:Bitmap;
+				var bmp:Bitmap = new Bitmap(_orginalBitmapData);
+				
+				if(bmp.width > bmp.height){
+					var rotatedImage:Bitmap = ImageUtils.rotate(bmp,90);
+					image = ImageUtils.scaleToTargetWidth(rotatedImage,FlexGlobals.topLevelApplication.stage.stageWidth);
+				}else{
+					image = ImageUtils.scaleToTargetHeight(bmp,FlexGlobals.topLevelApplication.stage.stageHeight);				
+				}
+				
+				currentState = "fullScreen";
+				fullScreenPhoto.source = image;
+				fullScreenPhoto.visible = true;
+				
+			}
+			*/
+			/*
+			* Swipe handling
+			*/
+			
+			private function handleSwipe(event:TransformGestureEvent):void
+			{
+				var contextObj:Object = new Object();
+				
+				/*
+				if(currentState=="fullScreen"){
+					contextObj.isFullScreen = true;
+				}else{
+					contextObj.isFullScreen = false;
+				}
+				*/
+				
+				if (event.offsetX == 1 ) 
+				{
+					if(_previousPhoto){
+						var rightSlide:SlideViewTransition = new SlideViewTransition();
+						rightSlide.direction = "right";					
+						navigator.pushView(SinglePhotoView,_previousPhoto,null,rightSlide);	
+					}
+				}
+				
+				if(event.offsetX == -1){
+					if(_nextPhoto){
+						var leftSlide:SlideViewTransition = new SlideViewTransition();
+						leftSlide.direction = "left";
+						navigator.pushView(SinglePhotoView,_nextPhoto,null,leftSlide);
+					}
+				}
+			}
+			
+			/*
+			* Bread crumb event
+			*/
+			
+			private function onClickYourSets():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				navigator.pushView(BrowseSets,null,null,slideEffect);
+			}
+			
+			private function onSetTitleClick():void{
+				var setVO:SetVO = new SetVO();
+				setVO.title = _setTitle;
+				setVO.id = _setId;
+				setVO.service = Service.getService();
+			
+				var dataObject:DataObject = new DataObject();
+				dataObject.selectedSet = setVO;
+				dataObject.viewType = ViewTypes.SET;
+				navigator.pushView(MultiplePhotosView,dataObject);
+			}
+			
+			/*
+			* Button bar handlers
+			*/
+			
+			protected function buttonBar_clickHandler(event:MouseEvent):void
+			{
+				var btn:ButtonBarButton = event.target as ButtonBarButton;
+				if(buttonBar.selectedIndex == 0){
+					onDownloadOriginal();
+				}
+				
+				if(buttonBar.selectedIndex == 2){
+					addToSet();
+				}
+				
+				if(buttonBar.selectedIndex == 3){
+					removeFromSet();
+				}
+
+				
+				if(buttonBar.selectedIndex == 4){
+					onFullScreenSelection();
+				}	
+			}
+			
+			private function onFullScreenSelection():void{
+				trace("onFullScreenSelection");
+				var imageObject:Object = new Object();
+				imageObject.image = _orginalBitmapData;
+				navigator.pushView(FullScreenView,_photoVO,imageObject);
+			}
+			
+			private function onDownloadOriginal(event:MouseEvent=null):void
+			{
+				trace(_imgString);
+				var obj:Object = new Object();
+				obj.imgString = _imgString;
+				navigator.pushView(DownloadOriginalView,obj);
+			}
+			
+			private function removeFromSet():void{
+				if(_setId){
+					var dataObject:Object = new Object();
+					dataObject.setId = _setId;
+					dataObject.setTitle = _setTitle;
+					dataObject.photoId = _photoVO.id;
+					navigator.pushView(views.singlePhoto.RemoveFromSetView,dataObject);
+				}
+			}
+			
+			private function addToSet():void
+			{
+				var dataObject:Object = new Object();
+				dataObject.photoId = _photoVO.id;
+				navigator.pushView(AddToSetView,dataObject);				
+			}
+			
+			protected function onBackKeyDown(event:KeyboardEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace("spv onBackKeyDown");
+			}
+			
+			/*
+			private function onClickNotFullScreen(event:Event):void{
+				notFullScreen(_cache.getImageData(_imgString));
+			}
+			*/
+			
+		
+		]]>
+	</fx:Script>
+	
+	<!--Loadingstate-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" 
+			  includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+	</s:VGroup>
+	
+	<!--BreadCrumbHeader-->
+	
+
+	
+	
+	
+	<!--whole view below actionbar-->
+	<s:VGroup width="100%" height="100%" gap="0">
+		
+		<!--ButtonBar-->
+		<s:SkinnableContainer width="{_headerWidth}" height="50" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeStateHeader">
+			<s:HGroup>			
+				<components:HTMLLabel text="Your Sets" click="onClickYourSets()" color="#ffffff" fontSize="24"/> 
+				<components:HTMLLabel text=" > " color="#dddddd" fontSize="24"/>
+				<components:HTMLLabel text="{_setTitle}" click="onSetTitleClick()" color="#ffffff" fontSize="24"/>
+			</s:HGroup>
+		</s:SkinnableContainer>	
+		
+	<s:SkinnableContainer width="{_headerWidth}" height="100" skinClass="skins.ButtonBarBoxSkin" includeIn="completeStateHeader,completeStateNoHeader">
+	<s:ButtonBar id="buttonBar"
+				 requireSelection="false"
+				 width="400"
+				 excludeFrom="loadingState,noState"
+				 
+				 click="buttonBar_clickHandler(event)">
+		<s:dataProvider>
+			<s:ArrayList>
+				<fx:Object label=""
+						   
+						   id="saveButton"
+						   icon="@Embed('assets/images/buttonIcons40x40/SaveIconGreyLP.png')" />
+				<fx:Object label=""
+						   id="editButton"
+						   icon="@Embed('assets/images/buttonIcons40x40/EditIconGreyLP.png')" />
+				<fx:Object id="addToSetButton"
+						   label=""
+						   icon="@Embed('assets/images/buttonIcons40x40/AddIconGreyLP.png')" />
+				<fx:Object label=""
+						   id="removeFromSetButton"
+						   icon="@Embed('assets/images/buttonIcons40x40/RemoveIconGreyLP.png')" />
+				<fx:Object label=""
+						   id="fullScreenButton"
+						   icon="@Embed('assets/images/buttonIcons40x40/FullScreenIconGreyLP.png')" />
+			</s:ArrayList>
+		</s:dataProvider>
+	</s:ButtonBar>
+	</s:SkinnableContainer>
+	<!--Photo Display-->
+	
+	<s:Scroller y="100" width="100%" height="100%" includeIn="completeStateHeader,completeStateNoHeader">
+		
+		<s:Group>
+			
+			<s:VGroup includeIn="completeStateHeader,completeStateNoHeader" 
+					  horizontalCenter="0" 
+					 y.completeStateHeader="10" y.completeStateNoHeader="10"
+					 horizontalAlign="center">
+				
+				<s:Image id="photo" smooth="true"/>
+				
+				<s:SkinnableContainer width="100%" height="400" skinClass="skins.SpeechBubbleSkin" excludeFrom="loadingState,noState">	
+					<s:VGroup gap="20">
+						<s:VGroup>
+							<s:Label text="Title" color="#dddddd" fontSize="22"/>
+							<s:Label id="titleLabel" text="{_title}"/>
+						</s:VGroup>
+						<s:VGroup>						
+							<s:Label text="Description" color="#dddddd" fontSize="22"/>
+							<s:Label id="descLabel" text="{_description}"/>
+						</s:VGroup>
+						<s:VGroup>						
+							<s:Label text="Owner name" color="#dddddd" fontSize="22"/>
+							<s:Label id="ownerNameLabel" text="{_ownerName}"/>	
+						</s:VGroup>
+						<s:VGroup>						
+							<s:Label text="tags" color="#dddddd" fontSize="22"/>
+							<s:Label text="{_tags}"/>		 
+						</s:VGroup> 
+					</s:VGroup>
+				</s:SkinnableContainer>
+				
+			</s:VGroup>
+				
+		</s:Group>
+			
+	</s:Scroller>
+	
+	
+<!--	<s:VGroup horizontalCenter="0" includeIn="fullScreen">
+		<s:Button id="notFullScreenButton" label="small" click="viewActivateHandler()"/>
+		<s:Image id="fullScreenPhoto" smooth="true" gestureSwipe.fullScreen="handleSwipe(event)"/>-->
+	</s:VGroup>
+	
+</s:View>

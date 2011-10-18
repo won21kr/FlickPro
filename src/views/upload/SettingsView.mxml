@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="SettingsView">
+		xmlns:s="library://ns.adobe.com/flex/spark" title="SettingsView" xmlns:components="components.*"
+		creationComplete="onCreationComplete(event)">
 	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
@@ -13,17 +14,27 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import VOs.SetVO;
 			import VOs.SettingsVO;
 			
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.events.FlexEvent;
 			private var _title:String;
 			private var _description:String;
 			private var _tags:String;
 			private var _isPublic:Boolean;
 			private var _isFriend:Boolean;
 			private var _isFamily:Boolean;
+			private var _setSelection:SetVO;
+			[Bindable]
+			private var _setTitle:String = "Please select a set.";
 			
+			protected function onCreationComplete(event:FlexEvent):void{
+				//EventCentral.getInstance().addEventListener(CustomDataEvent.SET_SELECTED_IN_UPLOAD_SETTINGS,onSetSelected);				
+			}
+
 			private function onClickOK(event:Event):void{
 				var settingsVO:SettingsVO = new SettingsVO();
 				settingsVO.title = _title;
@@ -32,6 +43,7 @@
 				settingsVO.is_public = _isPublic;
 				settingsVO.is_family = _isFamily;
 				settingsVO.is_friend = _isFriend;
+				settingsVO.setVO = _setSelection;
 				
 				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SETTINGS_SELECTED,null,null,null,null,null,settingsVO));
 				navigator.popView();
@@ -69,6 +81,13 @@
 			}
 			
 			
+			
+			protected function onSetSelected(event:CustomDataEvent):void
+			{
+				_setTitle = event.setVO.title;
+				_setSelection = event.setVO;
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -77,21 +96,28 @@
 		
 	<!--<s:SkinnableContainer height="100%" left="20" right="20" top="20" bottom="20" verticalCenter="0" horizontalCenter="0" backgroundColor="0xaaaaaa">-->
 	
-	<s:VGroup horizontalCenter="0" paddingTop="50">
-		<s:Label text="title" color="#ffffff"/>
+	<s:VGroup horizontalCenter="0" paddingTop="5" fontSize="18">
+		
+		<s:Label text="Title" color="#ffffff"/>
 		<s:TextInput id="titleInput" width="380" change="onTitleChange(event)"/>
-		<s:Label text="description" color="#ffffff"/>
-		<s:TextArea id="descriptionInput" width="380" change="onDescriptionChange(event)"/>
-		<s:Label text="tags" color="#ffffff"/>
+		<s:Label text="Description" color="#ffffff"/>
+		<s:TextInput id="descriptionInput" width="380" change="onDescriptionChange(event)"/>
+		<s:Label text="Tags" color="#ffffff"/>
 		<s:TextInput id="tagsInput" width="380" change="onTagsChange(event)"/>
-		<s:VGroup verticalCenter="0" horizontalCenter="0">	
-			<s:RadioButton id="familyValue" group="{privacySetting}" value="family" label="private"/>
-			<s:RadioButton id="friendValue" group="{privacySetting}" value="friend" label="friend"/>
-			<s:RadioButton id="publicValue" group="{privacySetting}" value="public" label="public"/>
-		</s:VGroup>
-		<s:HGroup verticalAlign="middle">
-			<s:Button label="ok" click="onClickOK(event)" skinClass="components.OKButton"/>
-			<s:Button label="cancel" click="onClickCancel(event)" skinClass="components.CloseButton"/>
+		<s:HGroup verticalCenter="0" horizontalCenter="0" color="#ffffff" horizontalAlign="center">	
+			<s:RadioButton scaleX="0.9" scaleY="0.9" id="familyValue" group="{privacySetting}" value="family" label="private" />
+			<s:RadioButton scaleX="0.9" scaleY="0.9" id="friendValue" group="{privacySetting}" value="friend" label="friend" />
+			<s:RadioButton scaleX="0.9" scaleY="0.9" id="publicValue" group="{privacySetting}" value="public" label="public" />
+		</s:HGroup>
+		<s:HGroup>
+			<s:VGroup>
+				<components:SetList/>
+				<s:Label text="Set selection: {_setTitle}" color="#ffffff"/>	
+			</s:VGroup>
+		</s:HGroup>
+		<s:HGroup paddingLeft="220">
+			<s:Button label="ok" click="onClickOK(event)"/>
+			<s:Button label="cancel" click="onClickCancel(event)"/>
 		</s:HGroup>
 		
 	</s:VGroup>

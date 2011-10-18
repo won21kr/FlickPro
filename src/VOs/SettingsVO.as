@@ -1,5 +1,6 @@
 package VOs
 {
+	[Bindable]
 	public class SettingsVO
 	{
 		public var title:String;
@@ -8,10 +9,9 @@ package VOs
 		public var is_family:Boolean = true;
 		public var is_public:Boolean = false;
 		public var is_friend:Boolean = false;
+		public var setVO:SetVO;
 		
-		public function SettingsVO()
-		{
-			trace("settingsvo constr");
+		public function SettingsVO(){
 		}
 	}
 }

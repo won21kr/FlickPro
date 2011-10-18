@@ -32,8 +32,9 @@ package com.adobe.webapis.flickr.methodgroups {
 	import com.adobe.crypto.MD5;
 	import com.adobe.utils.StringUtil;
 	import com.adobe.webapis.flickr.*;
-
 	import com.adobe.webapis.flickr.events.FlickrResultEvent;
+	import com.squidzoo.debug.DebugEvent;
+	import com.squidzoo.eventSystem.EventCentral;
 	
 	import flash.events.Event;
 	import flash.net.FileReference;
@@ -171,15 +172,21 @@ package com.adobe.webapis.flickr.methodgroups {
 								content_type:int = 0,
 								hidden:Boolean = false) : Boolean {
 			
+			trace("ul here1");
+			
 			// Bail out if missing the necessary authentication parameters
 			if (_service.api_key == "" || _service.secret == "" || _service.token == "") {
 				return false;
 			}
+			
+			trace("ul here2");
 
 			// Bail out if application doesn't have authorisation to writ or delete from account
 			if (_service.permission != AuthPerm.WRITE && _service.permission != AuthPerm.DELETE) {
 			    return false;
 		    }
+			
+			trace("ul here3");
 
 			// The upload method requires signing, so go through
 			// the signature process
@@ -197,13 +204,16 @@ package com.adobe.webapis.flickr.methodgroups {
 			if ( content_type != ContentType.DEFAULT ) sig += "content_type" + content_type;
 			if ( description != "" ) sig += "description" + description;
 			if ( hidden ) sig += "hidden" + ( hidden ? 1 : 0 );
-			if ( is_family ) sig += "is_family" + ( is_family ? 1 : 0 );
-			if ( is_friend ) sig += "is_friend" + ( is_friend ? 1 : 0 );
-			if ( is_public ) sig += "is_public" + ( is_public ? 1 : 0 );
+			sig += "is_family" + ( is_family ? 1 : 0 );
+			sig += "is_friend" + ( is_friend ? 1 : 0 );
+			sig += "is_public" + ( is_public ? 1 : 0 );
 			if ( safety_level != SafetyLevel.DEFAULT ) sig += "safety_level" + safety_level;
 			if ( tags != "" ) sig += "tags" + tags;
 			if ( title != "" ) sig += "title" + title;
 
+			var msg:String = sig;//"title: " +title+ " descriptipn: " +description+" tags: "+tags;
+			EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,msg)); 
+			
 			var vars:URLVariables = new URLVariables();
 			vars.auth_token = StringUtil.trim( _service.token );
 			vars.api_sig = MD5.hash( sig );
@@ -213,9 +223,9 @@ package com.adobe.webapis.flickr.methodgroups {
 			if ( content_type != ContentType.DEFAULT ) vars.content_type = content_type;
 			if ( description != "" ) vars.description = description;
 			if ( hidden ) sig += vars.hidden = ( hidden ? 1 : 0 );
-			if ( is_family ) vars.is_family = ( is_family ? 1 : 0 );
-			if ( is_friend ) vars.is_friend = ( is_friend ? 1 : 0 );
-			if ( is_public ) vars.is_public = ( is_public ? 1 : 0 );
+			vars.is_family = ( is_family ? 1 : 0 );
+			vars.is_friend = ( is_friend ? 1 : 0 );
+			vars.is_public = ( is_public ? 1 : 0 );
 			if ( safety_level != SafetyLevel.DEFAULT ) vars.safety_level = safety_level;
 			if ( tags != "" ) vars.tags = tags;
 			if ( title != "" ) vars.title = title;

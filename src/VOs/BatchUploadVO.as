@@ -2,6 +2,7 @@ package VOs
 {
 	import ItemRenderers.BatchUploadItemRenderer;
 	
+	import com.squidzoo.debug.DebugEvent;
 	import com.squidzoo.eventSystem.EventCentral;
 	import com.squidzoo.eventSystem.events.CustomDataEvent;
 	
@@ -89,6 +90,11 @@ package VOs
 		}
 		
 		private function onUploadDataComplete(event:DataEvent):void{
+			
+			var root:XML = new XML(event.data);
+			var id:String = root.photoid.children()[0];
+			EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,id));
+			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.ADD_UPLOADED_PHOTO_TO_SET,null,null,id));
 			uploadStatus = UPLOAD_COMPLETE;	
 		}
 		

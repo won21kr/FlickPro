@@ -4,18 +4,15 @@ package VOs
 	
 	import spark.components.View;
 
+	[Bindable]
 	public class SetVO
 	{
-		[Bindable]
 		public var title:String;
 		
-		[Bindable]
 		public var id:String;
 		
-		[Bindable]
 		public var nextView:View;
 		
-		[Bindable]
 		public var service:FlickrService;
 		
 		public function SetVO()

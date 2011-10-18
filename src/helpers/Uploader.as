@@ -22,6 +22,31 @@ package helpers
 	//import ru.inspirit.net.MultipartURLLoader;
 	//import ru.inspirit.net.events.MultipartURLLoaderEvent;
 	
+	/**
+	 * Broadcast as a result of the checkTickets method being called
+	 *
+	 * The event contains the following properties
+	 *	success	- Boolean indicating if the call was successful or not
+	 *	data - When success is true, contains an "uploadTickets" array of UploadTicket instances
+	 *		   When success is false, contains an "error" FlickrError instance
+	 *
+	 * @see #checkTickets
+	 * @see com.adobe.service.flickr.FlickrError
+	 * @langversion ActionScript 3.0
+	 * @playerversion Flash 8.5
+	 * @tiptext
+	 */
+	[Event(name="photosUploadCheckTickets", 
+		 type="com.adobe.webapis.flickr.events.FlickrResultEvent")]
+	
+	/**
+	 * Contains the methods for the Upload method group in the Flickr API.
+	 * 
+	 * Even though the events are listed here, they're really broadcast
+	 * from the FlickrService instance itself to make using the service
+	 * easier.
+	 */
+	
 	public class Uploader extends EventDispatcher
 	{
 		private static const UPLOAD_DEST:String = "http://api.flickr.com/services/upload/";
@@ -113,61 +138,4 @@ package helpers
 		}
 	}//end class
 }//end package
-
-		
-//start upload that works except for privacy settings
-		/*
-		public function upload( fileReference:FileReference, 
-								title:String = "",
-								description:String = "",
-								tags:String = "",
-								is_public:Boolean = false,
-								is_friend:Boolean = false,
-								is_family:Boolean = false ) : void {
-			// The upload method requires signing, so go through
-			// the signature process
-			
-			// [OvD] Flash sends both the 'Filename' and the 'Upload' values
-			// in the body of the POST request, so these are needed for the signature
-			// as well, otherwise Flickr returns a error code 96 'invalid signature'
-			
-			var sig:String = StringUtil.trim( _service.secret );
-			sig += "Filename" + fileReference.name;
-			sig += "UploadSubmit Query"; //
-			sig += "api_key" + StringUtil.trim( _service.api_key );
-			sig += "auth_token" + StringUtil.trim( _service.token );
-			
-			// [OvD] optional values, the order is irrelevant
-			if ( description != "" ) sig += "description" + description;
-			if ( is_family ) sig += "is_family" + ( is_family ? 1 : 0 );
-			if ( is_friend ) sig += "is_friend" + ( is_friend ? 1 : 0 );
-			if ( is_public ) sig += "is_public" + ( is_public ? 1 : 0 );
-			if ( tags != "" ) sig += "tags" + tags;
-			if ( title != "" ) sig += "title" + title;
-			
-			var vars:URLVariables = new URLVariables();
-			vars.auth_token = StringUtil.trim( _service.token );
-			vars.api_sig = MD5.hash( sig );
-			vars.api_key = StringUtil.trim(  _service.api_key );
-			
-			// [OvD] optional values, same order as the signature
-			if ( description != "" ) vars.description = description;
-			if ( is_family ) vars.is_family = ( is_family ? 1 : 0 );
-			if ( is_friend ) vars.is_friend = ( is_friend ? 1 : 0 );
-			if ( is_public ) vars.is_public = ( is_public ? 1 : 0 );
-			if ( tags != "" ) vars.tags = tags;
-			if ( title != "" ) vars.title = title;
-			
-			var request:URLRequest = new URLRequest( UPLOAD_DEST );
-			request.data = vars;
-			request.method = URLRequestMethod.POST;
-			
-			trace("2: upload: _is_public,_is_friend,_is_family: "+is_public,is_friend,is_family);
-			
-			// [OvD] Flickr expects the filename parameter to be named 'photo'
-			fileReference.upload( request, "photo" );
-		}//end upload(...)
-		//end upload() that works except from privacy settings
-		*/
-
 		

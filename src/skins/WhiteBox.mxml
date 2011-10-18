@@ -21,7 +21,7 @@
 		</s:fill>
 	</s:Rect>
 	
-	<s:Group id="contentGroup" verticalCenter="0" horizontalCenter="0"/>
+	<s:Group id="contentGroup" verticalCenter="0" horizontalCenter="0"/><!---->
 	<!-- SkinParts
 	name=contentGroup, type=spark.components.Group, required=false
 	-->

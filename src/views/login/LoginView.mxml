@@ -42,6 +42,7 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import views.HomeView;
 			import helpers.NSIDManager;
 			import helpers.TokenManager;
 			import statics.Service;
