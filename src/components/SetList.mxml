@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" width="380" height="250"
+					  creationComplete="onCreationComplete(event)" backgroundColor="#666666">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="loadingState"/>
+		<s:State name="errorState"/>
+		<s:State name="completeState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.DataObject;
+			import VOs.SetVO;
+			
+			import com.adobe.webapis.flickr.FlickrError;
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			
+			import spark.events.ViewNavigatorEvent;
+			
+			import statics.NSID;
+			import statics.Service;
+			import statics.ViewTypes;
+			
+			[Bindable]
+			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			[Bindable]
+			private var _service:FlickrService;
+			[Bindable]
+			private var _setsData:ArrayCollection;
+			[Bindable]
+			private var _setVOs:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var _selectedSetName:String;
+			
+			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
+			
+			public function reload():void{
+				getSetList();
+			}
+			
+			private function onCreationComplete(event:Event):void{
+				_service = Service.getService();
+				if(_setVOs.length<1){
+					getSetList();
+				}
+			}
+			
+			private function onClickTryAgain():void{
+				getSetList();
+			}
+			
+			private function getSetList(event:MouseEvent=null):void{
+				currentState = "loadingState";
+				if(!_service)_service = Service.getService();
+				
+				trace("SetList: NSID.getNSIS()) "+NSID.getNSID());
+				trace("SetList: _service.token() "+_service.token);
+				//trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
+				var id:String = NSID.getNSID();
+				trace("BrowseSets: id: "+id);
+				_service.photosets.getList(id);
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
+			} 
+			
+			private function onError(event:FlickrError):void{
+				trace(event.errorMessage);
+				currentState = "errorState";
+			}
+			
+			private function handleSetList(event:FlickrResultEvent):void{ 
+				trace("BrowseSets: handleSetList: e.data.photoSets: "+event.data.photoSets);
+				if(event.success){
+					trace("BrowseSets: success");
+					var setData:Array = event.data.photoSets as Array; 
+					_setVOs = new ArrayCollection(new Array);
+					
+					for(var i:uint = 0; i < setData.length; i ++){ 
+						trace("i:"+i);
+						var vo:SetVO = new SetVO();
+						vo.id = setData[i].id;
+						vo.title = setData[i].title;
+						vo.service = _service;
+						_setVOs.addItem(vo);
+					}
+					trace("BrowseSets: _setVOs.length "+_setVOs.length);
+					
+					currentState = "completeState";
+					_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList);
+					
+				}else{
+					
+					currentState = "errorState";
+					
+				}
+			} 
+			
+			private function onClickList():void{
+				var setVO:SetVO = setList.selectedItem;
+				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SET_SELECTED_IN_SET_LIST,null,null,null,null,null,null,0,setVO));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~State~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="loadingState">
+		<s:BusyIndicator scaleX="0.5" scaleY="0.5" symbolColor="white"/>
+		<s:Label text="Loading" fontSize="12" color="#ffffff"/>
+		<s:Label text="set list" fontSize="12" color="#ffffff"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~errorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="errorState">
+		<s:Label text="Error loading list" fontSize="12" color="#ffffff"/>
+		<s:Button label="Try again" fontSize="12" click="onClickTryAgain()" color="#ffffff"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~completeState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup includeIn="completeState">		
+		
+		<s:List x="0" y="0" id="setList" width="380" height="250"
+				change="onClickList()" 
+				dataProvider="{_setVOs}"
+				contentBackgroundAlpha="0"
+				borderVisible="true"
+				borderColor="#dddddd">
+			<s:itemRenderer>
+				<fx:Component>
+					<s:IconItemRenderer alternatingItemColors="{[0x777777,0x999999]}" labelField="title" fontSize="14" color="#ffffff" width="100%"/>
+				</fx:Component>
+			</s:itemRenderer>
+			
+		</s:List>
+	</s:VGroup>
+	
+</s:SkinnableContainer>

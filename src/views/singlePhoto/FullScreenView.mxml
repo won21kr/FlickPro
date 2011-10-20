@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		actionBarVisible="false"
+		creationComplete="creationCompleteHandler(event)">
+	
+	<s:states>
+		<s:State name="noState"/>
+		<s:State name="loadingState"/>
+		<s:State name="completeState"/>
+		<s:State name="errorState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.PhotoVO;
+			
+			import com.squidzoo.imageUtils.ImageCache;
+			import com.squidzoo.imageUtils.ImageUtils;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import spark.transitions.SlideViewTransition;
+			
+			private var _cache:ImageCache;
+			private var _photoVO:PhotoVO;
+			
+			private var _bmd:BitmapData;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState="noState"
+					
+				if(data)_photoVO = data as PhotoVO;
+				//if(navigator.context)_bmd = navigator.context.image as BitmapData;
+				
+				_cache = ImageCache.getInstance();
+				
+				if(_cache.hasImageData(_photoVO.largeImageString)){
+					var image:Bitmap = _cache.getImageData(_photoVO.largeImageString);
+					currentState="completeState";
+					imageComponent.source = fitImageToScreen(image);
+				}else{
+					
+					currentState="loadingState";
+					loadImageFromFlickr();
+				}
+				//pass in imageURL. 
+				//if photo exists, load it from cache and resize it.
+				//if i doesn't exist, download from Flickr, add to cache and resize it.
+				
+				//var image:Bitmap = getImageFromCache();
+				/*
+				if(_bmd){
+					var bm:Bitmap = new Bitmap(_bmd);
+					imageComponent.source = fitImageToScreen(bm);	
+				}
+					*/
+				
+			}
+			
+			private function loadImageFromFlickr():void{
+				var request:URLRequest = new URLRequest(data.largeImageString);
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoadComplete);
+				loader.load(request);
+			}
+			
+			private function onImageLoadComplete(event:Event):void{
+				var image:Bitmap = event.currentTarget.content;
+				//_image = image;
+				//if(_cache.hasImageData(_imgString)==false){
+					//_cache.putImageData(_imgString,image);
+				//}
+				currentState="completeState";
+				imageComponent.source = fitImageToScreen(image);
+			}	
+			
+			private function getImageFromCache():Bitmap{
+				var image:Bitmap = _cache.getImageData(_photoVO.imageURL);
+				return image;
+			}
+			
+			private function fitImageToScreen(original:Bitmap):Bitmap
+			{
+				var image:Bitmap;
+				var bmp:Bitmap = new Bitmap(original.bitmapData);
+				
+				if(bmp.width > bmp.height){
+					var rotatedImage:Bitmap = ImageUtils.rotate(bmp,90);
+					image = ImageUtils.scaleToTargetWidth(rotatedImage,FlexGlobals.topLevelApplication.stage.stageWidth);
+				}else{
+					image = ImageUtils.scaleToTargetHeight(bmp,FlexGlobals.topLevelApplication.stage.stageHeight);				
+				}
+				return image;	
+			}
+			
+			private function onChangeToSmallImage():void{
+				trace("onClickChangeToSmallImage");
+				navigator.pushView(SinglePhotoView,_photoVO);
+			}
+			
+			private function handleSwipe(event:TransformGestureEvent):void
+			{
+				if(imageComponent.source){
+					
+					var contextObj:Object = new Object();
+					contextObj.image = imageComponent.source.bitmapData;
+						
+					if (event.offsetX == 1 ) 
+					{
+						if(_photoVO.previousPhoto){
+							var rightSlide:SlideViewTransition = new SlideViewTransition();
+							rightSlide.direction = "right";					
+							navigator.pushView(FullScreenView,_photoVO.previousPhoto,contextObj,rightSlide);	
+						}
+					}
+					
+					if(event.offsetX == -1){
+						if(_photoVO.nextPhoto){
+							var leftSlide:SlideViewTransition = new SlideViewTransition();
+							leftSlide.direction = "left";
+							navigator.pushView(FullScreenView,_photoVO.nextPhoto,contextObj,leftSlide);
+						}
+					}
+					
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+		<s:VGroup horizontalCenter="0" verticalCenter="0" 
+	verticalAlign="middle" horizontalAlign="center" 
+	includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+		<s:Label text="Loading..." color="#ffffff"/>
+	</s:VGroup>
+	
+	<s:VGroup horizontalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="completeState">
+		<s:Button id="notFullScreenButton" label="small" click="onChangeToSmallImage()"/>
+		<s:Image id="imageComponent" smooth="true" gestureSwipe="handleSwipe(event)"/>
+	</s:VGroup>
+	
+</s:View>

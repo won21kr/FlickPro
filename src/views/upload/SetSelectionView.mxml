@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="SetSelectionView"
+		creationComplete="creationCompleteHandler(event)" xmlns:components="components.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="setSelectionState"/>
+		<s:State name="setCreationState"/>
+		<s:State name="setCreationErrorState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.SetVO;
+			
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.chewtinfoil.utils.StringUtils;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.events.FlexEvent;
+			
+			import queries.PhotoIDQuery;
+			
+			import statics.Service;
+			
+			[Bindable]
+			private var _setTitle:String;
+			[Bindable]
+			private var _newTitle:String = "";
+			[Bindable]
+			private var _newDescription:String = "";
+			[Bindable]
+			private var _firstPhotoId:String;
+			
+			private var _service:FlickrService;
+			
+			private var _selectedSet:SetVO;
+			
+			private function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState = "setSelectionState";	
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.SET_SELECTED_IN_SET_LIST,onSetSelected);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.FIRST_PHOTO_ID,onFirstPhotoId);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.FIRST_PHOTO_RETRIEVAL_ERROR,onFirstPhotoIdError);
+				_service = Service.getService();
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_CREATE,onPhotoSetCreate);
+			}
+			
+			protected function onSetSelected(event:CustomDataEvent):void
+			{
+				_selectedSet = event.setVO;
+				_setTitle = StringUtils.truncate(event.setVO.title,26);				
+			}
+			
+			/**
+			 * changes state from setSelection to setCreation after button click
+			 */ 
+			
+			protected function onClickCreateNewSet(event:MouseEvent):void
+			{
+				currentState = "setCreationState";
+			}
+			
+			/**
+			 *Listens to event from Flickr that set has been created
+			 */
+			
+			protected function onPhotoSetCreate(event:Event):void
+			{
+				currentState = "setSelectionState";
+				setList.reload();
+			}
+			
+			/**
+			* Handler for clicking new title/new description 'form' button.
+			* contacts Flickr to get an photo id necessary as param for the set
+			*/
+			
+			private function onCreateSetInFlickr(event:Event):void{
+				
+				var query:PhotoIDQuery = new PhotoIDQuery();
+				query.requestPhotoId();
+			}
+		
+			
+			private function onNewDescription(event:Event):void{
+				_newDescription = event.currentTarget.text;
+			}
+			
+			private function onNewTitle(event:Event):void{
+				_newTitle = event.currentTarget.text;	
+			}
+			
+			/*
+			*Handles photo id received from Flickr and calls
+			*Flickr to create a new set
+			*/
+			
+			protected function onFirstPhotoId(event:CustomDataEvent):void
+			{
+				var photoId:String = event.string;
+				//TODO: promt that title should be at least 1 character long in case its not
+				_service.photosets.create(_newTitle,_newDescription,photoId);
+			}
+			
+			protected function onFirstPhotoIdError(event:Event):void
+			{
+				currentState = "errorState";
+				
+			}
+			
+			private function onOK():void{
+				
+				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SET_FROM_SET_SELECTION_VIEW,null,null,null,null,null,null,0,_selectedSet));
+				navigator.popView();
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup includeIn="setSelectionState" verticalCenter="0" horizontalCenter="0">
+		<s:Label text="Choose a set:"/>
+		<components:SetList id="setList"/>
+		<s:Label text="Your selection: {_setTitle}"/>
+		<s:Spacer height="40" />
+		<s:Button label="Create New Set" click="onClickCreateNewSet(event)"/>
+		<s:Button label="OK" click="onOK()"/>
+	</s:VGroup>
+	
+	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="setCreationState">
+		<s:Label text="Create a new set"/>
+		<s:Label text="Title"/>
+		<s:TextInput width="380" change="onNewTitle(event)"/>
+		<s:Label text="description"/>
+		<s:TextInput width="380" change="onNewDescription(event)"/>
+		<s:Button label="create set" click="onCreateSetInFlickr(event)"/>
+	</s:VGroup>		
+	
+</s:View>

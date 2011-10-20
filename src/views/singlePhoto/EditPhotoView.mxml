@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="EditPhotoView"
+		creationComplete="init()">
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="visibilitySetting" 
+							itemClick="onVisibilitySelection(event)"/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.PhotoVO;
+			
+			import com.adobe.webapis.flickr.FlickrError;
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.ItemClickEvent;
+			
+			import spark.components.ActionBar;
+			
+			import statics.Service;
+			
+			private var _service:FlickrService;
+			
+			[Bindable]private var _savedTitle:String;
+			[Bindable]private var _newTitle:String;
+			
+			[Bindable]private var _savedDescription:String;
+			[Bindable]private var _newDescription:String;
+			
+			[Bindable]private var _savedTags:String;
+			[Bindable]private var _newTags:String;
+			
+			[Bindable]private var _savedTag:String;
+
+			[Bindable]private var _tagsAC:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]private var _visibility:String;
+			
+			private var _photoVO:PhotoVO;
+			
+			private var _tagToBeSaved:String;
+			private var _visibilityPreferred:String;
+			
+			[Bindable]
+			private var _viewContentHeight:int; 
+			
+			private function init():void{
+				
+				_viewContentHeight = FlexGlobals.topLevelApplication.stage.stageHeight - navigator.actionBar.height;
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.NEW_PHOTO_TITLE_SAVED_TO_FLICKR,onTitleSaved);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.NEW_PHOTO_DESCRIPTION_SAVED_TO_FLICKR, onDescriptionSaved);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.NEW_TAG_SAVED_TO_FLICKR,onNewTagSaved);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.TAG_REMOVED,onTagRemoved);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.VISIBILITY_CHANGED,onVisibilityChanged);	
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.TAG_CLICKED,onTagClicked);
+				_photoVO = data as PhotoVO;
+				
+				_service = Service.getService();
+			
+				if(_photoVO.title) _savedTitle = _photoVO.title;
+				if(_photoVO.title) _newTitle = _photoVO.title;
+				if(_photoVO.description) _savedDescription = _photoVO.description;
+				if(_photoVO.description) _newDescription = _photoVO.description;
+				if(_photoVO.tags) _tagsAC = _photoVO.tags;
+				if(_photoVO.privacySetting) _visibility = _photoVO.privacySetting;
+				
+			}
+			
+			private function onChangeTitle(event:Event):void{
+				_newTitle = event.currentTarget.text;				
+			}
+			
+			private function onChangeDescription(event:Event):void{
+				_newDescription = event.currentTarget.text;
+			}
+			
+			private function onClickSaveNewTitle(event:Event):void{
+				
+				titleBusyIndicator.visible = true;
+				_photoVO.setNewTitle(_newTitle);
+			}
+			
+			protected function onTitleSaved(event:CustomDataEvent):void
+			{
+				//trace(event.string,_photoVO.id);
+				_photoVO.title = _newTitle;
+				if(event.string == _photoVO.id){
+					_savedTitle = _newTitle;
+				}else{
+					//trace("title could not be saved");
+				}
+					titleBusyIndicator.visible = false;
+			}
+			
+			private function onClickSaveNewDesc(event:Event):void{
+				if(descInput.text !=""){
+					descBusyIndicator.visible = true;
+					_photoVO.setNewDescription(_newDescription);
+				}
+			}
+			
+			protected function onDescriptionSaved(event:CustomDataEvent):void
+			{
+				//trace(event.string,_photoVO.id);
+				if(event.string == _photoVO.id){
+					_photoVO.description = _newDescription;
+					_savedDescription = _newDescription;
+				}else{
+					//trace("description could not be saved");
+				}
+				descBusyIndicator.visible = false;
+			}
+			
+			private function onClickSaveNewTag(event:MouseEvent):void{
+				if(tagInput.text!=""){
+					tagAddBusyIndicator.visible = true;
+					_tagToBeSaved = tagInput.text;
+					_photoVO.addNewTag(tagInput.text);
+				}
+			}
+			
+			protected function onNewTagSaved(event:Event):void
+			{
+				_savedTag = _tagToBeSaved;
+				_tagToBeSaved = "";
+				tagAddBusyIndicator.visible = false;
+			}
+			
+			protected function onTagClicked(event:CustomDataEvent):void
+			{
+				tagRemoveBusyIndicator.visible = true;
+				_photoVO.removeTag(event.tagVO.id);					
+			}
+			
+			protected function onTagRemoved(event:Event):void
+			{
+				tagRemoveBusyIndicator.visible = false;				
+			}
+			
+			protected function onVisibilityChanged(event:Event):void
+			{
+				_visibility = _visibilityPreferred;
+				_visibilityPreferred = "";
+				visBusyIndicator.visible = false;
+			}
+			
+			protected function onVisibilitySelection(event:ItemClickEvent):void
+			{
+				visBusyIndicator.visible = true;
+				var isPublic:int;
+				var isFriend:int;
+				var isFamily:int;
+				
+				var permComment:int = 1;//friend and family can add comments;
+				var permAddmeta:int = 0;//only owner can add meta
+				
+				switch(event.currentTarget.selectedValue){
+					
+					case "family":
+						isPublic = 0;
+						isFriend = 0;
+						isFamily = 1;
+						_visibilityPreferred = "Family";
+						break;
+					case "friend":
+						isPublic = 0;
+						isFriend = 1;
+						isFamily = 0;
+						_visibilityPreferred = "Friend";
+						break;
+					case "public":
+						isPublic = 1;
+						isFriend = 0;
+						isFamily = 0;
+						_visibilityPreferred = "Public";
+						break;
+				}
+				
+				_photoVO.setVisibility(isPublic,isFriend,isFamily,permComment,permAddmeta);
+			}
+			
+		]]>
+	</fx:Script>
+<s:VGroup id="viewContent" width="100%" height="100%">
+	
+	<s:Scroller width="100%" height="100%">
+		<s:Group >
+			
+		<s:VGroup horizontalCenter="0" gap="50" top="20" bottom="50" paddingBottom="50" color="#dddddd" fontSize="20">
+			
+		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">			
+			<s:VGroup id="titleGroup">		
+				<s:Label text="Change title" color="#ffffff" fontSize="30" fontWeight="bold"/>
+				<s:Label text="Saved title: {_savedTitle}"/>
+				<s:TextInput text="{_newTitle}" width="100%" change="onChangeTitle(event)" color="#222222"/>
+				<s:HGroup verticalAlign="middle">
+					<s:Button id="saveNewTitleBtn" label="Save new title" click="onClickSaveNewTitle(event)" color="#444444" skinClass="skins.SquareButtonSkin"/>
+					<s:BusyIndicator id="titleBusyIndicator" symbolColor="white" visible="false"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:SkinnableContainer>
+			
+		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">		
+			<s:VGroup id="descriptionGroup">
+				<s:Label text="Change description" color="#ffffff" fontSize="30" fontWeight="bold"/>
+				<s:Label text="Saved description: {_savedDescription}"/>
+				<s:TextInput id="descInput" text="{_newDescription}" width="100%" change="onChangeDescription(event)" color="#222222"/>
+				<s:HGroup verticalAlign="middle">
+					<s:Button id="saveNewDescBtn" label="Save new description" click="onClickSaveNewDesc(event)" color="#444444" skinClass="skins.SquareButtonSkin"/>
+					<s:BusyIndicator id="descBusyIndicator" symbolColor="white" visible="false"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:SkinnableContainer>	
+			
+		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">		
+			<s:VGroup width="100%">
+				<s:Label text="Delete a tag" color="#ffffff" fontSize="30" fontWeight="bold"/>
+				<s:HGroup>
+					<s:Label text="Tap a tag to delete it" color="#dddddd" fontSize="22"/>
+					<s:BusyIndicator id="tagRemoveBusyIndicator" symbolColor="white" visible="false"/>
+				</s:HGroup>
+				<s:DataGroup id="tagsDG" width="100%" dataProvider="{_tagsAC}" itemRenderer="ItemRenderers.TagIRwithTap" contentBackgroundAlpha="0">
+					<s:layout>
+						<s:TileLayout/>
+					</s:layout>	
+				</s:DataGroup>	
+			</s:VGroup>
+		</s:SkinnableContainer>			
+			
+		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">	
+			<s:VGroup>
+				<s:Label text="Add a tag" color="#ffffff" fontSize="30" fontWeight="bold"/>
+				<s:TextInput id="tagInput" width="100%" color="#222222"/>
+				<s:Label text="saved tag: {_savedTag}"/>
+				<s:HGroup verticalAlign="middle">
+					<s:Button id="saveNewTag" label="Save new tag" click="onClickSaveNewTag(event)" color="#444444" skinClass="skins.SquareButtonSkin"/>
+					<s:BusyIndicator id="tagAddBusyIndicator" symbolColor="white" visible="false"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:SkinnableContainer>		
+			
+		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">	
+			<s:VGroup>
+				<s:Label text="Change visibility" color="#ffffff" fontSize="30" fontWeight="bold"/>
+				<s:HGroup>
+					<s:Label text="Visibility is set to {_visibility}"/>
+					<s:BusyIndicator id="visBusyIndicator" symbolColor="white" visible="false"/>
+				</s:HGroup>
+				<s:HGroup verticalCenter="0" horizontalCenter="0" color="#ffffff" horizontalAlign="center">	
+					<s:RadioButton scaleX="0.9" scaleY="0.9" id="familyValue" group="{visibilitySetting}" value="family" label="family" />
+					<s:RadioButton scaleX="0.9" scaleY="0.9" id="friendValue" group="{visibilitySetting}" value="friend" label="friend" />
+					<s:RadioButton scaleX="0.9" scaleY="0.9" id="publicValue" group="{visibilitySetting}" value="public" label="public" />
+				</s:HGroup>
+			</s:VGroup>
+		</s:SkinnableContainer>		
+		
+			<s:HGroup horizontalAlign="right" width="100%">
+				<s:Button label="Back" click="navigator.popView()" height="100" minWidth="100" skinClass="skins.SquareButtonSkin" fontSize="30"/>
+			</s:HGroup>	
+			
+		</s:VGroup>
+			
+	
+			
+		</s:Group>
+	</s:Scroller>
+
+</s:VGroup>
+</s:View>
+
+
+
+
+

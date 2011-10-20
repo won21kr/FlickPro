@@ -89,7 +89,8 @@ package queries
 				for(var i:int = 0; i < photos.length;i++){	
 					var vo:PhotoVO = new PhotoVO(photos[i]);
 					vo.title = photos[i].title;
-					vo.tags = photos[i].tags;
+					trace("pq: "+vo.title);
+					
 					vo.setTitle = _setTitle;
 					vo.setId = _setId;
 					

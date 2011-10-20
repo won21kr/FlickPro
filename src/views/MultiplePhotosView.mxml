@@ -33,6 +33,8 @@
 			
 			import statics.ViewTypes;
 			
+			import views.singlePhoto.SinglePhotoView;
+			
 			[Bindable]
 			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
 			[Bindable]
@@ -60,6 +62,7 @@
 				EventCentral.getInstance().addEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,onPhotosRetrieved);
 				EventCentral.getInstance().addEventListener(CustomEvent.ERROR_RETRIEVING_PHOTOS,onError);
 				EventCentral.getInstance().addEventListener(CustomEvent.INVALIDATE_DISPLAY_LIST,onInvalidateDisplayList);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.IMAGE_IN_LIST_CLICKED,onImageInListClicked);
 				
 				_viewType = (data as DataObject).viewType;
 				
@@ -98,6 +101,7 @@
 			
 			private function onPhotosRetrieved(event:CustomDataEvent):void
 			{
+				trace("mpv onPhotosRetrieved");
 				_photoVOs.removeAll();
 				currentState  = _completeStateType;
 				trace("psv onPhotosRetrieved");
@@ -106,8 +110,9 @@
 				EventCentral.getInstance().removeEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR,onPhotosRetrieved);
 			}
 			
-			private function onListClick(event:Event):void{
-				//navigator.pushView(SinglePhotoView, photoList.selectedItem);
+			private function onListClick(event:MouseEvent):void{
+				trace("mpv onListClicked: "+photoList.selectedItem.title);
+				navigator.pushView(SinglePhotoView, photoList.selectedItem);
 			}
 			
 			private function onError(event:Event):void{
@@ -120,15 +125,24 @@
 			
 			private function onInvalidateDisplayList(event:Event):void
 			{	
+				/*
 				var _itemRenderer:IFactory = photoList.itemRenderer;
 				photoList.itemRenderer = null;
 				photoList.itemRenderer = _itemRenderer;
+				*/
 			}
 			
 			private function onclickYourSets():void{
 				var slideEffect:SlideViewTransition = new SlideViewTransition();
 				slideEffect.direction = "right";
 				navigator.pushView(BrowseSets,null,null,slideEffect);
+			}
+			
+			protected function onImageInListClicked(event:CustomDataEvent):void
+			{
+				// TODO Auto-generated method stub
+				//trace("mpv onImageInListClicked: "+event.photoVO.title);
+				//navigator.pushView(SinglePhotoView,event.photoVO);
 			}
 			
 		]]>

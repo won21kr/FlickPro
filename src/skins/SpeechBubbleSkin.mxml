@@ -44,7 +44,7 @@
 	
 	</s:Path>
 	
-	<s:Rect y="45" width="95%" height="300" radiusX="10" radiusY="10" horizontalCenter="0">
+	<s:Rect y="45" width="95%" height="100%" radiusX="10" radiusY="10" horizontalCenter="0">
 		<s:fill>
 			<s:LinearGradient>
 				<s:GradientEntry color="#333333"/>
@@ -53,7 +53,7 @@
 		</s:fill>
 	</s:Rect>
 	
-	<s:Group id="contentGroup" top="90" left="34" right="34 " bottom="10" fontSize="16" color="#ffffff"/>
+	<s:Group id="contentGroup" top="90" left="34" right="34 " bottom="30" fontSize="16" color="#ffffff"/>
 	
 	<!-- SkinParts
 	name=contentGroup, type=spark.components.Group, required=false

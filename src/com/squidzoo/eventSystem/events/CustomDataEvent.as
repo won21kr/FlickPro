@@ -1,8 +1,10 @@
+
 package com.squidzoo.eventSystem.events
 {
 	import VOs.PhotoVO;
 	import VOs.SetVO;
 	import VOs.SettingsVO;
+	import VOs.TagVO;
 	
 	import flash.display.Bitmap;
 	import flash.events.Event;
@@ -24,7 +26,13 @@ package com.squidzoo.eventSystem.events
 		public static const FIRST_PHOTO_ID:String = "First photo id";
 		public static const FIRST_PHOTO_RETRIEVAL_ERROR:String = "First photo retrieval error";
 		public static const SET_FROM_SET_SELECTION_VIEW:String = "Set From Set Selection View";
-
+		public static const NEW_PHOTO_TITLE_SAVED_TO_FLICKR:String = "New photo title saved to Flickr";
+		public static const NEW_PHOTO_DESCRIPTION_SAVED_TO_FLICKR:String = "New photo description saved to Flickr";
+		public static const NEW_TAG_SAVED_TO_FLICKR:String = "New Tag description saved to Flickr";
+		public static const TAG_CLICKED:String = "Tag clicked";
+		public static const TAG_REMOVED:String = "Tag removed";
+		public static const VISIBILITY_CHANGED:String = "visibility changed";
+		
 		private var _image:Bitmap;
 		private var _fileReference:FileReference
 		private var _string:String;
@@ -33,9 +41,10 @@ package com.squidzoo.eventSystem.events
 		private var _settingsVO:SettingsVO;
 		private var _amount:int;
 		private var _setVO:SetVO;
+		private var _tagVO:TagVO;
 
 		public function CustomDataEvent(type:String, file:FileReference=null, image:Bitmap = null, string:String=null, list:ArrayCollection=null,photoVO:PhotoVO=null, 
-										settingsVO:SettingsVO=null, amount:int = 0, setVO:SetVO=null, bubbles:Boolean = true, cancelable:Boolean = false)
+										settingsVO:SettingsVO=null, amount:int = 0, setVO:SetVO=null, tagVO:TagVO=null, bubbles:Boolean = true, cancelable:Boolean = false)
 		{
 			super(type,bubbles,cancelable);
 
@@ -47,6 +56,17 @@ package com.squidzoo.eventSystem.events
 			this._settingsVO = settingsVO;
 			this._amount = amount;
 			this._setVO = setVO;
+			this._tagVO = tagVO;
+		}
+
+		public function get tagVO():TagVO
+		{
+			return _tagVO;
+		}
+
+		public function set tagVO(value:TagVO):void
+		{
+			_tagVO = value;
 		}
 
 		public function get setVO():SetVO
@@ -121,7 +141,7 @@ package com.squidzoo.eventSystem.events
 
 		public override function clone():Event
 		{
-			return new CustomDataEvent(type, fileReference, image, string, list, photoVO, settingsVO, amount, setVO, bubbles, cancelable);
+			return new CustomDataEvent(type, fileReference, image, string, list, photoVO, settingsVO, amount, setVO, tagVO, bubbles, cancelable);
 		}
 
 		public override function toString():String

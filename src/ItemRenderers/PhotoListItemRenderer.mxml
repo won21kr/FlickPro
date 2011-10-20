@@ -4,7 +4,7 @@
 				xmlns:mx="library://ns.adobe.com/flex/mx"
 				xmlns:styles="styles.*"
 				autoDrawBackground="false" contentBackgroundAlpha="0" 
-				>
+				creationComplete="init()">
 	<fx:Declarations>
 		<styles:GraphicsLib id="graphicLib"/>
 	</fx:Declarations>
@@ -18,13 +18,18 @@
 			
 			private var _data:PhotoVO;
 			
+			private function init():void{
+				//trace("plir init()");
+			}
+			
 			override public function set data(value:Object):void{
 				_data = (value as PhotoVO);
+				//trace("plir: "+_data.title);
 				photo.source = value.image;
 			}
 			
 			private function onClickImage():void{
-				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.IMAGE_IN_LIST_CLICKED,null,null,null,null,_data));
+				//EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.IMAGE_IN_LIST_CLICKED,null,null,null,null,_data));
 			}
 			
 		]]>

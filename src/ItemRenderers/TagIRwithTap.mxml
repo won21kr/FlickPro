@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				autoDrawBackground="false"
+				contentBackgroundAlpha="0" creationComplete="creationCompleteHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="firstState"/>
+		<s:State name="tappedState"/>
+	</s:states>
+	<fx:Script>
+		<![CDATA[
+			import VOs.TagVO;
+			
+			import com.chewtinfoil.utils.StringUtils;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import flashx.textLayout.tlf_internal;
+			
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			private var _name:String;
+			private var _id:String;
+			
+			private var _tagVO:TagVO;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState = "firstState";
+				_tagVO = (data as TagVO);
+				_name = (data as TagVO).name;
+				_id = (data as TagVO).id;
+				//trace("StringUtil: "+StringUtils.truncate(_name,10));
+				//trace("TagIR: data.name: "+(data as TagVO).name);
+				this.addEventListener(MouseEvent.CLICK,onClick);
+			}
+			
+			protected function onClick(event:MouseEvent):void
+			{
+				currentState = "tappedState"
+				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.TAG_CLICKED,null,null,null,null,null,null,0,null,_tagVO));				
+			}
+			
+		]]>
+	</fx:Script>
+	
+		
+	<s:SkinnableContainer skinClass="skins.TagIRSkin" width="100%" height="100%">
+		<s:Label id="nameLabel" text="{_name}" horizontalCenter="0" verticalCenter="0" color.firstState="#ffffff" color.tappedState="#000000" fontSize="20"/>				
+	</s:SkinnableContainer>
+	
+</s:ItemRenderer>

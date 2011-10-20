@@ -673,7 +673,9 @@ package com.adobe.webapis.flickr.methodgroups {
 		 * Converts a photo XML object into a Photo instance
 		 */
 		internal static function parsePhoto( xml:XML ):Photo {
+			
 			var photo:Photo = new Photo();
+
 			
 			photo.id = xml.photo.@id.toString();
 			photo.farmId = parseInt(xml.photo.@farm);
@@ -701,6 +703,14 @@ package com.adobe.webapis.flickr.methodgroups {
 			if ( xml.photo.permissions.@permaddmeta.toString() ) {
 				photo.addMetaPermission = parseInt( xml.photo.permissions.@permaddmeta );
 			}
+			
+			//bug fix by Gunnar Karlsson Oct 20,2011
+			trace("isfamily: "+xml.photo.visibility.@isfamily); 
+			photo.isFamily = xml.photo.visiblity.@isfamily;
+			photo.isFriend = xml.photo.visibility.@isfriend;
+			photo.isPublic = xml.photo.visibility.@isPublic;
+			//
+			
 			photo.dateAdded = stringToDate( xml.photo.dates.@posted.toString() );
 			photo.dateTaken = stringToDate( xml.photo.dates.@taken.toString() );
 			if ( xml.photo.editability.@cancomment.toString() ) {

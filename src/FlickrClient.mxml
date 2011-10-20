@@ -94,7 +94,7 @@
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_BROWSE_SETS, onBrowseSets);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM, onPhotostream);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_SEARCH, onSearch);
-				EventCentral.getInstance().addEventListener(CustomDataEvent.IMAGE_IN_LIST_CLICKED,onImageInListClicked);
+				
 			}
 			
 			private function onUpload(event:CustomEvent):void{
@@ -121,11 +121,7 @@
 				navigator.pushView(SearchView);
 			}
 			
-			protected function onImageInListClicked(event:CustomDataEvent):void
-			{
-				// TODO Auto-generated method stub
-				navigator.pushView(SinglePhotoView,event.photoVO);
-			}
+		
 			
 			private function _onKeyDown(event:KeyboardEvent):void
 			{

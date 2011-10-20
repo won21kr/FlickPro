@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="AddToSetView"
+		creationComplete="creationCompleteHandler(event)" 
+		xmlns:components="components.*">
+	
+	<s:states>
+		<s:State name="selectSetState"/>
+		<s:State name="callState"/>
+		<s:State name="completeState"/>
+		<s:State name="errorState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import VOs.SetVO;
+			
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.events.FlexEvent;
+			
+			import statics.Service;
+			
+			public var forCompiler:AddToSetView;
+			
+			private var _service:FlickrService;
+			[Bindable]
+			private var _selectedSet:SetVO;
+			private var _photoId:String;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState = "selectSetState";
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.SET_SELECTED_IN_SET_LIST,onSetSelected);
+				
+				if(data) _photoId = data.photoId;
+			}
+			
+			private function addPhotoToSet():void{
+				currentState = "callState";
+				_service = Service.getService();	
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_ADD_PHOTO,onAddPhoto);
+				_service.photosets.addPhoto(_selectedSet.id,_photoId);	
+			}
+			
+			private function onSetSelected(event:CustomDataEvent):void
+			{
+				_selectedSet = event.setVO; 				
+			}
+			
+			protected function onAddPhoto(event:FlickrResultEvent):void
+			{
+				if(event.success){
+					currentState = "completeState";
+				}else{
+					currentState = "errorState";
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	<s:VGroup horizontalCenter="0" verticalCenter="0" 
+	verticalAlign="middle" horizontalAlign="center" 
+	includeIn="selectSetState" color="#ffffff">
+		<s:Label text="Select a set:"/>
+		<components:SetList/>
+		<s:HGroup>
+			<s:Button label="OK, add it" click="addPhotoToSet()"/>
+			<s:Button label="Back" click="navigator.popView()"/>
+		</s:HGroup>
+	</s:VGroup>
+	
+		<s:VGroup horizontalCenter="0" verticalCenter="0" 
+	verticalAlign="middle" horizontalAlign="center" 
+	includeIn="callState" color="#ffffff">
+		<s:BusyIndicator scaleX="3" scaleY="3"/>
+		<s:Label text="adding photo..."/>
+			<s:Label text="to set..."/>
+	</s:VGroup>
+	
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" horizontalAlign="center"
+			  includeIn="completeState" color="#ffffff">
+		<s:Label text="Your photo was added"/>
+		<s:Label text="to {_selectedSet.title}"/>
+		<s:Button label="Back" click="navigator.popView()"/>
+	</s:VGroup>
+	
+		<s:VGroup horizontalCenter="0" verticalCenter="0" 
+	verticalAlign="middle" horizontalAlign="center" 
+	includeIn="errorState" color="#ffffff">
+		<s:Label text="Error loading list"/>
+		<s:Button label="Back" click="navigator.popView()"/>
+	</s:VGroup>
+			  
+
+</s:View>

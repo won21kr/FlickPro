@@ -7,6 +7,8 @@ package VOs
 	[Bindable]
 	public class SetVO
 	{
+		public var forCompiler:SetVO;
+		
 		public var title:String;
 		
 		public var id:String;
