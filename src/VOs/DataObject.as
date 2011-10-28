@@ -6,6 +6,7 @@ package VOs
 		public var searchParams:String;
 		public var selectedSet:SetVO;
 		public var tags:String;
+		public var pageIndex:int = 1;
 		
 		public function DataObject()
 		{

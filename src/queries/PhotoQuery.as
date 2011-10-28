@@ -27,6 +27,7 @@ package queries
 		private var _tags:String;
 		private var _setTitle:String;
 		private var _setId:String;
+		private var _pageIndex:int = 1;
 		
 		public function PhotoQuery(){
 		}
@@ -39,6 +40,9 @@ package queries
 			}
 			if(dataObject.tags){
 				_tags = dataObject.tags;
+			}
+			if(dataObject.pageIndex){
+				_pageIndex = dataObject.pageIndex;
 			}
 		}
 		
@@ -56,20 +60,19 @@ package queries
 					break;
 			
 				case ViewTypes.PHOTO_STREAM:
+					trace("pageIndex: "+_pageIndex);
 					trace("get stream");
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
 					_service.photos.search(NSID.getNSID(),
 						"","any","",null,null,null,null,-1,"date-posted-desc",-1,"",
-						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",50);
+						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",20,_pageIndex);
 					break;
-					
-				
 				
 				case ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR:
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
 					_service.photos.search("",
 						_tags,"","",null,null,null,null,-1,"date-posted-desc",-1,"",
-						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",20);
+						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",20,_pageIndex);
 					break;
 				
 				/*

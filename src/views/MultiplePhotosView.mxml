@@ -56,6 +56,8 @@
 			[Bindable]
 			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
 			[Bindable]
+			private var _halfStageWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth/2;  
+			[Bindable]
 			private var _setTitle:String;
 			[Bindable]
 			private var _photoVOs:ArrayCollection = new ArrayCollection();			
@@ -64,6 +66,7 @@
 			private var _viewType:String;
 			private var _completeStateType:String;
 			[Bindable]private var _setVO:SetVO;
+			private var _pageIndex:int = 1;
 	
 			
 			
@@ -73,6 +76,12 @@
 			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
 			
 			private function init(event:FlexEvent=null):void{
+				
+				if(data){
+					if(data.pageIndex>0){
+						_pageIndex = data.pageIndex;
+					}
+				}
 				
 				photoList = new List();
 				
@@ -92,6 +101,7 @@
 				switch(_viewType){		
 					
 					case ViewTypes.PHOTO_STREAM :
+					_photoQuery.setParams(data as DataObject);
 					type = ViewTypes.PHOTO_STREAM;
 					_completeStateType = "completeStateStream";
 					break;
@@ -210,6 +220,48 @@
 				trace("question");
 			}
 			
+			/*
+			* prev/next
+			*/
+			
+			private function onClickPrevious():void{
+				
+				if(_pageIndex>1){
+					
+					/*
+					var dataObject:DataObject = (data as DataObject);
+					dataObject.selectedSet = photoList.selectedItem;
+					
+					if(_viewType == ViewTypes.SET){
+						
+						dataObject.viewType = ViewTypes.SET;
+					
+					}else if(_viewType == ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR){
+						
+						dataObject.viewType = ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;
+					
+					}else if(_viewType == ViewTypes.PHOTO_STREAM){
+						
+						dataObject.viewType == ViewTypes.PHOTO_STREAM;
+					
+					}
+					*/
+					this.data.pageIndex--; 
+					
+					var slideEffect:SlideViewTransition = new SlideViewTransition();
+					slideEffect.direction = "right";
+					
+					
+					navigator.pushView(MultiplePhotosView,this.data,null,slideEffect);
+				}
+			}
+			
+			private function onClickNext():void{
+				this.data.pageIndex++;
+				
+				navigator.pushView(MultiplePhotosView,this.data);
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -259,11 +311,17 @@
 									handlers="{new ArrayCollection([
 									setViewByLine,
 									setViewByGrid,
+									onClickNext,
+									onClickPrevious,
+									question
 									])}"
 									
 									icons='{new ArrayCollection([	
 									IconFactory.VERT_LIST_ICON,
 									IconFactory.GRID_ICON,
+									IconFactory.ARROW_DOWN_ICON,
+									IconFactory.ARROW_UP_ICON,
+									IconFactory.QUESTION_ICON
 									])}'/>
 		
 		<!--StreamState-->
@@ -274,11 +332,17 @@
 									handlers="{new ArrayCollection([
 										setViewByLine,
 										setViewByGrid,
+										onClickNext,
+										onClickPrevious,
+										question
 									])}"
 									
 									icons='{new ArrayCollection([	
 										IconFactory.VERT_LIST_ICON,
 										IconFactory.GRID_ICON,
+										IconFactory.ARROW_DOWN_ICON,
+										IconFactory.ARROW_UP_ICON,
+										IconFactory.QUESTION_ICON
 									])}'/>
 		
 		<!--end Headers-->
@@ -298,6 +362,11 @@
 		</s:layout>
 		
 	</s:List>
+		
+	<!--<s:HGroup includeIn="completeStateSearch,completeStateStream" width="100%">
+		<s:Button label="Previous" click="onClickPrevious()" width="{_halfStageWidth}"/>
+		<s:Button label="Next" click="onClickNext()" width="{_halfStageWidth}"/>
+	</s:HGroup>-->	
 	</s:VGroup>
 	
 </s:View>

@@ -14,10 +14,13 @@
 	<s:VGroup width="100%" height="100%" gap="0">
 	<components:BreadCrumbHeader firstText="About This App"/>		
 	
-	<s:VGroup verticalCenter="0" horizontalCenter="0" verticalAlign="middle" horizontalAlign="center" gap="10">
+	<s:VGroup verticalCenter="0" horizontalCenter="0" verticalAlign="middle" horizontalAlign="center" gap="10" width="100%" height="100%">
 		<s:Image source="@Embed('assets/images/FastrsforFlickrBigWithIcon.png')"/>
+		<s:Label text="Version 1.01" fontSize="18" color="#ffffff"/>
 		<s:Label text="Copyright 2011 Gunnar Karlsson" fontSize="18" color="#ffffff"/>
 		<s:Label text="All rights reserved" fontSize="18" color="#ffffff"/>
+		<s:Label text="All trademarks are the property of" fontSize="18" color="#ffffff"/>
+		<s:Label text="their respective owners." fontSize="18" color="#ffffff"/>
 	</s:VGroup>
 	
 	</s:VGroup>
