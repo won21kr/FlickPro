@@ -3,20 +3,19 @@
 		xmlns:s="library://ns.adobe.com/flex/spark"
 		xmlns:styles="styles.*" 
 		xmlns:components="components.*" 
-		viewActivate="viewActivateHandler(event)" xmlns:mx="library://ns.adobe.com/flex/mx"
-		add="onAdd()">
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		add="onAdd()"
+		viewActivate="viewActivateHandler(event)">
 	
+	<!-- the states must have same name string value as the corresponding state constants-->
 	<s:states>
-		<s:State name="noState"/>
-		<s:State name="loadingState"/>
-		<s:State name="completeStateHeader"/>
-		<s:State name="completeStateNoHeader"/>
-		<!--<s:State name="fullScreen"/>-->
+		<s:State name="NoState"/><!--initial state-->
+		<s:State name="LoadingState"/><!--loading image-->
+		<s:State name="SetState"/><!-- if we came from a set view-->
+		<s:State name="SearchState"/><!--if we came from a search view-->
+		<s:State name="StreamState"/><!--if we came from a stream view-->
+		<s:State name="RemovedFromSetState"/><!--if we return from a removal from a set-->
 	</s:states>
-	
-	<!--<s:actionContent>
-		<s:Button label="full screen" click="onFullScreen(event)"/>
-	</s:actionContent>-->
 	
 	<fx:Declarations>
 		<styles:GraphicsLib id="graphicsLib"/>
@@ -35,24 +34,42 @@
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			
+			import skins.SpeechBubbleSkin;
+			
 			import spark.components.ButtonBarButton;
 			import spark.events.ViewNavigatorEvent;
 			import spark.transitions.SlideViewTransition;
 			
+			import statics.IconFactory;
+			import statics.LatestSearchTag;
 			import statics.Service;
 			import statics.ViewTypes;
 			
 			import views.BrowseSets;
 			import views.MultiplePhotosView;
 			
-			[Bindable]private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			public var forCompiler:SinglePhotoView;
+			//public var moreForCompiler:SpeechBubbleSkin;
+			
+			[Bindable] private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*2;
+			[Bindable] private var _contentWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*4;
+			
+			/* These constants must have same string value as corresponding state */
+			public static const REMOVED_FROM_SET_STATE:String = "RemovedFromSetState";
+			public static const PHOTO_STREAM_STATE:String = "StreamState";
+			public static const SET_STATE:String = "SetState";
+			public static const SEARCH_STATE:String = "SearchState";
+			public static const LOADING_STATE:String = "LoadingState";
+			
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
 			private var _maxImageWidth:int = 420;
 			private var _maxImageHeight:int = 450;
 			
 			private var _previousPhoto:PhotoVO;
 			private var _nextPhoto:PhotoVO;
 			
-			private var _completeState:String = "completeStateNoHeader";
+			private var _completeState:String = SinglePhotoView.REMOVED_FROM_SET_STATE;
 			
 			[Bindable]private var _privacySetting:String;
 			[Bindable]private var _setTitle:String;
@@ -78,52 +95,97 @@
 			[Bindable] private var _ownerName:String;
 			[Bindable] private var _viewHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 100;
 			
+			private var _context:String = "";
+			
+			
+			/*
+			* onAdd() handles case where an image was removed from its set in the RemoveFromSetView and that view popped to this one"
+			*/
+			
 			private function onAdd():void{
 				if(navigator.poppedViewReturnedObject && 
 					navigator.poppedViewReturnedObject.object && 
 					navigator.poppedViewReturnedObject.object.removedFromList){
 					if(navigator.poppedViewReturnedObject.object.removedFromList == "removed"){
 						_removedFromSet = true;
-						_completeState = "completeStateNoHeader";
+						_completeState = SinglePhotoView.REMOVED_FROM_SET_STATE;
 					}
 				}
 			}
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent=null):void{
+				
+				currentState = SinglePhotoView.LOADING_STATE;
+				
 				_cache = ImageCache.getInstance();
 				
-				
 				FlexGlobals.topLevelApplication.stage.addEventListener(KeyboardEvent.KEY_DOWN, onBackKeyDown);
-				
-				if(data) _photoVO = data as PhotoVO;
-				
-				if(data.setTitle && (_removedFromSet==false))_completeState = "completeStateHeader"
-				if(data.setTitle)		_setTitle = StringUtils.truncate(data.setTitle,70);
-				if(data.setId)			_setId = data.setId;
-										_title = StringUtils.truncate(_photoVO.title,30);
-				if(data.description) 	_description = StringUtils.truncate(data.description,70);
-				if(data.ownerName)		_ownerName = StringUtils.truncate(data.ownerName, 70);
-				if(data.tags)			_tagAC = data.tags;
-				if(data.privacySetting) _privacySetting = data.privacySetting;
-				if(data.previousPhoto)	_previousPhoto = data.previousPhoto;
-				if(data.nextPhoto)		_nextPhoto = data.nextPhoto;
-				if(data.largeImageString)_imgString = data.largeImageString;
-				
 				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
-			
-				checkIfImageIsCached();
-			}	
-			
-			private function checkIfImageIsCached():void{
-				if(_cache.hasImageData(_imgString)){
-					trace("is cached");
-					changeImageSize(_cache.getImageData(_imgString));
+				
+				/*	Set end state based on context object state property value
+					The context object is passed in from either MultiplePhotosView or FullScreenView
+				*/
+				
+				if(navigator.context){
+					if(navigator.context.state == SinglePhotoView.SEARCH_STATE){
+						_completeState = SinglePhotoView.SEARCH_STATE;
+					}else if(navigator.context.state == SinglePhotoView.PHOTO_STREAM_STATE){
+						_completeState = SinglePhotoView.PHOTO_STREAM_STATE;
+					}else if(navigator.context.state == SinglePhotoView.SET_STATE){
+						_completeState = SinglePhotoView.SET_STATE;
+					}
+				}
+								
+				if(data){
+					parseData();
+					
+					if(_cache.hasImageData(_imgString)){
+						displayImage();
+					}else{
+						loadImageFromFlickr();
+					}
 				}else{
-					trace("is not chached");
-					currentState = "loadingState";
-					loadImageFromFlickr();
+					//if no data...
 				}
 			}
+		
+			
+			/*
+			* check of we have already cached image
+			*/
+			
+			private function displayImage():void{
+				setCompleteState();
+				assignImageToDisplay(changeImageSize(_cache.getImageData(_imgString)));
+			}
+			
+			private function changeImageSize(image:Bitmap):Bitmap{
+				_orginalBitmapData = image.bitmapData.clone();
+				if(image.width > image.height){
+					image = ImageUtils.scaleToTargetWidth(image,_maxImageWidth);
+				}else{
+					image = ImageUtils.scaleToTargetHeight(image,_maxImageHeight);				
+				}
+				image = ImageUtils.addBorder(image,10,0xffffff);
+				
+				return image;
+			}
+			
+			private function assignImageToDisplay(image:Bitmap):void{
+				
+				photo.source = image;
+				if(_description)descArea.insertText(_description);
+				if(_title)titleArea.insertText(_title);
+			}
+			
+			private function setCompleteState():void{
+				
+				currentState = _completeState	
+			}
+			
+			/*
+			*if imaged wasn't cached yet, load it
+			*/
 			
 			private function loadImageFromFlickr():void{
 				var request:URLRequest = new URLRequest(data.largeImageString);
@@ -133,27 +195,40 @@
 			}
 			
 			private function onImageLoadComplete(event:Event):void{
+				
 				var image:Bitmap = event.currentTarget.content;
 				_image = image;
+				
+				saveInCache(image);
+				setCompleteState();
+				assignImageToDisplay(changeImageSize(image));
+			}	
+			
+			private function saveInCache(image:Bitmap):void{
 				if(_cache.hasImageData(_imgString)==false){
 					_cache.putImageData(_imgString,image);
 				}
-				changeImageSize(image);
-			}	
-			
-			private function changeImageSize(image:Bitmap):void{
-				_orginalBitmapData = image.bitmapData.clone();
-				if(image.width > image.height){
-					image = ImageUtils.scaleToTargetWidth(image,_maxImageWidth);
-				}else{
-					image = ImageUtils.scaleToTargetHeight(image,_maxImageHeight);				
-				}
-				image = ImageUtils.addBorder(image,10,0xffffff);
-				
-				currentState = _completeState;
-			
-				photo.source = image;
 			}
+
+			
+			private function parseData():void{
+				_photoVO = data as PhotoVO;
+				
+				if(data.setTitle && (_removedFromSet==false))_completeState = SinglePhotoView.SET_STATE;
+				if(data.setTitle)		_setTitle = StringUtils.truncate(data.setTitle,500);
+				if(data.setId)			_setId = data.setId;
+				_title = StringUtils.truncate(_photoVO.title,30);
+				if(data.description) 	_description = StringUtils.truncate(data.description,500);
+				if(data.ownerName)		_ownerName = StringUtils.truncate(data.ownerName, 50);
+				if(data.tags)			_tagAC = data.tags;
+				if(data.privacySetting) _privacySetting = data.privacySetting;
+				if(data.previousPhoto)	_previousPhoto = data.previousPhoto;
+				if(data.nextPhoto)		_nextPhoto = data.nextPhoto;
+				if(data.largeImageString)_imgString = data.largeImageString;
+	
+			}
+			
+			
 			
 			/*
 			* Swipe handling
@@ -181,23 +256,36 @@
 				}
 			}
 			
+
+			
 			/*
 			* Bread crumb event
 			*/
 			
+			private function onClickSearchResults():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				var dataObject:DataObject = new DataObject();
+				dataObject.tags = LatestSearchTag.getLatestSearchTag();
+				dataObject.viewType = ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;
+				navigator.pushView(MultiplePhotosView,dataObject,null,slideEffect);
+			}
+			
+			private function onClickPhotoStream():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				var dataObject:DataObject = new DataObject();
+				dataObject.viewType = ViewTypes.PHOTO_STREAM;
+				navigator.pushView(MultiplePhotosView,dataObject,null,slideEffect);
+			}
+			
 			private function onClickYourSets():void{
-				//actionBarVisible = false;
-				//buttonBarContainer.visible = false;
-				//breadCrumbContainer.visible = false;
 				var slideEffect:SlideViewTransition = new SlideViewTransition();
 				slideEffect.direction = "right";
 				navigator.pushView(BrowseSets,null,null,slideEffect);
 			}
 			
 			private function onSetTitleClick():void{
-				//actionBarVisible = false;
-				//buttonBarContainer.visible = false;
-				//breadCrumbContainer.visible = false;
 				var setVO:SetVO = new SetVO();
 				setVO.title = _setTitle;
 				setVO.id = _setId;
@@ -209,48 +297,21 @@
 				navigator.pushView(MultiplePhotosView,dataObject);
 			}
 			
-			/*
-			* Button bar handlers
-			*/
-			
-			protected function buttonBar_clickHandler(event:MouseEvent):void
-			{
-				var btn:ButtonBarButton = event.target as ButtonBarButton;
-				if(buttonBar.selectedIndex == 0){
-					onDownloadOriginal();
-				}
-				
-				if(buttonBar.selectedIndex == 1){
-					editDetails();
-				}
-				
-				if(buttonBar.selectedIndex == 2){
-					addToSet();
-				}
-				
-				if(buttonBar.selectedIndex == 3){
-					removeFromSet();
-				}
-
-				
-				if(buttonBar.selectedIndex == 4){
-					onFullScreenSelection();
-				}	
-			}
 			
 			private function onFullScreenSelection():void{
 				trace("onFullScreenSelection");
 				var imageObject:Object = new Object();
 				imageObject.image = _orginalBitmapData;
+				imageObject.state = _completeState;
 				navigator.pushView(FullScreenView,_photoVO,imageObject);
 			}
 			
 			private function onDownloadOriginal(event:MouseEvent=null):void
 			{
-				trace(_imgString);
-				var obj:Object = new Object();
-				obj.imgString = _imgString;
-				navigator.pushView(DownloadOriginalView,obj);
+				//trace(_imgString);
+				//var obj:Object = new Object();
+				//obj.imgString = _imgString;
+				navigator.pushView(SaveSinglePhotoView,_photoVO);
 			}
 			
 			private function removeFromSet():void{
@@ -283,96 +344,108 @@
 				navigator.pushView(EditPhotoView,_photoVO);
 			}
 			
+		
+			
 		]]>
 	</fx:Script>
 	
 	<!--Loadingstate-->
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" 
-			  includeIn="loadingState">
+			  includeIn="LoadingState">
 		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
 	</s:VGroup>
 	
 	
 	<!--whole view below actionbar-->
 	<s:VGroup width="100%" height="100%" gap="0">
-		
-	<!--BreadCrumbHeader-->
-		<s:SkinnableContainer id="breadCrumbContainer" width="{_headerWidth}" height="70" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeStateHeader">
-			<s:HGroup filters="{graphicsLib.getDropShadowFilterWhite()}">			
-				<components:HTMLLabel text="Your Sets" click="onClickYourSets()" color="#555555" fontSize="26" fontWeight="bold"/> 
-				<components:HTMLLabel text=" > " color="#555555" fontSize="26" fontWeight="bold"/>
-				<components:HTMLLabel text="{_setTitle}" click="onSetTitleClick()" color="#555555" fontSize="26" fontWeight="bold"/>
-			</s:HGroup>
-		</s:SkinnableContainer>	
-		
-		<!--ButtonBar-->
-	<s:SkinnableContainer id="buttonBarContainer" width="{_headerWidth}" height="100" skinClass="skins.ButtonBarBoxSkin" includeIn="completeStateHeader,completeStateNoHeader">
-	<s:ButtonBar id="buttonBar"
-				 requireSelection="false"
-				 width="400"
-				 excludeFrom="loadingState,noState"
-				 
-				 click="buttonBar_clickHandler(event)">
-		<s:dataProvider>
-			<s:ArrayList>
-				<fx:Object label=""
-						   
-						   id="saveButton"
-						   icon="@Embed('assets/images/buttonIcons40x40/SaveIconGreyLP.png')" />
-				<fx:Object label=""
-						   id="editButton"
-						   icon="@Embed('assets/images/buttonIcons40x40/EditIconGreyLP.png')" />
-				<fx:Object id="addToSetButton"
-						   label=""
-						   icon="@Embed('assets/images/buttonIcons40x40/AddIconGreyLP.png')" />
-				<fx:Object label=""
-						   id="removeFromSetButton"
-						   icon="@Embed('assets/images/buttonIcons40x40/RemoveIconGreyLP.png')" />
-				<fx:Object label=""
-						   id="fullScreenButton"
-						   icon="@Embed('assets/images/buttonIcons40x40/FullScreenIconGreyLP.png')" />
-			</s:ArrayList>
-		</s:dataProvider>
-	</s:ButtonBar>
-	</s:SkinnableContainer>
-	<!--Photo Display-->
 	
-	<s:Scroller y="100" width="100%" height="100%" includeIn="completeStateHeader,completeStateNoHeader">
+		<!--headers-->	
+		
+		<!--completeStateSet-->
+			<components:BreadCrumbHeader includeIn="SetState"	
+				firstText="Your Sets" 		firstTextClickHandler="onClickYourSets" 
+				secondText="{_setTitle}" 	secondTextClickHandler="onSetTitleClick" />	
+			
+			<components:ButtonBarHeader includeIn="SetState"
+				handlers="{new ArrayCollection([
+				onDownloadOriginal, editDetails, addToSet, removeFromSet, onFullScreenSelection   ])}"
+				
+				icons="{new ArrayCollection([	
+				IconFactory.SAVE_ICON, IconFactory.EDIT_ICON, IconFactory.ADD_ICON,
+				IconFactory.REMOVE_ICON, IconFactory.FULL_SCREEN_ICON   ])}"/>
+		
+		<!--completeStateSearch-->
+		<components:BreadCrumbHeader includeIn="SearchState" firstText="Your Search Result" firstTextClickHandler="onClickSearchResults"
+								 								secondText="Photo"/>	
+	
+		<components:ButtonBarHeader includeIn="SearchState" handlers="{new ArrayCollection([
+									onFullScreenSelection   ])}"
+									
+									icons="{new ArrayCollection([	
+									IconFactory.FULL_SCREEN_ICON   ])}"/>
+	
+		<!--completeStateStream-->
+		<components:BreadCrumbHeader includeIn="StreamState" 	
+									 firstText="Your PhotoStream" firstTextClickHandler="onClickPhotoStream"
+									 secondText="Photo" />	
+		
+		<components:ButtonBarHeader includeIn="StreamState" 
+									handlers="{new ArrayCollection([
+									onDownloadOriginal, editDetails, addToSet, onFullScreenSelection   ])}"
+									
+									icons="{new ArrayCollection([	
+									IconFactory.SAVE_ICON, IconFactory.EDIT_ICON, IconFactory.ADD_ICON,
+									IconFactory.FULL_SCREEN_ICON   ])}"/>	
+		
+		<!--completeStateRemovedFromSet-->
+		<components:BreadCrumbHeader includeIn="RemovedFromSetState" 
+									 firstText="Photostream" 
+									 secondText="Photo"/>
+		
+		<components:ButtonBarHeader includeIn="RemovedFromSetState" 
+									handlers="{new ArrayCollection([
+									onDownloadOriginal, editDetails, addToSet, onFullScreenSelection   ])}"
+									
+									icons="{new ArrayCollection([	
+									IconFactory.SAVE_ICON, IconFactory.EDIT_ICON, IconFactory.ADD_ICON,
+									IconFactory.FULL_SCREEN_ICON   ])}"/>	
+		<!--end headers-->
+	
+	<s:Scroller y="100" width="100%" height="100%" excludeFrom="LoadingState,NoState">
 		
 		<s:Group>
 			
-			<s:VGroup includeIn="completeStateHeader,completeStateNoHeader" 
-					  horizontalCenter="0" 
-					 y.completeStateHeader="10" y.completeStateNoHeader="10"
-					 horizontalAlign="center">
+			<s:VGroup paddingTop="10" paddingLeft="20" paddingRight="20" paddingBottom="20" horizontalCenter="0" horizontalAlign="center">
 				
 				<s:Image id="photo" smooth="true"/>
 				
-				<s:SkinnableContainer width="100%" skinClass="skins.SpeechBubbleSkin" excludeFrom="loadingState,noState">	
+				<s:SkinnableContainer width="{_containerWidth}" skinClass="skins.SpeechBubbleSkin">	
 					<s:VGroup gap="20">
 						<s:VGroup>
-							<s:Label text="Title" color="#dddddd" fontSize="22"/>
-							<s:Label id="titleLabel" text="{_title}"/>
+							<s:Label text="Title" color="#ffffff" fontSize="22"/>
+							<s:TextArea selectable="false" editable="false" borderVisible="false" contentBackgroundAlpha="0" 
+										id="titleArea" width="{_contentWidth}" color="#222222"/>
 						</s:VGroup>
 						<s:VGroup>						
-							<s:Label text="Description" color="#dddddd" fontSize="22"/>
-							<s:Label id="descLabel" text="{_description}"/>
+							<s:Label text="Description" color="#ffffff" fontSize="22"/>
+							<s:TextArea selectable="false" editable="false" borderVisible="false" contentBackgroundAlpha="0" 
+										id="descArea" width="{_contentWidth}" color="#222222"/>
 						</s:VGroup>
 						<s:VGroup>						
-							<s:Label text="Visibility" color="#dddddd" fontSize="22"/>
-							<s:Label id="privacySettingLabel" text="{_privacySetting}"/>	
+							<s:Label text="Visibility" color="#ffffff" fontSize="22"/>
+							<s:Label id="privacySettingLabel" color="#222222" text="{_privacySetting}"/>	
 						</s:VGroup>
 						<s:VGroup>						
-							<s:Label text="Owner name" color="#dddddd" fontSize="22"/>
-							<s:Label id="ownerNameLabel" text="{_ownerName}"/>	
+							<s:Label text="Owner name" color="#ffffff" fontSize="22"/>
+							<s:Label id="ownerNameLabel" color="#222222" text="{_ownerName}"/>	
 						</s:VGroup>
 						<s:VGroup>
 							
-							<s:Label text="Tags" color="#dddddd" fontSize="22"/>
-							<s:DataGroup width="400" dataProvider="{_tagAC}" itemRenderer="ItemRenderers.TagItemRenderer" contentBackgroundAlpha="0">
+							<s:Label text="Tags" color="#ffffff" fontSize="22"/>
+							<s:DataGroup width="{_contentWidth}" dataProvider="{_tagAC}" itemRenderer="ItemRenderers.TagItemRenderer" contentBackgroundAlpha="0">
 								<s:layout>
-									<s:TileLayout/>
+									<s:TileLayout requestedColumnCount="1" />
 								</s:layout>
 								
 							</s:DataGroup>		 

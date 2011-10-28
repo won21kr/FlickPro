@@ -4,6 +4,7 @@ package com.squidzoo.eventSystem.events
 	import VOs.PhotoVO;
 	import VOs.SetVO;
 	import VOs.SettingsVO;
+	import VOs.SizeVO;
 	import VOs.TagVO;
 	
 	import flash.display.Bitmap;
@@ -32,6 +33,7 @@ package com.squidzoo.eventSystem.events
 		public static const TAG_CLICKED:String = "Tag clicked";
 		public static const TAG_REMOVED:String = "Tag removed";
 		public static const VISIBILITY_CHANGED:String = "visibility changed";
+		public static const SIZE_SELECTED:String = "size selected";
 		
 		private var _image:Bitmap;
 		private var _fileReference:FileReference
@@ -42,9 +44,10 @@ package com.squidzoo.eventSystem.events
 		private var _amount:int;
 		private var _setVO:SetVO;
 		private var _tagVO:TagVO;
+		private var _sizeVO:SizeVO;
 
 		public function CustomDataEvent(type:String, file:FileReference=null, image:Bitmap = null, string:String=null, list:ArrayCollection=null,photoVO:PhotoVO=null, 
-										settingsVO:SettingsVO=null, amount:int = 0, setVO:SetVO=null, tagVO:TagVO=null, bubbles:Boolean = true, cancelable:Boolean = false)
+										settingsVO:SettingsVO=null, amount:int = 0, setVO:SetVO=null, tagVO:TagVO=null, sizeVO:SizeVO=null, bubbles:Boolean = true, cancelable:Boolean = false)
 		{
 			super(type,bubbles,cancelable);
 
@@ -57,6 +60,17 @@ package com.squidzoo.eventSystem.events
 			this._amount = amount;
 			this._setVO = setVO;
 			this._tagVO = tagVO;
+			this._sizeVO = sizeVO;
+		}
+
+		public function get sizeVO():SizeVO
+		{
+			return _sizeVO;
+		}
+
+		public function set sizeVO(value:SizeVO):void
+		{
+			_sizeVO = value;
 		}
 
 		public function get tagVO():TagVO
@@ -141,7 +155,7 @@ package com.squidzoo.eventSystem.events
 
 		public override function clone():Event
 		{
-			return new CustomDataEvent(type, fileReference, image, string, list, photoVO, settingsVO, amount, setVO, tagVO, bubbles, cancelable);
+			return new CustomDataEvent(type, fileReference, image, string, list, photoVO, settingsVO, amount, setVO, tagVO, sizeVO, bubbles, cancelable);
 		}
 
 		public override function toString():String

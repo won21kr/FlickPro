@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="AddToSetView"
+		xmlns:s="library://ns.adobe.com/flex/spark"
 		creationComplete="creationCompleteHandler(event)" 
 		xmlns:components="components.*">
 	
@@ -20,8 +20,10 @@
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
+			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
 			
+			import statics.IconFactory;
 			import statics.Service;
 			
 			public var forCompiler:AddToSetView;
@@ -30,6 +32,9 @@
 			[Bindable]
 			private var _selectedSet:SetVO;
 			private var _photoId:String;
+			
+			[Bindable]private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*2;
+			[Bindable]private var _contentWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 40*2;
 			
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
@@ -54,49 +59,58 @@
 			
 			protected function onAddPhoto(event:FlickrResultEvent):void
 			{
-				if(event.success){
 					currentState = "completeState";
-				}else{
-					currentState = "errorState";
-				}
+			}
+			
+			private function onClickYourPhotoBreadCrumb():void{
+				navigator.popView();
 			}
 			
 		]]>
 	</fx:Script>
-
-	<s:VGroup horizontalCenter="0" verticalCenter="0" 
-	verticalAlign="middle" horizontalAlign="center" 
-	includeIn="selectSetState" color="#ffffff">
-		<s:Label text="Select a set:"/>
-		<components:SetList/>
-		<s:HGroup>
-			<s:Button label="OK, add it" click="addPhotoToSet()"/>
-			<s:Button label="Back" click="navigator.popView()"/>
-		</s:HGroup>
-	</s:VGroup>
+<s:VGroup width="100%" height="100%" gap="0">
 	
-		<s:VGroup horizontalCenter="0" verticalCenter="0" 
-	verticalAlign="middle" horizontalAlign="center" 
-	includeIn="callState" color="#ffffff">
-		<s:BusyIndicator scaleX="3" scaleY="3"/>
-		<s:Label text="adding photo..."/>
-			<s:Label text="to set..."/>
-	</s:VGroup>
+	<components:BreadCrumbHeader firstText="Your Photo" firstTextClickHandler="onClickYourPhotoBreadCrumb"
+								 imageSource="{IconFactory.getIcon(IconFactory.ADD_ICON)}"
+								 secondText="Add Photo To Set"/>
 	
-	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" horizontalAlign="center"
-			  includeIn="completeState" color="#ffffff">
-		<s:Label text="Your photo was added"/>
-		<s:Label text="to {_selectedSet.title}"/>
-		<s:Button label="Back" click="navigator.popView()"/>
-	</s:VGroup>
-	
-		<s:VGroup horizontalCenter="0" verticalCenter="0" 
-	verticalAlign="middle" horizontalAlign="center" 
-	includeIn="errorState" color="#ffffff">
-		<s:Label text="Error loading list"/>
-		<s:Button label="Back" click="navigator.popView()"/>
-	</s:VGroup>
+	<s:VGroup width="100%" height="100%" paddingBottom="20" paddingTop="20" paddingRight="20" paddingLeft="20">
+		
+		<s:SkinnableContainer width="{_containerWidth}" skinClass="skins.GreyBoxRoundCornersSkin">
+			
+			<s:VGroup width="100%"  
+					  paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="30">
+				<s:VGroup includeIn="selectSetState">
+					<s:Label text="Select a set: {_selectedSet.title}" color="#ffffff" fontSize="24"/>
+					<components:SetList width="{_contentWidth}"/>
+					<s:HGroup horizontalAlign="left" gap="20">
+						<s:Button label="OK, add it" click="addPhotoToSet()" skinClass="skins.SquareButtonSkin"/>
+						<s:Button label="Cancel" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
+					</s:HGroup>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="callState" horizontalCenter="0" verticalCenter="0">
+					<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+					<s:Label text="adding photo..." color="#ffffff"/>
+					<s:Label text="to set..." color="#ffffff"/>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="completeState">
+					<s:Label text="Your photo was added" color="#ffffff"/>
+					<s:Label text="to {_selectedSet.title}" color="#ffffff"/>
+					<s:Button label="Back" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="errorState">
+					<s:Label text="Error adding photo" color="#ffffff"/>
+					<s:Button label="Back" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
+				</s:VGroup>
+			</s:VGroup>
+			
+		</s:SkinnableContainer>
+		
+	</s:VGroup> 
 			  
+</s:VGroup>
 
 </s:View>

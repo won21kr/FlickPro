@@ -6,10 +6,12 @@ package VOs
 	import com.adobe.webapis.flickr.FlickrService;
 	import com.adobe.webapis.flickr.Photo;
 	import com.adobe.webapis.flickr.events.FlickrResultEvent;
+	import com.chewtinfoil.utils.StringUtils;
 	import com.squidzoo.eventSystem.EventCentral;
 	import com.squidzoo.eventSystem.events.CustomDataEvent;
 	import com.squidzoo.eventSystem.events.CustomEvent;
 	import com.squidzoo.imageUtils.ImageCache;
+	import com.squidzoo.imageUtils.ImageUtils;
 	
 	import flash.display.Bitmap;
 	import flash.display.Loader;
@@ -64,9 +66,12 @@ package VOs
 		private var _idToBeRemoved:String = "";
 		
 		public var privacySetting:String;
-		private var _isFamilyPreferredValue:int;
-		private var _isFriendPreferredValue:int;
-		private var _isPublicPreferredValue:int;
+		private var _isFamilyPreferredValue:Boolean;
+		private var _isFriendPreferredValue:Boolean;
+		private var _isPublicPreferredValue:Boolean;
+
+		public var truncatedTitle:String;
+		public var truncatedDateTaken:String;
 		
 		public function PhotoVO(photo:Photo)
 		{
@@ -78,6 +83,7 @@ package VOs
 			this.id = photo.id;
 			this.photo = photo;
 			this.title = photo.title;
+			this.truncatedTitle = StringUtils.truncate(title,30);
 			//trace("photoVO: "+title, id);
 			this.description = photo.description;
 			
@@ -94,25 +100,6 @@ package VOs
 			}
 		}
 		
-		public function removeTag(id:String):void{
-			if(id){
-				_idToBeRemoved = id;
-				_service.addEventListener(FlickrResultEvent.PHOTOS_REMOVE_TAG,onRemoveTag);
-				_service.photos.removeTag(id);
-			}
-		}
-		
-		protected function onRemoveTag(event:Event):void
-		{
-			for(var i:int = 0;i < tags.length;i++){			
-				if(tags[i].id == _idToBeRemoved){
-					tags.removeItemAt(i);
-				}
-			}
-			
-			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.TAG_REMOVED));
-		}
-		
 		public function setNewTitle(newTitle:String):void{
 			if(newTitle){
 				_newTitle = newTitle;
@@ -126,6 +113,14 @@ package VOs
 				_newDescription = newDescription;
 				_service.addEventListener(FlickrResultEvent.PHOTOS_SET_META,onSetDescription);
 				_service.photos.setMeta(this.id,this.title,_newDescription);
+			}
+		}
+		
+		public function removeTag(id:String):void{
+			if(id){
+				_idToBeRemoved = id;
+				_service.addEventListener(FlickrResultEvent.PHOTOS_REMOVE_TAG,onRemoveTag);
+				_service.photos.removeTag(id);
 			}
 		}
 		
@@ -146,12 +141,23 @@ package VOs
 			}
 		}
 		
-		public function setVisibility(isPublic:int,isFriend:int,isFamily:int,permComment:int,permAddmeta:int):void{
+		public function setVisibility(isPublic:Boolean,isFriend:Boolean,isFamily:Boolean,permComment:int,permAddmeta:int):void{
 			_isFamilyPreferredValue = isFamily;
 			_isFriendPreferredValue = isFriend;
 			_isPublicPreferredValue = isPublic;
 			_service.addEventListener(FlickrResultEvent.PHOTOS_SET_PERMS, onSetPerms);
 			_service.photos.setPerms(id, isPublic,isFriend,isFamily,permComment,permAddmeta);
+		}
+		
+		protected function onRemoveTag(event:Event):void
+		{
+			for(var i:int = 0;i < tags.length;i++){			
+				if(tags[i].id == _idToBeRemoved){
+					tags.removeItemAt(i);
+				}
+			}
+			
+			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.TAG_REMOVED));
 		}
 		
 		private function onSetPerms(event:Event):void
@@ -160,16 +166,25 @@ package VOs
 			isFriend = _isFriendPreferredValue;
 			isPublic = _isPublicPreferredValue;
 			
+			if(isFamily){
+				privacySetting = "Family"
+			}else if(isFriend){
+				privacySetting = "Friend"
+			}else{
+				privacySetting = "Public"
+			}
+			
 			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.VISIBILITY_CHANGED));
 			
 		}
 		
 		protected function onSetTags(event:Event):void
 		{
-			var tagVO:TagVO = new TagVO();
-			tagVO.name = _newTag;
-			tags.addItem(tagVO);
+			//var tagVO:TagVO = new TagVO();
+			//tagVO.name = _newTag;
+			//tags.addItem(tagVO);
 			_newTag = "";
+			loadMeta();
 			EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.NEW_TAG_SAVED_TO_FLICKR));
 		}
 		
@@ -227,11 +242,13 @@ package VOs
 				_cache.putImageData(imageURL,image);
 			}
 			
+			
 			displayImage(image);
 		}
 		
 		private function displayImage(image:Bitmap):void{
 			trace("photoVO: displayImage(): "+title, id);
+			image = ImageUtils.scaleToTargetHeight(image,100);
 			this.image = image;
 			loadMeta();
 			EventCentral.getInstance().dispatchEvent(new CustomEvent(CustomEvent.INVALIDATE_DISPLAY_LIST));
@@ -246,12 +263,15 @@ package VOs
 		
 		protected function onGetMeta(event:FlickrResultEvent):void
 		{
-			trace("onGetMeta Id rec" +event.data.photo.id + " ID in vo " +id);
+			//trace("onGetMeta Id rec" +event.data.photo.id + " ID in vo " +id);
 			//_service.removeEventListener(FlickrResultEvent.PHOTOS_GET_INFO,onGetMeta);
 			if(event.data.photo.id == id){
 				if(event.success && event.data && event.data.photo){
 					
-					if(event.data.photo.dateTaken) dateTaken = event.data.photo.dateTaken;
+					if(event.data.photo.dateTaken) {
+						dateTaken = event.data.photo.dateTaken;
+						truncatedDateTaken = StringUtils.truncate(dateTaken,22,"");
+					}
 					if(event.data.photo.description) description = event.data.photo.description;
 					if(event.data.photo.isFamily) isFamily = event.data.photo.isFamily;
 					if(event.data.photo.isFavorite) isFavorite = event.data.photo.isFriend;
@@ -259,6 +279,7 @@ package VOs
 					if(event.data.photo.ownerName) ownerName = event.data.photo.ownerName;
 					
 					if(event.data.photo.tags){
+						tags.removeAll();
 						var a:Array = event.data.photo.tags;
 						for(var i:int = 0;i < a.length; i++){
 							var tagVO:TagVO = new TagVO();

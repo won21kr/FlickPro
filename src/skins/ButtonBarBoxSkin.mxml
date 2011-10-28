@@ -22,15 +22,14 @@
 	</s:states>
 	
 	<s:Rect width="105%" height="100%" filters="{[graphicsLib.getDropShadowFilter()]}">
-		<s:fill>
-			<s:LinearGradient rotation="90">
-				<s:GradientEntry color="#666666"/><!--#8ccbf9-->
-				<s:GradientEntry color="#666666"/><!--#3fa9f5-->
-			</s:LinearGradient>
-		</s:fill>
-		<s:stroke>
-			<s:SolidColorStroke/>
-		</s:stroke>
+	<s:fill>
+		<s:LinearGradient rotation="90">
+			<s:GradientEntry color="#777777"/><!--#3fa9f5-->
+			<s:GradientEntry color="#666666"/><!--#8ccbf9-->
+			<s:GradientEntry color="#777777"/><!--#3fa9f5-->
+		</s:LinearGradient>
+	</s:fill>
+	
 	</s:Rect>
 	
 	<s:Group id="contentGroup" verticalCenter="0" horizontalCenter="0"/>

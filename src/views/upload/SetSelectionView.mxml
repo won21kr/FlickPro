@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="SetSelectionView"
+		xmlns:s="library://ns.adobe.com/flex/spark" 
 		creationComplete="creationCompleteHandler(event)" xmlns:components="components.*">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
@@ -22,9 +22,14 @@
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
+			import flash.net.dns.AAAARecord;
+			
+			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
 			
 			import queries.PhotoIDQuery;
+			
+			import spark.transitions.SlideViewTransition;
 			
 			import statics.Service;
 			
@@ -40,6 +45,9 @@
 			private var _service:FlickrService;
 			
 			private var _selectedSet:SetVO;
+			
+			[Bindable]private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 80;
+			[Bindable]private var _contentsWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 120;
 			
 			private function creationCompleteHandler(event:FlexEvent):void
 			{
@@ -73,6 +81,7 @@
 			
 			protected function onPhotoSetCreate(event:Event):void
 			{
+				bi.visible = false;
 				currentState = "setSelectionState";
 				setList.reload();
 			}
@@ -84,6 +93,7 @@
 			
 			private function onCreateSetInFlickr(event:Event):void{
 				
+				bi.visible = true;
 				var query:PhotoIDQuery = new PhotoIDQuery();
 				query.requestPhotoId();
 			}
@@ -121,24 +131,66 @@
 				navigator.popView();
 			}
 			
+			private function onClickCancelSetSelection():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				navigator.popView(slideEffect);
+			}
+			
+			private function onClickCancel():void{
+				currentState = "setSelectionState";
+			}
+			
+			private function onClickUploadBreadCrumb():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				navigator.popView(slideEffect);
+			}
+			
 		]]>
 	</fx:Script>
-	<s:VGroup includeIn="setSelectionState" verticalCenter="0" horizontalCenter="0">
-		<s:Label text="Choose a set:"/>
-		<components:SetList id="setList"/>
-		<s:Label text="Your selection: {_setTitle}"/>
-		<s:Spacer height="40" />
-		<s:Button label="Create New Set" click="onClickCreateNewSet(event)"/>
-		<s:Button label="OK" click="onOK()"/>
-	</s:VGroup>
 	
-	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="setCreationState">
-		<s:Label text="Create a new set"/>
-		<s:Label text="Title"/>
-		<s:TextInput width="380" change="onNewTitle(event)"/>
-		<s:Label text="description"/>
-		<s:TextInput width="380" change="onNewDescription(event)"/>
-		<s:Button label="create set" click="onCreateSetInFlickr(event)"/>
-	</s:VGroup>		
+	<s:VGroup width="100%" height="100%" gap="0" >
+		
+		<components:BreadCrumbHeader firstText="Upload" firstTextClickHandler="onClickUploadBreadCrumb" 
+									 secondText="Choose set for batch" />
+		
+		<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" gap="50"
+				  width="100%" height="100%" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+			
+			<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">			
+				<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">		
+		
+					<s:VGroup includeIn="setSelectionState" verticalCenter="0" horizontalCenter="0">
+						<s:Label text="Choose a set:" styleName="headerTextWhite"/>
+						<components:SetList id="setList" width="{_contentsWidth}"/>
+						<s:Label text="Your selection:" styleName="headerTextWhite"/>
+						<s:Label text="{_setTitle}" styleName="headerTextWhite"/>
+						<s:Spacer height="40" />
+						<s:HGroup>							
+							<s:Button label="Choose this set" click="onOK()" skinClass="skins.SquareButtonSkin"/>
+							<s:Button label="Cancel" click="onClickCancelSetSelection()" skinClass="skins.SquareButtonSkin"/>
+						</s:HGroup>
+							<s:Button label="Create New Set" click="onClickCreateNewSet(event)" skinClass="skins.SquareButtonSkin"/>
+						
+					</s:VGroup>
+					
+					<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="setCreationState">
+						<s:Label text="Create a new set"/>
+						<s:Label text="Title"/>
+						<s:TextInput width="{_contentsWidth}" change="onNewTitle(event)"/>
+						<s:Label text="description"/>
+						<s:TextInput width="{_contentsWidth}" change="onNewDescription(event)"/>
+						<s:HGroup verticalAlign="middle">	
+							<s:Button label="Create set" click="onCreateSetInFlickr(event)" skinClass="skins.SquareButtonSkin"/>
+							<s:BusyIndicator id="bi" symbolColor="white" visible="false"/>
+							<s:Button label="Cancel" click="onClickCancel()" skinClass="skins.SquareButtonSkin"/>
+						</s:HGroup>
+					</s:VGroup>		
+				</s:VGroup>
+			</s:SkinnableContainer>
+			
+		</s:VGroup>
+	</s:VGroup>	
 	
 </s:View>

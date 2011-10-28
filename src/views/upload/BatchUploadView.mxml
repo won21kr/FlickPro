@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark" 
-		title="Upload"
 		creationComplete="init()"
 		viewActivate="viewActivateHandler(event)" xmlns:debug="com.squidzoo.debug.*"
-		destructionPolicy="never">
+		destructionPolicy="never" xmlns:components="components.*">
 	<fx:Script>
 		<![CDATA[
 			import VOs.BatchUploadVO;
@@ -19,6 +18,7 @@
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
 			import components.PrivacySettingsPopup;
+			import components.popups.MenuPopUp;
 			
 			import helpers.GalleryBrowser;
 			import helpers.Uploader;
@@ -27,6 +27,7 @@
 			
 			import spark.events.ViewNavigatorEvent;
 			
+			import statics.IconFactory;
 			import statics.Service;
 			
 			private var _browser:GalleryBrowser;
@@ -35,11 +36,11 @@
 			[Bindable]
 			protected var _service:FlickrService;
 			[Bindable]
-			private var _title:String = "add your title";
+			private var _title:String = "";
 			[Bindable]
-			private var _description:String = "add your description";
+			private var _description:String = "";
 			[Bindable]
-			private var _tags:String = "add your tags:";
+			private var _tags:String = "";
 			[Bindable]
 			private var _is_family:Boolean = true;
 			[Bindable]
@@ -68,6 +69,9 @@
 			[Bindable]
 			private var _setTitle:String;
 			
+			[Bindable]
+			private var _visibility:String = "family";
+			
 			//public var forCompiler:BatchUploadView;//required
 			
 			private function viewActivateHandler(event:ViewNavigatorEvent):void{
@@ -93,15 +97,23 @@
 				_is_family = event.settingsVO.is_family;
 				_is_public = event.settingsVO.is_public;
 				_is_friend = event.settingsVO.is_friend;
-				_setTitle = event.settingsVO.setVO.title;
-				_setSelection = event.settingsVO.setVO;
+				
+				if(_is_family){
+					_visibility = "family";
+				}else if(_is_friend){
+					_visibility = "friend";
+				}else{
+					_visibility = "public";
+				}
+				//if(event.settingsVO.setVO.title)_setTitle = event.settingsVO.setVO.title;
+				//_setSelection = event.settingsVO.setVO as SetVO;
 			}
 			
 			private function init():void{
 				_browser = new GalleryBrowser();
 			}
 			
-			private function onClickPickPhotoButton(event:MouseEvent):void
+			private function onClickPickPhotoButton(event:MouseEvent=null):void
 			{ 
 				_browser.addEventListener(CustomDataEvent.GALLERY_IMAGE_SELECTED,onGalleryImageSelected);
 				_browser.browse();
@@ -143,11 +155,15 @@
 				}
 			}
 			
-			protected function onClickPrivacySettingsButton(event:MouseEvent):void
+			protected function onClickPrivacySettingsButton(event:MouseEvent=null):void
 			{
-				navigator.pushView(SettingsView);
-				//_privacyPopup = new PrivacySettingsPopup();
-				//_privacyPopup.show();
+				var dataObject:Object = new Object();
+				dataObject.title = _title;
+				dataObject.description = _description;
+				dataObject.tags = _tags;
+				
+				dataObject.visibility = _visibility;
+				navigator.pushView(SettingsView,dataObject);
 			}
 			
 			protected function onPrivacySettings(event:CustomDataEvent):void
@@ -156,17 +172,17 @@
 					_is_family = false;
 					_is_friend = false;
 					_is_public = true;
-					_privacyLabel = "Public"
+					_privacyLabel = _visibility = "Public"
 				}else if(event.string == "friend"){
 					_is_family = false;
 					_is_friend = true;
 					_is_public = false;
-					_privacyLabel = "Friend";
+					_privacyLabel =_visibility =  "Friend";
 				}else{
 					_is_family = true;
 					_is_friend = false;
 					_is_public = false;
-					_privacyLabel = "Family";
+					_privacyLabel = _visibility = "Family";
 				}
 			}
 			
@@ -188,15 +204,19 @@
 				_service.photosets.addPhoto(setId,photoId);
 			}
 			
-			private function onClickSetSelection(event:Event):void{
+			private function onClickSetSelection(event:Event=null):void{
 				navigator.pushView(SetSelectionView);
 			}
 			
 			protected function onSetFromSetSelectionView(event:CustomDataEvent):void
 			{
 				// TODO Auto-generated method stub
-				_setSelection = event.setVO;
+				_setSelection = event.setVO as SetVO;
 				_setTitle = event.setVO.title;
+			}
+			
+			private function question():void{
+				
 			}
 			
 		]]>
@@ -209,45 +229,37 @@
 	<!--<s:actionContent>
 	<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
 	</s:actionContent>-->
-	<s:HGroup paddingLeft="20" paddingRight="0" paddingTop="15" width="100%" height="100%">
-		<s:VGroup gap="10">
-			
-			<s:Button id="pickPhotoButton"
-					  click="onClickPickPhotoButton(event)" 
-					  skinClass="components.PickaPhotoButtonDarkBorder"/>
-			
-			<s:VGroup paddingLeft="5">
-				<s:Label text="Press Pick button again" fontSize="14" color="#ffffff"/>
-				<s:Label text="to add more photos for upload" fontSize="14" color="#ffffff"/>
-			</s:VGroup>
-			
-			<s:Button id="PrivacySettingsButton"
-					  click="onClickPrivacySettingsButton(event)"
-					  skinClass="components.privacySettingsButtonBlackBorder"/>
-			<s:Button id="setSelectionButton"
-					  click="onClickSetSelection(event)"
-					  skinClass="components.ChooseSetButtonSkin"/>
-			<s:Button click="onClickUploadListButton()" 
-					  skinClass="components.UploadButtonBlackBorder"/>
-			<s:VGroup paddingLeft="5">
-				<s:Label text="Title: {_title}" maxWidth="180" fontSize="14" color="#ffffff"/>
-				<s:Label text="Description: {_description}" maxWidth="180" fontSize="14" color="#ffffff"/>
-				<s:Label text="Tags: {_tags}" fontSize="14" maxWidth="180" color="#ffffff"/>
-				<s:Label text="Privacy setting: {_privacyLabel}" fontSize="14" color="#ffffff"/>
-				<s:Label text="Set: {_setTitle}" fontSize="14" color="14"/>
-			</s:VGroup>
-			<debug:DebugTextArea id="debug" width="200" height="200"/>
-			
-		</s:VGroup>
+	
+	<s:VGroup width="100%" height="100%" gap="0">
 		
-		<s:List id="photoList" width="210" height="680" dataProvider="{_batchUploadAC}"  useVirtualLayout="false"
+	
+	<components:BreadCrumbHeader firstText="Upload"/>
+	
+	<components:ButtonBarHeader 
+								handlers="{new ArrayCollection([
+								onClickPickPhotoButton,
+								onClickPrivacySettingsButton,
+								onClickSetSelection,
+								onClickUploadListButton,
+								question
+								])}"
+								
+								icons='{new ArrayCollection([	
+								IconFactory.IMAGE_ICON,
+								IconFactory.EDIT_ICON,
+								IconFactory.SET_ICON,
+								IconFactory.CLOUD_ICON,
+								IconFactory.QUESTION_ICON
+								])}'/>
+	
+		
+		<s:List id="photoList" width="100%" height="100%" dataProvider="{_batchUploadAC}"  useVirtualLayout="false"
 				itemRenderer="ItemRenderers.BatchUploadItemRenderer" contentBackgroundColor="#58595b">
 			<s:layout >
-				<s:VerticalLayout paddingTop="10" paddingLeft="10" paddingRight="10" paddingBottom="10" gap="5"/>
+				<s:TileLayout paddingTop="10" paddingLeft="10" paddingRight="10" paddingBottom="10" requestedColumnCount="2"/>
 			</s:layout>
 		</s:List>
-		
-	</s:HGroup>
-	
+		<components:UploadDetailsDisplay title="{_title}" description="{_description}" tags="{_tags}" set="{_setTitle}" privacy="{_visibility}"/>
+	</s:VGroup>	
 	
 </s:View>

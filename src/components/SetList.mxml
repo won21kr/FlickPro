@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	Add this to your component to listen to set selection events:
+		EventCentral.getInstance().addEventListener(CustomDataEvent.SET_SELECTED_IN_SET_LIST, handler);
+	And access event.setVO for data
+-->
+
 <s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
-					  xmlns:s="library://ns.adobe.com/flex/spark" width="380" height="250"
+					  xmlns:s="library://ns.adobe.com/flex/spark" width="100%" height="300"
 					  creationComplete="onCreationComplete(event)" backgroundColor="#666666">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
@@ -31,6 +38,8 @@
 			import statics.NSID;
 			import statics.Service;
 			import statics.ViewTypes;
+			
+			public var forCompiler:SetList;
 			
 			[Bindable]
 			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
@@ -120,7 +129,7 @@
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~State~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="loadingState">
+	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" width="100%" horizontalAlign="center" includeIn="loadingState">
 		<s:BusyIndicator scaleX="0.5" scaleY="0.5" symbolColor="white"/>
 		<s:Label text="Loading" fontSize="12" color="#ffffff"/>
 		<s:Label text="set list" fontSize="12" color="#ffffff"/>
@@ -128,16 +137,16 @@
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~errorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="errorState">
+	<s:VGroup horizontalCenter="0" verticalCenter="0" width="100%" includeIn="errorState">
 		<s:Label text="Error loading list" fontSize="12" color="#ffffff"/>
 		<s:Button label="Try again" fontSize="12" click="onClickTryAgain()" color="#ffffff"/>
 	</s:VGroup>
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~completeState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:VGroup includeIn="completeState">		
+	<s:VGroup includeIn="completeState" width="100%" verticalAlign="middle" horizontalAlign="center">		
 		
-		<s:List x="0" y="0" id="setList" width="380" height="250"
+		<s:List id="setList" width="100%" height="300"
 				change="onClickList()" 
 				dataProvider="{_setVOs}"
 				contentBackgroundAlpha="0"
@@ -145,7 +154,8 @@
 				borderColor="#dddddd">
 			<s:itemRenderer>
 				<fx:Component>
-					<s:IconItemRenderer alternatingItemColors="{[0x777777,0x999999]}" labelField="title" fontSize="14" color="#ffffff" width="100%"/>
+					<s:IconItemRenderer alternatingItemColors="{[0x777777,0x999999]}" labelField="title" fontSize="18" color="#ffffff" width="100%" 
+										downColor="#3fa9f5" selectionColor="#3fa9f5"/>
 				</fx:Component>
 			</s:itemRenderer>
 			

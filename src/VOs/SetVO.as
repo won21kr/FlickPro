@@ -3,13 +3,15 @@ package VOs
 	import com.adobe.webapis.flickr.FlickrService;
 	
 	import spark.components.View;
-
+	
 	[Bindable]
 	public class SetVO
 	{
 		public var forCompiler:SetVO;
 		
 		public var title:String;
+		
+		public var description:String;
 		
 		public var id:String;
 		

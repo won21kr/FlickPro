@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="Search">
+		xmlns:s="library://ns.adobe.com/flex/spark" >
 	
 	<fx:Script>
 		<![CDATA[
@@ -8,6 +8,7 @@
 			
 			import spark.events.TextOperationEvent;
 			
+			import statics.LatestSearchTag;
 			import statics.ViewTypes;
 			private var _tags:String = "Flickr";
 			
@@ -15,6 +16,7 @@
 			{
 				var dataObject:DataObject = new DataObject();
 				dataObject.tags = _tags;
+				LatestSearchTag.setLatestSearchTag(_tags);
 				
 				if(event.target.id == "Flickr"){
 					dataObject.viewType = ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;

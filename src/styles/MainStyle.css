@@ -31,7 +31,7 @@ s|TabbedViewNavigator #tabBar
 }
 
 s|View{
-	backgroundColor: #555555;
+	backgroundColor: #222222;
 }
 
 s|Label{
@@ -41,4 +41,45 @@ s|Button
 {
 	
 	fontSize: 16;
+}
+
+.bodyText 
+{
+	color:#dddddd;
+	fontSize: 18;
+}
+
+.headerTextGrey
+{
+	color:#222222;
+	fontSize: 24;
+	fontWeight: bold;
+}
+
+.headerTextWhite
+{
+	color:#ffffff;
+	fontSize: 22;
+	fontWeight: bold;
+}
+
+.smallBlackText
+{
+	color: #222222;
+	fontSize: 14;
+	fontWeight: bold;
+}
+
+.smallWhiteText
+{
+	color: #ffffff;
+	fontSize: 14;
+	fontWeight: bold;
+}
+
+.smallOffWhiteText
+{
+	color: #eeeeee;
+	fontSize: 14;
+	fontWeight: bold;
 }

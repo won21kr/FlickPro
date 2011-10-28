@@ -13,9 +13,21 @@
 				return dropShadowFilter;
 			}
 			
+			public function getDropShadowFilterClose():spark.filters.DropShadowFilter{
+				var color:uint = 0x444444;
+				var dropShadowFilter:spark.filters.DropShadowFilter = new spark.filters.DropShadowFilter(1,45,color,0.5,1,1);
+				return dropShadowFilter;
+			}
+			
 			public function getDropShadowFilterWhite():spark.filters.DropShadowFilter{
 				var color:uint = 0xdddddd;
 				var dropShadowFilter:spark.filters.DropShadowFilter = new spark.filters.DropShadowFilter(1,90,color,1,1,1);
+				return dropShadowFilter;
+			}
+			
+			public function getDropShadowFilterTest():spark.filters.DropShadowFilter{
+				var color:uint = 0xff0000;
+				var dropShadowFilter:spark.filters.DropShadowFilter = new spark.filters.DropShadowFilter(4,90,color,4,4,4);
 				return dropShadowFilter;
 			}
 		]]>

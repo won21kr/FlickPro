@@ -19,7 +19,8 @@
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
-			import components.MenuPopUp;
+			import components.popups.ButtonBarPopUp;
+			import components.popups.MenuPopUp;
 			
 			import helpers.NSIDManager;
 			import helpers.TokenManager;
@@ -35,21 +36,23 @@
 			import statics.Service;
 			import statics.ViewTypes;
 			
-			import views.upload.BatchUploadView;
 			import views.BrowseSets;
 			import views.HomeView;
-			import views.login.LoginView;
 			import views.MultiplePhotosView;
 			import views.SearchView;
+			import views.login.LoginView;
 			import views.singlePhoto.SinglePhotoView;
+			import views.upload.BatchUploadView;
 			
 			private var _popup:MenuPopUp;
-			
+		
 			public var _service:FlickrService;
 			
 			private function init(event:FlexEvent):void{
 				addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 				_popup = new MenuPopUp();
+				
+			
 				
 				_service = new FlickrService();
 				

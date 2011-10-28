@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark"
-		creationComplete="init(event)" xmlns:components="components.*">
+		creationComplete="init(event)" xmlns:components="components.*" xmlns:styles="styles.*" xmlns:ItemRenderers="ItemRenderers.*">
+	
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+		<ItemRenderers:PhotoListVerticalIR id="vertIR"/>
+		<s:VerticalLayout id="verticalLayout" gap="0" paddingTop="0"/>
+	</fx:Declarations>
 	
 	<s:states>
 		<s:State name="loadingState"/>
@@ -15,7 +21,11 @@
 		<![CDATA[
 			import Interfaces.IPhotoQuery;
 			
+			import ItemRenderers.PhotoListIGridItemRenderer;
+			import ItemRenderers.PhotoListVerticalItemRenderer;
+			
 			import VOs.DataObject;
+			import VOs.SetVO;
 			
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.chewtinfoil.utils.StringUtils;
@@ -29,11 +39,17 @@
 			
 			import queries.PhotoQuery;
 			
+			import spark.components.ButtonBarButton;
+			import spark.layouts.VerticalLayout;
+			import spark.layouts.supportClasses.LayoutBase;
 			import spark.transitions.SlideViewTransition;
 			
+			import statics.IconFactory;
 			import statics.ViewTypes;
 			
 			import views.singlePhoto.SinglePhotoView;
+			import views.singleSet.SingleSetAddMeta;
+			import views.singleSet.SingleSetDeleteSet;
 			
 			[Bindable]
 			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
@@ -47,7 +63,10 @@
 			private var _service:FlickrService;
 			private var _viewType:String;
 			private var _completeStateType:String;
+			[Bindable]private var _setVO:SetVO;
 	
+			
+			
 			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");  
@@ -80,6 +99,7 @@
 					case ViewTypes.SET :
 					_setTitle = StringUtils.truncate((data as DataObject).selectedSet.title,30);
 					_photoQuery.setParams(data as DataObject);
+					_setVO = (data as DataObject).selectedSet;
 					type = ViewTypes.SET;
 					_completeStateType = "completeStateSet";
 					break;
@@ -111,8 +131,25 @@
 			}
 			
 			private function onListClick(event:MouseEvent):void{
-				trace("mpv onListClicked: "+photoList.selectedItem.title);
-				navigator.pushView(SinglePhotoView, photoList.selectedItem);
+				if(photoList.selectedItem){
+					
+					var contextObject:Object = new Object();
+					
+					switch(currentState){
+						case "completeStateSet":
+							contextObject.state = SinglePhotoView.SET_STATE;
+							navigator.pushView(SinglePhotoView, photoList.selectedItem,contextObject);
+							break;
+						case "completeStateSearch":
+							contextObject.state = SinglePhotoView.SEARCH_STATE;
+							navigator.pushView(SinglePhotoView, photoList.selectedItem,contextObject);
+							break;
+						case "completeStateStream":
+							contextObject.state = SinglePhotoView.PHOTO_STREAM_STATE;
+							navigator.pushView(SinglePhotoView,photoList.selectedItem,contextObject);
+							break;
+					}
+				}
 			}
 			
 			private function onError(event:Event):void{
@@ -132,7 +169,7 @@
 				*/
 			}
 			
-			private function onclickYourSets():void{
+			private function onClickYourSets():void{
 				var slideEffect:SlideViewTransition = new SlideViewTransition();
 				slideEffect.direction = "right";
 				navigator.pushView(BrowseSets,null,null,slideEffect);
@@ -144,9 +181,39 @@
 				//trace("mpv onImageInListClicked: "+event.photoVO.title);
 				//navigator.pushView(SinglePhotoView,event.photoVO);
 			}
+
+			/*
+			* ButtonBar handlers
+			*/
+			
+			private function editSet():void
+			{
+				navigator.pushView(SingleSetAddMeta,_setVO);
+			}
+			
+			private function setViewByLine():void{
+				photoList.layout = verticalLayout;
+				photoList.itemRenderer = new ClassFactory(PhotoListVerticalIR);
+			}
+			
+			private function setViewByGrid():void{
+				photoList.layout = tileLayout;
+				photoList.itemRenderer = new ClassFactory(PhotoListIGridItemRenderer);
+			}
+			
+			private function deleteSet():void
+			{
+				navigator.pushView(SingleSetDeleteSet,_setVO);
+			}
+			
+			private function question():void{
+				trace("question");
+			}
 			
 		]]>
 	</fx:Script>
+	
+	<!--errorState-->
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0"
 			  includeIn="errorState">
@@ -154,36 +221,77 @@
 		<s:Button label="Try again" click="init()" skinClass="components.TryAgainButtonSkin2"/>
 	</s:VGroup>
 	
+	<!--loadingState-->
+	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="loadingState">
 		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
 		<s:Label text="Loading..."/>
 	</s:VGroup>
 	
-	<s:VGroup>
+	<!--completeState-->
 	
-		<s:SkinnableContainer id="header" width="{_headerWidth}" height="50" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeStateSet,completeStateStream, completeStateSearch">
-			<s:HGroup>			
-				
-				<components:HTMLLabel text="Your Sets" color="#ffffff" fontSize="24" click="onclickYourSets()" includeIn="completeStateSet"/> 
-				<components:HTMLLabel text=" > " color="#dddddd" fontSize="24" includeIn="completeStateSet"/>
-				<components:HTMLLabel text="{_setTitle}" color="#ffffff" fontSize="24" includeIn="completeStateSet"/>
-				
-				<components:HTMLLabel text="Your PhotoStream" color="#ffffff" fontSize="24" click="onclickYourSets()" includeIn="completeStateStream"/> 
-				
-				<components:HTMLLabel text="Your Search Result" color="#ffffff" fontSize="24" click="onclickYourSets()" includeIn="completeStateSearch"/> 
-				
-			</s:HGroup>
-		</s:SkinnableContainer>	
+	<s:VGroup width="100%" height="100%" gap="0" includeIn="completeStateSet,completeStateStream, completeStateSearch">
 		
-	<s:List width="100%" height="{_listHeight}" id="photoList" 
+		<!--Headers-->
+		<!--stateSet-->
+		<components:BreadCrumbHeader includeIn="completeStateSet" firstText="Your Sets" firstTextClickHandler="onClickYourSets" 
+									 secondText="{_setTitle}" />
+		
+		<components:ButtonBarHeader includeIn="completeStateSet"
+									handlers="{new ArrayCollection([
+									setViewByLine,
+									setViewByGrid,
+									editSet,
+									deleteSet,
+									question   ])}"
+									
+									icons='{new ArrayCollection([	
+									IconFactory.VERT_LIST_ICON,
+									IconFactory.GRID_ICON,
+									IconFactory.EDIT_ICON,
+									IconFactory.REMOVE_ICON,
+									IconFactory.QUESTION_ICON   ])}'/>
+		<!--end stateSet-->
+		
+		<components:BreadCrumbHeader includeIn="completeStateSearch" firstText="Your Search Result"/>
+		
+		<components:ButtonBarHeader includeIn="completeStateSearch"
+									handlers="{new ArrayCollection([
+									setViewByLine,
+									setViewByGrid,
+									])}"
+									
+									icons='{new ArrayCollection([	
+									IconFactory.VERT_LIST_ICON,
+									IconFactory.GRID_ICON,
+									])}'/>
+		
+		<!--StreamState-->
+		<!--stateSet-->
+		<components:BreadCrumbHeader includeIn="completeStateStream" firstText="Your PhotoStream" />
+		
+		<components:ButtonBarHeader includeIn="completeStateStream"
+									handlers="{new ArrayCollection([
+										setViewByLine,
+										setViewByGrid,
+									])}"
+									
+									icons='{new ArrayCollection([	
+										IconFactory.VERT_LIST_ICON,
+										IconFactory.GRID_ICON,
+									])}'/>
+		
+		<!--end Headers-->
+		
+	<s:List width="100%" height="100%" id="photoList" 
 			includeIn="completeStateSet,completeStateSearch,completeStateStream"
-			left="10" right="10" top="5" bottom="0" 
+			left="10" right="10" top="10" bottom="0" 
 			dataProvider="{_photoVOs}" 
 			click="onListClick(event)"
-			itemRenderer="ItemRenderers.PhotoListItemRenderer"
+			itemRenderer="ItemRenderers.PhotoListIGridItemRenderer"
 			contentBackgroundAlpha="0">
 		<s:layout>
-			<s:TileLayout requestedColumnCount="3" 
+			<s:TileLayout id="tileLayout" requestedColumnCount="3" 
 						  columnAlign="justifyUsingGap"
 			horizontalGap="5" verticalGap="20"
 			paddingLeft="30" paddingRight="30" paddingTop="5" paddingBottom="5"/>

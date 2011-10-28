@@ -23,14 +23,22 @@
 			
 			import spark.transitions.SlideViewTransition;
 			
+			public var forCompiler:FullScreenView;
+			
 			private var _cache:ImageCache;
 			private var _photoVO:PhotoVO;
 			
 			private var _bmd:BitmapData;
 			
+			private var _originState:String;
+			
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
 				currentState="noState"
+				
+				if(navigator.context && navigator.context.state){
+					_originState = navigator.context.state;
+				}
 					
 				if(data)_photoVO = data as PhotoVO;
 				//if(navigator.context)_bmd = navigator.context.image as BitmapData;
@@ -97,8 +105,9 @@
 			}
 			
 			private function onChangeToSmallImage():void{
-				trace("onClickChangeToSmallImage");
-				navigator.pushView(SinglePhotoView,_photoVO);
+				var contextObject:Object = new Object();
+				contextObject.state = _originState;
+				navigator.pushView(SinglePhotoView,_photoVO,contextObject);
 			}
 			
 			private function handleSwipe(event:TransformGestureEvent):void
@@ -139,7 +148,7 @@
 	</s:VGroup>
 	
 	<s:VGroup horizontalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="completeState">
-		<s:Button id="notFullScreenButton" label="small" click="onChangeToSmallImage()"/>
+		<s:Button id="notFullScreenButton" click="onChangeToSmallImage()" icon="@Embed('assets/images/buttonIcons40x40/shrinkLP.png')" />
 		<s:Image id="imageComponent" smooth="true" gestureSwipe="handleSwipe(event)"/>
 	</s:VGroup>
 	

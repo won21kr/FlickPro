@@ -7,7 +7,7 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
-			public var forCompiler:BlueBox;
+			public var forCompiler:BlueBoxRoundCornersSkin;
 		]]>
 	</fx:Script>
 	
@@ -23,22 +23,22 @@
 	
 	<s:Rect width="214" height="281" x="0" y="0" radiusX="6" radiusY="6">
 		<s:fill>
-			<s:LinearGradient>
+			<s:LinearGradient rotation="90">
 				<s:GradientEntry color="#8ccbf9"/>
 				<s:GradientEntry color="#7bbae8"/>
 			</s:LinearGradient>
 		</s:fill>
 	</s:Rect>
-	<s:Rect width="60" height="67" y="271" x="154" radiusX="6" radiusY="6">
+	<!--<s:Rect width="60" height="67" y="271" x="154" radiusX="6" radiusY="6">
 		<s:fill>
 			<s:LinearGradient>
 				<s:GradientEntry color="#8ccbf9"/>
 				<s:GradientEntry color="#7bbae8"/>
 			</s:LinearGradient>
 		</s:fill>
-	</s:Rect>
+	</s:Rect>-->
 	
-	<s:Group id="contentGroup"/>
+	<s:Group id="contentGroup" left="10" right="10" top="10" bottom="10"/>
 	
 	<!-- SkinParts
 	name=contentGroup, type=spark.components.Group, required=false

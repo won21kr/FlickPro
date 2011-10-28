@@ -63,14 +63,20 @@ package queries
 						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",50);
 					break;
 					
+				
+				
 				case ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR:
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
-					_service.photos.search("", _tags);
+					_service.photos.search("",
+						_tags,"","",null,null,null,null,-1,"date-posted-desc",-1,"",
+						-1,-1,-1,"","","","","","","",false,"","",-1,-1,"",20);
 					break;
 				
+				/*
 				case ViewTypes.SEARCH_ONLY_OWN_PHOTOS:
 					_service.addEventListener(FlickrResultEvent.PHOTOS_SEARCH,onGetPhotoStream); 
 					_service.photos.search(NSID.getNSID(), _tags);
+				*/
 			}
 		}
 		
@@ -91,17 +97,12 @@ package queries
 					vo.title = photos[i].title;
 					trace("pq: "+vo.title);
 					
-					vo.setTitle = _setTitle;
-					vo.setId = _setId;
+					if(_setTitle)vo.setTitle = _setTitle;
+					if(_setId)vo.setId = _setId;
 					
 					_photoVOs.addItem(vo);
-					for(var j:int = 0; j < _photoVOs.length-1; j++){
-						_photoVOs[j].nextPhoto = _photoVOs[j+1];
-					}
-					
-					for(var k:int = 1; k < _photoVOs.length; k++){
-						_photoVOs[k].previousPhoto = _photoVOs[k-1];
-					}
+				
+					createLinkedList();
 					
 					if(i >= _numPhotos-1){
 						dispatchCustomDataEvent();
@@ -109,6 +110,16 @@ package queries
 				}
 			}else{
 				dispatchError();
+			}
+		}
+		
+		private function createLinkedList():void{
+			for(var j:int = 0; j < _photoVOs.length-1; j++){
+				_photoVOs[j].nextPhoto = _photoVOs[j+1];
+			}
+			
+			for(var k:int = 1; k < _photoVOs.length; k++){
+				_photoVOs[k].previousPhoto = _photoVOs[k-1];
 			}
 		}
 		
@@ -127,6 +138,8 @@ package queries
 				for(var i:int = 0; i < photos.length;i++){
 					var vo:PhotoVO = new PhotoVO(photos[i]);
 					_photoVOs.addItem(vo);
+					
+					createLinkedList();
 					
 					if(i >= _numPhotos-1){
 						dispatchCustomDataEvent();

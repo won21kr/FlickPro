@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="SettingsView" xmlns:components="components.*"
+		xmlns:s="library://ns.adobe.com/flex/spark" xmlns:components="components.*"
 		creationComplete="onCreationComplete(event)">
 	
 	<fx:Declarations>
@@ -14,24 +14,54 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import VOs.SetVO;
 			import VOs.SettingsVO;
 			
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
+			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
-			private var _title:String;
-			private var _description:String;
-			private var _tags:String;
-			private var _isPublic:Boolean;
-			private var _isFriend:Boolean;
-			private var _isFamily:Boolean;
-			private var _setSelection:SetVO;
+			
+			import spark.transitions.SlideViewTransition;
+			private var _title:String = "";
+			private var _description:String = "";
+			private var _tags:String = "";
+			private var _isPublic:Boolean = false;
+			private var _isFriend:Boolean = false;;
+			private var _isFamily:Boolean = true;
+			//private var _setSelection:SetVO;
+			
+			[Bindable]private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 80;
+			[Bindable]private var _textInputWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 120;
 			[Bindable]
 			private var _setTitle:String = "Please select a set.";
 			
 			protected function onCreationComplete(event:FlexEvent):void{
+				
+				if(data){
+					if(data.title)titleInput.text = data.title;
+					if(data.description)descriptionInput.text = data.description;
+					if(data.tags) tagsInput.text = data.tags;
+					if(data.visibility){
+						
+						if(data.visibility == "public"){
+							_isPublic = true;
+							_isFriend = false;
+							_isFamily = false;
+							publicValue.selected = true;
+						}else if(data.visibility == "friend"){
+							_isPublic = false;
+							_isFriend = true;
+							_isFamily = false;
+							friendValue.selected = true;
+						}else{
+							_isPublic = false;
+							_isFriend = false;
+							_isFamily = true;
+							familyValue.selected = true;
+						}
+					}
+				}
 				//EventCentral.getInstance().addEventListener(CustomDataEvent.SET_SELECTED_IN_UPLOAD_SETTINGS,onSetSelected);				
 			}
 
@@ -43,7 +73,7 @@
 				settingsVO.is_public = _isPublic;
 				settingsVO.is_family = _isFamily;
 				settingsVO.is_friend = _isFriend;
-				settingsVO.setVO = _setSelection;
+				//settingsVO.setVO = _setSelection;
 				
 				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SETTINGS_SELECTED,null,null,null,null,null,settingsVO));
 				navigator.popView();
@@ -71,58 +101,66 @@
 			private function onPrivacySelection(event:Event):void{
 				switch(event.currentTarget.selectedValue){
 					case "family":
-						
+						_isFamily = true;
+						_isFriend = false;
+						_isPublic = false;
 						break;
 					case "friend":
+						_isFamily = false;
+						_isFriend = true;
+						_isPublic = false;
 						break;
 					case "public":
+						_isFamily = false;
+						_isFriend = false;
+						_isPublic = true;
 						break;
 				}
 			}
 			
-			
-			
-			protected function onSetSelected(event:CustomDataEvent):void
-			{
-				_setTitle = event.setVO.title;
-				_setSelection = event.setVO;
+			private function onClickUploadBreadCrumb():void{
+				var slideEffect:SlideViewTransition = new SlideViewTransition();
+				slideEffect.direction = "right";
+				navigator.popView(slideEffect);
 			}
 			
 		]]>
 	</fx:Script>
-	
-	
-	<!--<s:SkinnableContainer left="10" right="10" top="10" bottom="10" width="100%" height="100%">-->
 		
-	<!--<s:SkinnableContainer height="100%" left="20" right="20" top="20" bottom="20" verticalCenter="0" horizontalCenter="0" backgroundColor="0xaaaaaa">-->
-	
-	<s:VGroup horizontalCenter="0" paddingTop="5" fontSize="18">
+	<s:VGroup width="100%" height="100%" gap="0" >
 		
-		<s:Label text="Title" color="#ffffff"/>
-		<s:TextInput id="titleInput" width="380" change="onTitleChange(event)"/>
-		<s:Label text="Description" color="#ffffff"/>
-		<s:TextInput id="descriptionInput" width="380" change="onDescriptionChange(event)"/>
-		<s:Label text="Tags" color="#ffffff"/>
-		<s:TextInput id="tagsInput" width="380" change="onTagsChange(event)"/>
-		<s:HGroup verticalCenter="0" horizontalCenter="0" color="#ffffff" horizontalAlign="center">	
-			<s:RadioButton scaleX="0.9" scaleY="0.9" id="familyValue" group="{privacySetting}" value="family" label="private" />
-			<s:RadioButton scaleX="0.9" scaleY="0.9" id="friendValue" group="{privacySetting}" value="friend" label="friend" />
-			<s:RadioButton scaleX="0.9" scaleY="0.9" id="publicValue" group="{privacySetting}" value="public" label="public" />
-		</s:HGroup>
-		<s:HGroup>
-			<s:VGroup>
-				<components:SetList/>
-				<s:Label text="Set selection: {_setTitle}" color="#ffffff"/>	
-			</s:VGroup>
-		</s:HGroup>
-		<s:HGroup paddingLeft="220">
-			<s:Button label="ok" click="onClickOK(event)"/>
-			<s:Button label="cancel" click="onClickCancel(event)"/>
-		</s:HGroup>
-		
-	</s:VGroup>
-
+		<components:BreadCrumbHeader firstText="Upload"  firstTextClickHandler="onClickUploadBreadCrumb"
+									 secondText="Settings for batch" />
 	
-	<!--</s:SkinnableContainer>-->
+		<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" gap="50"
+				  width="100%" height="100%" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+			
+			<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">			
+				<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">		
+					<s:Label text="Title" color="#ffffff"/>
+					<s:TextInput id="titleInput" width="{_textInputWidth}" change="onTitleChange(event)"/>
+					
+					<s:Label text="Description" color="#ffffff"/>
+					<s:TextInput id="descriptionInput" width="{_textInputWidth}" change="onDescriptionChange(event)"/>
+					
+					<s:Label text="Tags" color="#ffffff"/>
+					<s:TextInput id="tagsInput" width="{_textInputWidth}" change="onTagsChange(event)"/>
+					
+					<s:VGroup color="#ffffff">	
+						<s:RadioButton scaleX="0.9" scaleY="0.9" id="familyValue" group="{privacySetting}" value="family" label="family" />
+						<s:RadioButton scaleX="0.9" scaleY="0.9" id="friendValue" group="{privacySetting}" value="friend" label="friend" />
+						<s:RadioButton scaleX="0.9" scaleY="0.9" id="publicValue" group="{privacySetting}" value="public" label="public" />
+					</s:VGroup>
+					
+					<s:HGroup right="20">
+						<s:Button label="ok" width="100" click="onClickOK(event)" skinClass="skins.SquareButtonSkin"/>
+						<s:Button label="cancel" click="onClickCancel(event)" skinClass="skins.SquareButtonSkin"/>
+					</s:HGroup>
+					
+				</s:VGroup>
+			</s:SkinnableContainer>
+			
+		</s:VGroup>
+	</s:VGroup>	
 
 </s:View>

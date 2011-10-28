@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="RemoveFromSetView"
-		creationComplete="creationCompleteHandler(event)">
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		creationComplete="creationCompleteHandler(event)" xmlns:components="components.*">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
@@ -22,9 +22,10 @@
 			
 			import spark.components.supportClasses.ViewReturnObject;
 			
+			import statics.IconFactory;
 			import statics.Service;
 			
-			public var forCompiler:RemoveFromSetView;
+			[Bindable]public var forCompiler:RemoveFromSetView;
 			
 			private var _photoId:String;
 			private var _setId:String;
@@ -63,44 +64,53 @@
 				return _returnObject;
 			}
 			
+			private function onClickYourPhotoBreadCrumb():void{
+				navigator.popView();
+			}
+			
 		]]>
 	</fx:Script>
 	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" 
-			  verticalAlign="middle" horizontalAlign="center" 
-			  includeIn="askState">
-		<s:Label text="Do you want to remove" color="#ffffff"/>
-		<s:Label text="the photo from set {_setTitle}" color="#ffffff"/>
-		<s:Label text="it will not be removed from" color="#ffffff"/>
-		<s:Label text="your photostream" color="#ffffff"/>
-		<s:HGroup>
-			<s:Button label="OK,remove it" click="callFlickr()"/>
-			<s:Button label="No, go back" click="navigator.popView()"/>
-		</s:HGroup>
-	</s:VGroup>
+	<s:VGroup width="100%" height="100%" gap="0">
+		<components:BreadCrumbHeader firstText="Your Photo" firstTextClickHandler="onClickYourPhotoBreadCrumb"
+									 imageSource="{IconFactory.getIcon(IconFactory.REMOVE_ICON)}"
+									 />
 	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" 
-			  verticalAlign="middle" horizontalAlign="center" 
-			  includeIn="callState">
-		<s:BusyIndicator scaleX="3" scaleY="3"/>
-		<s:Label text="Calling Flickr..." color="#ffffff"/>
-			<s:Label text="Requesting removal of photo" color="#ffffff"/>
-			<s:Label text="from set {_setTitle}" color="#ffffff"/>
-	</s:VGroup>
-	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" 
-			  verticalAlign="middle" horizontalAlign="center" 
-			  includeIn="errorState">
-		<s:Label text="error removing set" color="#ffffff"/>
-		<s:Button label="back" click="navigator.popView()"/>
-	</s:VGroup>
-	
-	<s:VGroup horizontalCenter="0" verticalCenter="0" 
-			  verticalAlign="middle" horizontalAlign="center" 
-			  includeIn="completeState">
-		<s:Label text="your photo was removed" color="#ffffff"/>
-		<s:Label text="from set {_setTitle}" color="#ffffff"/>
-		<s:Button label="back" click="navigator.popView()"/>
+		<s:VGroup width="100%" height="100%" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+			<s:SkinnableContainer width="100%" skinClass="skins.GreyBoxRoundCornersSkin">
+				
+				<s:VGroup includeIn="askState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:Label text="Do you want to remove" color="#ffffff"/>
+					<s:Label text="the photo from set {_setTitle}" color="#ffffff"/>
+					<s:Label text="it will not be removed from" color="#ffffff"/>
+					<s:Label text="your photostream" color="#ffffff"/>
+					<s:HGroup>
+						<s:Button label="OK,remove it" click="callFlickr()" skinClass="skins.SquareButtonSkin"/>
+						<s:Button label="No, go back" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
+					</s:HGroup>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="callState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+					<s:Label text="Calling Flickr..." color="#ffffff"/>
+					<s:Label text="Requesting removal of photo" color="#ffffff"/>
+					<s:Label text="from set {_setTitle}" color="#ffffff"/>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="completeState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:Label text="your photo was removed" color="#ffffff"/>
+					<s:Label text="from set {_setTitle}" color="#ffffff"/>
+					<s:Button label="back" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="errorState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:Label text="error removing set" color="#ffffff"/>
+					<s:Button label="back" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
+				</s:VGroup>
+				
+			</s:SkinnableContainer>
+		</s:VGroup>
+
 	</s:VGroup>
 	
 </s:View>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		xmlns:s="library://ns.adobe.com/flex/spark" title="EditPhotoView"
-		creationComplete="init()">
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		creationComplete="init()" xmlns:skins="skins.*" xmlns:components="components.*">
 	
 	<fx:Declarations>
 		<s:RadioButtonGroup id="visibilitySetting" 
@@ -24,9 +24,16 @@
 			
 			import spark.components.ActionBar;
 			
+			import statics.IconFactory;
 			import statics.Service;
 			
+			public var forCompiler:EditPhotoView;
+			
 			private var _service:FlickrService;
+			
+			[Bindable]private var _offset:int = 20;
+			[Bindable]private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*2;
+			[Bindable]private var _contentsWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*4;
 			
 			[Bindable]private var _savedTitle:String;
 			[Bindable]private var _newTitle:String;
@@ -37,7 +44,7 @@
 			[Bindable]private var _savedTags:String;
 			[Bindable]private var _newTags:String;
 			
-			[Bindable]private var _savedTag:String;
+			[Bindable]private var _savedTag:String = "";
 
 			[Bindable]private var _tagsAC:ArrayCollection = new ArrayCollection();
 			
@@ -188,20 +195,28 @@
 				_photoVO.setVisibility(isPublic,isFriend,isFamily,permComment,permAddmeta);
 			}
 			
+			private function onClickYourPhotoBreadCrumb():void{
+				navigator.popView();
+			}
+			
 		]]>
 	</fx:Script>
-<s:VGroup id="viewContent" width="100%" height="100%">
+<s:VGroup id="viewContent" width="100%" height="100%" gap="0">
+	
+	<components:BreadCrumbHeader firstText="Your Photo" firstTextClickHandler="onClickYourPhotoBreadCrumb"
+								 imageSource="{IconFactory.getIcon(IconFactory.EDIT_ICON)}"
+								 secondText="Edit Photo Details"/>
 	
 	<s:Scroller width="100%" height="100%">
 		<s:Group >
 			
-		<s:VGroup horizontalCenter="0" gap="50" top="20" bottom="50" paddingBottom="50" color="#dddddd" fontSize="20">
+		<s:VGroup paddingLeft="{_offset}" paddingRight="{_offset}" gap="50" top="20" bottom="50" paddingBottom="50" color="#dddddd" fontSize="20">
 			
-		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">			
-			<s:VGroup id="titleGroup">		
+		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">			
+			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">		
 				<s:Label text="Change title" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:Label text="Saved title: {_savedTitle}"/>
-				<s:TextInput text="{_newTitle}" width="100%" change="onChangeTitle(event)" color="#222222"/>
+				<s:TextInput text="{_newTitle}" width="{_contentsWidth}" change="onChangeTitle(event)" color="#222222"/>
 				<s:HGroup verticalAlign="middle">
 					<s:Button id="saveNewTitleBtn" label="Save new title" click="onClickSaveNewTitle(event)" color="#444444" skinClass="skins.SquareButtonSkin"/>
 					<s:BusyIndicator id="titleBusyIndicator" symbolColor="white" visible="false"/>
@@ -209,11 +224,11 @@
 			</s:VGroup>
 		</s:SkinnableContainer>
 			
-		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">		
-			<s:VGroup id="descriptionGroup">
+		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">		
+			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Change description" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:Label text="Saved description: {_savedDescription}"/>
-				<s:TextInput id="descInput" text="{_newDescription}" width="100%" change="onChangeDescription(event)" color="#222222"/>
+				<s:TextInput id="descInput" text="{_newDescription}" width="{_contentsWidth}" change="onChangeDescription(event)" color="#222222"/>
 				<s:HGroup verticalAlign="middle">
 					<s:Button id="saveNewDescBtn" label="Save new description" click="onClickSaveNewDesc(event)" color="#444444" skinClass="skins.SquareButtonSkin"/>
 					<s:BusyIndicator id="descBusyIndicator" symbolColor="white" visible="false"/>
@@ -221,25 +236,25 @@
 			</s:VGroup>
 		</s:SkinnableContainer>	
 			
-		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">		
-			<s:VGroup width="100%">
+		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">		
+			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Delete a tag" color="#ffffff" fontSize="30" fontWeight="bold"/>
-				<s:HGroup>
+				<s:HGroup verticalAlign="middle">
 					<s:Label text="Tap a tag to delete it" color="#dddddd" fontSize="22"/>
 					<s:BusyIndicator id="tagRemoveBusyIndicator" symbolColor="white" visible="false"/>
 				</s:HGroup>
 				<s:DataGroup id="tagsDG" width="100%" dataProvider="{_tagsAC}" itemRenderer="ItemRenderers.TagIRwithTap" contentBackgroundAlpha="0">
 					<s:layout>
-						<s:TileLayout/>
+						<s:TileLayout requestedColumnCount="1"/>
 					</s:layout>	
 				</s:DataGroup>	
 			</s:VGroup>
 		</s:SkinnableContainer>			
 			
-		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">	
-			<s:VGroup>
+		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">	
+			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Add a tag" color="#ffffff" fontSize="30" fontWeight="bold"/>
-				<s:TextInput id="tagInput" width="100%" color="#222222"/>
+				<s:TextInput id="tagInput" width="{_contentsWidth}" color="#222222"/>
 				<s:Label text="saved tag: {_savedTag}"/>
 				<s:HGroup verticalAlign="middle">
 					<s:Button id="saveNewTag" label="Save new tag" click="onClickSaveNewTag(event)" color="#444444" skinClass="skins.SquareButtonSkin"/>
@@ -248,10 +263,10 @@
 			</s:VGroup>
 		</s:SkinnableContainer>		
 			
-		<s:SkinnableContainer skinClass="skins.BlackBox" width="100%">	
-			<s:VGroup>
+		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">	
+			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Change visibility" color="#ffffff" fontSize="30" fontWeight="bold"/>
-				<s:HGroup>
+				<s:HGroup verticalAlign="middle">
 					<s:Label text="Visibility is set to {_visibility}"/>
 					<s:BusyIndicator id="visBusyIndicator" symbolColor="white" visible="false"/>
 				</s:HGroup>
@@ -263,8 +278,8 @@
 			</s:VGroup>
 		</s:SkinnableContainer>		
 		
-			<s:HGroup horizontalAlign="right" width="100%">
-				<s:Button label="Back" click="navigator.popView()" height="100" minWidth="100" skinClass="skins.SquareButtonSkin" fontSize="30"/>
+			<s:HGroup horizontalAlign="right" width="100%" paddingRight="{_offset}">
+				<s:Button label="Back" click="navigator.popView()" height="70" minWidth="100" skinClass="skins.SquareButtonSkin" fontSize="30"/>
 			</s:HGroup>	
 			
 		</s:VGroup>

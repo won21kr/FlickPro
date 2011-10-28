@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
 		xmlns:s="library://ns.adobe.com/flex/spark"
-		viewActivate="viewActivateHandler(event)" xmlns:components="components.*">
+		viewActivate="viewActivateHandler(event)" xmlns:components="components.*" xmlns:styles="styles.*">
+	
+	<!--
+	<s:actionContent>
+		<s:Button label="Create Set" click="navigator.pushView(CreateSetView)"/>
+		<s:Button label="Delete Set" click="navigator.pushView(DeleteSetView)"/>
+	</s:actionContent>
+	-->
 
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+	</fx:Declarations>
+	
 	<s:states>
 			<s:State name="loadingState"/>
 			<s:State name="errorState"/>
@@ -18,14 +29,23 @@
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
 			
-			import mx.collections.ArrayCollection;
-			import mx.core.FlexGlobals;
+			import components.PopUpQA;
 			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.core.FlexGlobals;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.ButtonBarButton;
 			import spark.events.ViewNavigatorEvent;
 			
+			import statics.IconFactory;
 			import statics.NSID;
 			import statics.Service;
 			import statics.ViewTypes;
+			
+			[Bindable]public var forCompiler:BrowseSets;
 			
 			[Bindable]
 			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
@@ -37,6 +57,9 @@
 			private var _setsData:ArrayCollection;
 			[Bindable]
 			private var _setVOs:ArrayCollection = new ArrayCollection();
+			
+			private var _setVOsByTime:ArrayCollection = new ArrayCollection();
+			private var _setVOsByAZ:ArrayCollection = new ArrayCollection();
 			
 			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
@@ -58,11 +81,11 @@
 					currentState = "loadingState";
 					if(!_service)_service = Service.getService();
 					
-					trace("BrowseSets: NSID.getNSIS()) "+NSID.getNSID());
-					trace("BrowseSets: _service.token() "+_service.token);
+					//trace("BrowseSets: NSID.getNSIS()) "+NSID.getNSID());
+					//trace("BrowseSets: _service.token() "+_service.token);
 					//trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
 					var id:String = NSID.getNSID();
-					trace("BrowseSets: id: "+id);
+					//trace("BrowseSets: id: "+id);
 					_service.photosets.getList(id);
 					
 					/*
@@ -87,21 +110,41 @@
 				
 			private function handleSetList(event:FlickrResultEvent):void{ 
 				
-				trace("BrowseSets: handleSetList: e.data.photoSets: "+event.data.photoSets);
+				//trace("BrowseSets: handleSetList: e.data.photoSets: "+event.data.photoSets);
 				if(event.success){
-					trace("BrowseSets: success");
+					//trace("BrowseSets: success");
 					var setData:Array = event.data.photoSets as Array; 
 					_setVOs = new ArrayCollection(new Array);
 					
 					for(var i:uint = 0; i < setData.length; i ++){ 
-						trace("i:"+i);
+						//trace("i:"+i);
 						var vo:SetVO = new SetVO();
 						vo.id = setData[i].id;
 						vo.title = setData[i].title;
+						vo.description = setData[i].description;
 						vo.service = _service;
 						_setVOs.addItem(vo);
 					}
-					trace("BrowseSets: _setVOs.length "+_setVOs.length);
+					//trace("BrowseSets: _setVOs.length "+_setVOs.length);
+					
+					//save sorted by time
+					for each(var setVO:Object in _setVOs){
+						_setVOsByTime.addItem(setVO);
+					}
+					
+					//save sorted by AZ
+					var sort:Sort = new Sort();
+					sort.fields = [new SortField("title")]
+					_setVOs.sort = sort;
+					_setVOs.refresh();
+					
+					for each(var item:Object in _setVOs){
+						_setVOsByAZ.addItem(item);
+					}
+					
+					//init as sorted by time
+					_setVOs = _setVOsByTime;
+					_setVOs.refresh();
 					
 					currentState = "completeState";
 					_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList);
@@ -119,6 +162,36 @@
 				dataObject.selectedSet = setList.selectedItem;
 				dataObject.viewType = ViewTypes.SET;
 				navigator.pushView(MultiplePhotosView,dataObject);
+			}
+						
+			private function sortAlphabetically():void
+			{	
+				_setVOs = _setVOsByAZ;
+				_setVOs.refresh();
+			}
+			
+			private function sortByTime():void
+			{
+				_setVOs = _setVOsByTime;
+				_setVOs.refresh();	
+			}
+			
+			private function addSet():void
+			{
+				navigator.pushView(CreateSetView);
+			}
+			
+			private function removeSet():void
+			{
+				navigator.pushView(DeleteSetView);
+			}
+			
+			private function question():void
+			{
+				// TODO Auto Generated method stub
+				var popup:PopUpQA = new PopUpQA();
+				popup.show();
+				
 			}
 			
 		]]>
@@ -141,22 +214,34 @@
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~completeState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
 	
-	<s:VGroup 
-			  includeIn="completeState">
+	<s:VGroup width="100%" height="100%"
+			  includeIn="completeState,loadingState" gap="0">
 
-		<s:SkinnableContainer id="header" width="{_headerWidth}" height="50" skinClass="skins.BreadCrumbBoxSkin" includeIn="completeState">
-			<s:HGroup>			
-				<components:HTMLLabel text="Your Sets" color="#ffffff" fontSize="24"/> 
-			</s:HGroup>
-		</s:SkinnableContainer>		
+		<components:BreadCrumbHeader firstText="Your Sets"/>
 		
-	<s:List id="setList" height="{_listHeight}" width="100%"
+		<components:ButtonBarHeader includeIn="completeState"
+			handlers="{new ArrayCollection([
+				sortAlphabetically,
+				sortByTime,
+				addSet,
+				removeSet,
+				question   ])}"
+			
+			icons='{new ArrayCollection([	
+				IconFactory.SORT_BY_ALPHA,
+				IconFactory.SORT_BY_TIME,
+				IconFactory.ADD_ICON,
+				IconFactory.REMOVE_ICON,
+				IconFactory.QUESTION_ICON   ])}'/>
+		
+	<s:List id="setList" height="100%" width="100%"
 			change="onClickList()" 
 			dataProvider="{_setVOs}"
-			contentBackgroundAlpha="0">
+			contentBackgroundAlpha="0"
+			includeIn="completeState">
 		<s:itemRenderer>
 			<fx:Component>
-				<s:IconItemRenderer alternatingItemColors="{[0xbbbbbb,0xcccccc]}" labelField="title" decorator="@Embed('assets/images/greenArrowRight3.png')"/>
+				<s:IconItemRenderer alternatingItemColors="{[0x333333,0x444444]}" color="#ffffff" downColor="#3fa9f5" labelField="title" decorator="@Embed('assets/images/buttonIcons40x40/plusLP.png')"/>
 			</fx:Component>
 		</s:itemRenderer>
 

@@ -1,4 +1,4 @@
-package com.squidzoo.Utils
+package com.squidzoo.IdUtils
 {
 	public class UniqueStringUtil
 	{

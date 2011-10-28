@@ -52,7 +52,7 @@
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
 			//import com.flexcapacitor.controls.WebView;
-			import components.MenuPopUp;
+			import components.popups.MenuPopUp;
 			import mx.utils.ObjectUtil;
 			import spark.events.ViewNavigatorEvent;
 			import statics.NSID;

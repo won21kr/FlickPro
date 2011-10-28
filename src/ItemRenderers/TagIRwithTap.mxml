@@ -22,7 +22,7 @@
 			import flashx.textLayout.tlf_internal;
 			
 			import mx.events.FlexEvent;
-			
+			public var forCompiler:TagIRwithTap;
 			[Bindable]
 			private var _name:String;
 			private var _id:String;
