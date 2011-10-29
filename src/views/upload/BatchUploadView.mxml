@@ -18,7 +18,11 @@
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			
 			import components.PrivacySettingsPopup;
+			import components.popups.HelpWindow;
 			import components.popups.MenuPopUp;
+			
+			import factories.HelpFactory;
+			import factories.IconFactory;
 			
 			import helpers.GalleryBrowser;
 			import helpers.Uploader;
@@ -27,7 +31,6 @@
 			
 			import spark.events.ViewNavigatorEvent;
 			
-			import statics.IconFactory;
 			import statics.Service;
 			
 			private var _browser:GalleryBrowser;
@@ -216,7 +219,9 @@
 			}
 			
 			private function question():void{
-				
+				var helpWindow:HelpWindow = new HelpWindow();
+				helpWindow.content = HelpFactory.getHelpContent(HelpFactory.UPLOAD);
+				helpWindow.show();
 			}
 			
 		]]>

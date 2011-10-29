@@ -23,7 +23,7 @@
 			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
 			
-			import statics.IconFactory;
+			import factories.IconFactory;
 			import statics.Service;
 			
 			public var forCompiler:AddToSetView;
@@ -76,7 +76,7 @@
 	
 	<s:VGroup width="100%" height="100%" paddingBottom="20" paddingTop="20" paddingRight="20" paddingLeft="20">
 		
-		<s:SkinnableContainer width="{_containerWidth}" skinClass="skins.GreyBoxRoundCornersSkin">
+		<s:SkinnableContainer width="{_containerWidth}" skinClass="skins.BlueRectangleWithRoundCornersSkin">
 			
 			<s:VGroup width="100%"  
 					  paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="30">

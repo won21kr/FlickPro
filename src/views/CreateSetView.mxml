@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:styles="styles.*"
+		xmlns:components="components.*"		
+		creationComplete="creationCompleteHandler(event)" >
+	<fx:Script>
+		<![CDATA[
+			import factories.IconFactory;
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="startState"/>
+		<s:State name="waitState"/>
+		<s:State name="resultState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import queries.PhotoIDQuery;
+			
+			import spark.filters.DropShadowFilter;
+			import spark.transitions.SlideViewTransition;
+			
+			import statics.Service;
+			
+			[Bindable]private var _textInputWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 80;
+			
+			private var _newTitle:String = "";
+			private var _newDescription:String = "";
+			private var _service:FlickrService;
+			[Bindable]private var _newSetTitle:String = "";
+
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			
+			private function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState="startState";
+				
+				_service = Service.getService();
+				
+				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.FIRST_PHOTO_ID,onFirstPhotoId);
+				
+			}
+
+			private function onNewTitle(event:Event):void{
+				_newTitle = event.currentTarget.text;
+			}
+			
+			private function onNewDescription(event:Event):void{
+				_newDescription = event.currentTarget.text;
+			}
+			
+			private function onClickCreate(event:Event):void{
+				
+				if(_newTitle != ""){
+					currentState = "waitState";
+					var query:PhotoIDQuery = new PhotoIDQuery();
+					query.requestPhotoId();
+				}
+			}
+			
+			/*
+			*Handles photo id received from Flickr and calls
+			*Flickr to create a new set
+			*/
+			private function onFirstPhotoId(event:CustomDataEvent):void
+			{
+				var photoId:String = event.string;
+				//TODO: promt that title should be at least 1 character long in case its not
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_CREATE,onPhotoSetCreate);
+				_service.photosets.create(_newTitle,_newDescription,photoId);
+			}
+			
+			protected function onPhotoSetCreate(event:Event):void
+			{
+				currentState = "resultState";
+				_newSetTitle = _newTitle;
+			}
+			
+			private function handleSwipe(event:TransformGestureEvent):void
+			{
+				if (event.offsetX == 1 ) 
+				{
+					slideRight();	
+				}
+			}
+			
+			private function onClickYourSetsBreadCrumb():void
+			{
+				slideRight();
+			}
+			
+			private function onClickCancel():void{
+				slideRight();
+			}
+			
+			private function slideRight():void{
+				var rightSlide:SlideViewTransition = new SlideViewTransition();
+				rightSlide.direction = "right";					
+				navigator.pushView(BrowseSets,null,null,rightSlide);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup width="100%" height="100%" gap="0">	
+		
+	<!--BreadCrumbHeader-->
+		
+	<components:BreadCrumbHeader 	firstText="Your sets" firstTextClickHandler="onClickYourSetsBreadCrumb"	
+									imageSource="{IconFactory.getIcon(IconFactory.ADD_ICON)}" secondText="Create new set"/>
+		
+	<s:VGroup gap="30" horizontalCenter="0" paddingLeft="20" paddingRight="20" paddingTop="20" paddingBottom="20">
+	
+		<s:TextArea contentBackgroundAlpha="0" borderVisible="false" editable="false" selectable="false"
+					styleName="bodyText" width="100%" height="100" includeIn="startState">
+			<s:text>To create a set, Flickr requires an already uploaded photo. 
+			By default Fastr adds the latest photo in your photostream. You can delete it from the set in the photo view page.
+			</s:text>
+		</s:TextArea>
+		
+		<s:VGroup height="100" includeIn="waitState" paddingLeft="20" verticalAlign="middle" verticalCenter="0">
+			<s:BusyIndicator scaleX="2" scaleY="2" symbolColor="white"/>
+		</s:VGroup>
+		
+		<s:VGroup height="100" includeIn="resultState" paddingLeft="20" verticalAlign="middle" verticalCenter="0">
+			<s:Label text="Your new set has been created:" color="#ffffff" fontWeight="bold" fontSize="20"/>
+			<s:Label text="{_newSetTitle}" color="#ffffff" fontWeight="bold" fontSize="20"/>
+		</s:VGroup>
+		
+		<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" contentBackgroundAlpha="0" width="100%">
+			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="50">				
+				<s:VGroup>
+					<s:Label text="Title" styleName="headerTextGrey" filters="{[graphicsLib.getDropShadowFilterWhite()]}"/>
+					<s:TextInput width="{_textInputWidth}" change="onNewTitle(event)" contentBackgroundAlpha="1" contentBackgroundColor="#ffffff"/>
+				</s:VGroup>
+				
+				<s:VGroup>
+					<s:Label text="Description" styleName="headerTextGrey" filters="{[graphicsLib.getDropShadowFilterWhite()]}"/>
+					<s:TextInput width="{_textInputWidth}" change="onNewDescription(event)" contentBackgroundAlpha="1" contentBackgroundColor="#ffffff"/>
+				</s:VGroup>
+				
+				<s:HGroup gap="20">		
+					<s:Button label="Create set" click="onClickCreate(event)" skinClass="skins.SquareButtonSkin"/>
+					<s:Button label="Cancel" click="onClickCancel()" skinClass="skins.SquareButtonSkin"/>
+				</s:HGroup>
+			</s:VGroup>
+		
+		</s:SkinnableContainer>
+	
+	</s:VGroup>		
+	
+	</s:VGroup>
+	
+</s:View>

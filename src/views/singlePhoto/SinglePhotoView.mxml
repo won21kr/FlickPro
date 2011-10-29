@@ -40,7 +40,7 @@
 			import spark.events.ViewNavigatorEvent;
 			import spark.transitions.SlideViewTransition;
 			
-			import statics.IconFactory;
+			import factories.IconFactory;
 			import statics.LatestSearchTag;
 			import statics.Service;
 			import statics.ViewTypes;
@@ -422,23 +422,25 @@
 				
 				<s:SkinnableContainer width="{_containerWidth}" skinClass="skins.SpeechBubbleSkin">	
 					<s:VGroup gap="20">
-						<s:VGroup>
+						<s:VGroup gap="0">
 							<s:Label text="Title" color="#ffffff" fontSize="22"/>
 							<s:TextArea selectable="false" editable="false" borderVisible="false" contentBackgroundAlpha="0" 
-										id="titleArea" width="{_contentWidth}" color="#222222"/>
+										id="titleArea" width="{_contentWidth}" color="#222222" paddingTop="0" />
 						</s:VGroup>
-						<s:VGroup>						
+						<s:VGroup gap="0">						
 							<s:Label text="Description" color="#ffffff" fontSize="22"/>
 							<s:TextArea selectable="false" editable="false" borderVisible="false" contentBackgroundAlpha="0" 
 										id="descArea" width="{_contentWidth}" color="#222222"/>
 						</s:VGroup>
 						<s:VGroup>						
 							<s:Label text="Visibility" color="#ffffff" fontSize="22"/>
-							<s:Label id="privacySettingLabel" color="#222222" text="{_privacySetting}"/>	
+							<s:TextArea id="privacySettingLabel" color="#222222" text="{_privacySetting}"
+										selectable="false" editable="false" borderVisible="false" contentBackgroundAlpha="0"/>	
 						</s:VGroup>
 						<s:VGroup>						
 							<s:Label text="Owner name" color="#ffffff" fontSize="22"/>
-							<s:Label id="ownerNameLabel" color="#222222" text="{_ownerName}"/>	
+							<s:TextArea id="ownerNameLabel" color="#222222" text="{_ownerName}"
+										selectable="false" editable="false" borderVisible="false" contentBackgroundAlpha="0"/>	
 						</s:VGroup>
 						<s:VGroup>
 							

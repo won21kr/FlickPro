@@ -2,10 +2,10 @@
 @namespace s "library://ns.adobe.com/flex/spark";
 
 global{
-	modalTransparency: 0.6;
-	modalTransparencyBlur: 5;
-	modalTransparencyColor: #000000;
-	modalTransparencyDuration: 100;
+	modalTransparency: 0.1;
+	modalTransparencyBlur: 2;
+	modalTransparencyColor: #777777;
+	modalTransparencyDuration: 0;
 }
 
 s|ActionBar

@@ -24,7 +24,7 @@
 			
 			import spark.components.ActionBar;
 			
-			import statics.IconFactory;
+			import factories.IconFactory;
 			import statics.Service;
 			
 			public var forCompiler:EditPhotoView;
@@ -212,7 +212,7 @@
 			
 		<s:VGroup paddingLeft="{_offset}" paddingRight="{_offset}" gap="50" top="20" bottom="50" paddingBottom="50" color="#dddddd" fontSize="20">
 			
-		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">			
+		<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" width="{_containerWidth}">			
 			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">		
 				<s:Label text="Change title" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:Label text="Saved title: {_savedTitle}"/>
@@ -224,7 +224,7 @@
 			</s:VGroup>
 		</s:SkinnableContainer>
 			
-		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">		
+		<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" width="{_containerWidth}">		
 			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Change description" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:Label text="Saved description: {_savedDescription}"/>
@@ -236,7 +236,7 @@
 			</s:VGroup>
 		</s:SkinnableContainer>	
 			
-		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">		
+		<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" width="{_containerWidth}">		
 			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Delete a tag" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:HGroup verticalAlign="middle">
@@ -251,7 +251,7 @@
 			</s:VGroup>
 		</s:SkinnableContainer>			
 			
-		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">	
+		<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" width="{_containerWidth}">	
 			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Add a tag" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:TextInput id="tagInput" width="{_contentsWidth}" color="#222222"/>
@@ -263,7 +263,7 @@
 			</s:VGroup>
 		</s:SkinnableContainer>		
 			
-		<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">	
+		<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" width="{_containerWidth}">	
 			<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">	
 				<s:Label text="Change visibility" color="#ffffff" fontSize="30" fontWeight="bold"/>
 				<s:HGroup verticalAlign="middle">

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		creationComplete="init()" xmlns:components="components.*" xmlns:styles="styles.*">
+	<fx:Script>
+		<![CDATA[
+			import factories.IconFactory;
+			
+			import views.BrowseSets;
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	
+	
+	<s:states>
+		<s:State name="startState"/>
+		<s:State name="waitState"/>
+		<s:State name="resultState"/>
+		<s:State name="errorState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			import spark.transitions.SlideViewTransition;
+			import VOs.SetVO;
+			
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			
+			import statics.Service;
+			
+			private var _setVO:SetVO;
+			private var _service:FlickrService;
+			[Bindable]private var _title:String;
+			
+			[Bindable]private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 40;
+			
+			[Bindable]private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			
+			private function init():void{
+				currentState = "startState";
+				_service = Service.getService();
+				_setVO = data as SetVO;	
+				_title = _setVO.title;
+				this.addEventListener( TransformGestureEvent.GESTURE_SWIPE, handleSwipe );
+			}
+			
+			private function onClickDelete():void{
+				currentState = "waitState";
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_DELETE,onDeleteResult);
+				_service.photosets.deleteSet(_setVO.id);
+			}
+			
+			protected function onDeleteResult(event:Event):void
+			{
+				currentState = "resultState";
+				slideRight();
+			}
+			
+			private function handleSwipe(event:TransformGestureEvent):void
+			{
+				if (event.offsetX == 1 ) 
+				{
+					slideRight();	
+				}
+			}
+			
+			private function onClickYourSetsBreadCrumb():void
+			{
+				slideRight();
+			}
+			
+			private function slideRight():void{
+				var rightSlide:SlideViewTransition = new SlideViewTransition();
+				rightSlide.direction = "right";					
+				navigator.pushView(BrowseSets,null,null,rightSlide);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<styles:GraphicsLib id="graphicsLib"/>
+	
+	<s:VGroup width="100%" height="100%" gap="0">
+		
+		<components:BreadCrumbHeader firstText="Your Sets" firstTextClickHandler="onClickYourSetsBreadCrumb"
+									 imageSource="{IconFactory.getIcon(IconFactory.REMOVE_ICON)}"
+									 secondText="Delete this set"/>
+	
+		<s:VGroup gap="30" horizontalCenter="0" verticalCenter="0" horizontalAlign="center" paddingLeft="20" paddingRight="20" paddingTop="20" paddingBottom="20">
+		
+			<!--startState-->
+			
+			<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" contentBackgroundAlpha="0" width="{_containerWidth}">
+				<s:VGroup x="0" y="0" width="90%" gap="50" paddingBottom="20" paddingLeft="20"
+						  paddingRight="20" paddingTop="20">	
+					
+					<s:Label text="Set: {_title}" color="#ffffff"/>
+					
+					<s:TextArea includeIn="startState" selectable="false" editable="false" 
+								borderVisible="false" contentBackgroundAlpha="0" width="100%" height="200">
+						<s:text>Are you sure you want to delete your set? 
+							Deleting a set does not delete the images inside. 
+						They are still available in your photostream</s:text>
+					</s:TextArea>
+					
+					<s:HGroup gap="20" includeIn="startState">
+						<s:Button label="Yes, delete" 
+								  skinClass="skins.SquareButtonSkin" click="onClickDelete()"/>
+						<s:Button label="Cancel" skinClass="skins.SquareButtonSkin" click="navigator.popView()"/>
+					</s:HGroup>
+					
+					<s:VGroup width="100%" height="100"  verticalAlign="middle" horizontalAlign="center" 
+							  verticalCenter="0" horizontalCenter="0"
+							  includeIn="waitState">
+						<s:BusyIndicator scaleX="2" scaleY="2" symbolColor="white"/>
+					</s:VGroup>
+					
+					<s:VGroup includeIn="resultState" verticalAlign="middle" horizontalAlign="center" 
+							  verticalCenter="0" horizontalCenter="0" width="100%" height="300">
+						<s:TextArea selectable="false" editable="false" includeIn="resultState"
+									borderVisible="false" contentBackgroundAlpha="0" width="100%" height="100">
+							<s:text>Your set has been deleted</s:text>
+							<s:Button label="Back to set list" includeIn="resultState" skinClass="skins.SquareButtonSkin" click="navigator.pushView(BrowseSets)"/>
+						</s:TextArea>	
+					</s:VGroup>
+					
+				</s:VGroup>
+				
+			</s:SkinnableContainer>
+		
+	
+			
+		<!--resultState-->	
+		
+			<s:VGroup includeIn="resultState"
+					  width="100%" height="100%" 
+					  verticalAlign="middle" horizontalAlign="center" 
+					  verticalCenter="0" horizontalCenter="0">
+				
+					
+			</s:VGroup>	
+			
+		</s:VGroup>
+	
+	</s:VGroup>
+	
+</s:View>

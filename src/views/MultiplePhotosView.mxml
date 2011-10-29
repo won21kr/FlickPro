@@ -22,7 +22,6 @@
 			import Interfaces.IPhotoQuery;
 			
 			import ItemRenderers.PhotoListIGridItemRenderer;
-			import ItemRenderers.PhotoListVerticalItemRenderer;
 			
 			import VOs.DataObject;
 			import VOs.SetVO;
@@ -32,6 +31,11 @@
 			import com.squidzoo.eventSystem.EventCentral;
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
+			
+			import components.popups.HelpWindow;
+			
+			import factories.HelpFactory;
+			import factories.IconFactory;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
@@ -44,7 +48,6 @@
 			import spark.layouts.supportClasses.LayoutBase;
 			import spark.transitions.SlideViewTransition;
 			
-			import statics.IconFactory;
 			import statics.ViewTypes;
 			
 			import views.singlePhoto.SinglePhotoView;
@@ -216,9 +219,7 @@
 				navigator.pushView(SingleSetDeleteSet,_setVO);
 			}
 			
-			private function question():void{
-				trace("question");
-			}
+			
 			
 			/*
 			* prev/next
@@ -262,6 +263,24 @@
 				navigator.pushView(MultiplePhotosView,this.data);
 			}
 			
+			private function questionStateSet():void{
+				var helpWindow:HelpWindow = new HelpWindow();
+				helpWindow.content = HelpFactory.getHelpContent(HelpFactory.VIEW_SINGLE_SET);
+				helpWindow.show();
+			}
+			
+			private function questionStateStream():void{
+				var helpWindow:HelpWindow = new HelpWindow();
+				helpWindow.content = HelpFactory.getHelpContent(HelpFactory.VIEW_PHOTOSTREAM);
+				helpWindow.show();
+			}
+			
+			private function questionStateSearch():void{
+				var helpWindow:HelpWindow = new HelpWindow();
+				helpWindow.content = HelpFactory.getHelpContent(HelpFactory.VIEW_PHOTOSTREAM);
+				helpWindow.show();
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -295,7 +314,7 @@
 									setViewByGrid,
 									editSet,
 									deleteSet,
-									question   ])}"
+									questionStateSet   ])}"
 									
 									icons='{new ArrayCollection([	
 									IconFactory.VERT_LIST_ICON,
@@ -313,7 +332,7 @@
 									setViewByGrid,
 									onClickNext,
 									onClickPrevious,
-									question
+									questionStateSearch
 									])}"
 									
 									icons='{new ArrayCollection([	
@@ -334,7 +353,7 @@
 										setViewByGrid,
 										onClickNext,
 										onClickPrevious,
-										question
+										questionStateStream
 									])}"
 									
 									icons='{new ArrayCollection([	

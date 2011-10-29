@@ -83,8 +83,8 @@
 				//trace("data: "+data+" _service: "+_service+" nsid: "+NSID.getNSID());
 				var id:String = NSID.getNSID();
 				trace("BrowseSets: id: "+id);
-				_service.photosets.getList(id);
 				_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
+				_service.photosets.getList(id);
 			} 
 			
 			private function onError(event:FlickrError):void{

@@ -116,6 +116,7 @@
 					
 					var contextObj:Object = new Object();
 					contextObj.image = imageComponent.source.bitmapData;
+					contextObj.state = _originState;
 						
 					if (event.offsetX == 1 ) 
 					{

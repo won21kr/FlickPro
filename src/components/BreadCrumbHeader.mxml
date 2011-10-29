@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" width="{_headerWidth}" height="70" skinClass="skins.BreadCrumbBoxSkin" xmlns:components="components.*" xmlns:styles="styles.*">
+
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.chewtinfoil.utils.StringUtils;
+			
+			import mx.core.FlexGlobals;
+			
+			[Bindable]private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+		
+			[Bindable]private var _firstText:String;
+			[Bindable]private var _secondText:String;
+			[Bindable]private var _firstHandler:Function;
+			[Bindable]private var _secondHandler:Function;
+			[Bindable]private var _imageSource:Bitmap;
+			private var _truncationPosition:int = 25;
+			
+			public function set truncationAt(position:int):void{
+				_truncationPosition = position;
+			}
+			
+			public function set firstText(text:String):void{
+				_firstText = text;
+			}
+			
+			public function set imageSource(img:Bitmap):void{
+				if(img==null){
+					_imageSource = null;
+				}else{
+					_imageSource = img;					
+				}
+			}
+			
+			public function set secondText(text:String):void{
+				_secondText = StringUtils.truncate(text,_truncationPosition);
+				
+			}
+			
+			public function set firstTextClickHandler(handler:Function):void{
+				_firstHandler = handler;
+			}
+			
+			public function set secondTextClickHandler(handler:Function):void{
+				_secondHandler = handler;
+			}
+			
+			public function handleFirstTextHandler():void{
+				if(_firstHandler!=null)_firstHandler();
+			}
+			
+			public function handleSecondTextHandler():void{
+				if(_secondHandler!=null)_secondHandler();	
+			}
+			
+			private function doNothing():Function{
+				return new Function();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--display-->
+	
+		<s:HGroup filters="{graphicsLib.getDropShadowFilterWhite()}" verticalAlign="middle">			
+			
+			<components:HTMLLabel text="{_firstText}" color="#555555" fontSize="26" fontWeight="bold" click="handleFirstTextHandler()"/> 
+			<components:HTMLLabel id="arrow" text=" > " color="#555555" fontSize="26" fontWeight="bold"/>
+			<s:Image source="{_imageSource}" scaleY="0.8" scaleX="0.8" filters="{[]}"/>
+			<components:HTMLLabel text="{_secondText}" color="#555555" fontSize="26" fontWeight="bold" click="handleSecondTextHandler()"/>
+			
+		</s:HGroup>
+	
+</s:SkinnableContainer>

@@ -12,16 +12,17 @@
 		<s:State name="normal" />
 	</s:states>
 	
-	<s:Rect width="100%" height="100%">
+	<s:Rect width="100%" height="100%" radiusX="10" radiusY="10">
 		<s:fill>
-			<s:LinearGradient>
-				<s:GradientEntry color="#ffffff"/>
-				<s:GradientEntry color="#ffffff"/>
+			<s:LinearGradient rotation="90" >
+				<s:GradientEntry color="#8ccbf9"/>
+				<s:GradientEntry color="#3fa9f5"/>
 			</s:LinearGradient>
 		</s:fill>
 	</s:Rect>
 	
-	<s:Group id="contentGroup" verticalCenter="0" horizontalCenter="0"/><!---->
+	<s:Group id="contentGroup" verticalCenter="0" horizontalCenter="0"/>
+	
 	<!-- SkinParts
 	name=contentGroup, type=spark.components.Group, required=false
 	-->

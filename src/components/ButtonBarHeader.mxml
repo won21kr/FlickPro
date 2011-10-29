@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  width="{_headerWidth}" height="100" 
+					  skinClass="skins.ButtonBarBoxSkin">
+
+	<fx:Script>
+		<![CDATA[
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import spark.components.Image;
+			
+			import factories.IconFactory;
+			
+			private const MAX_NUM_BUTTONS:int = 5;
+			[Bindable]private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			[Bindable]private var _buttonObjects:ArrayCollection;
+			private var _handlers:ArrayCollection;
+			
+			public function set handlers(ac:ArrayCollection):void{
+				
+				/*if the 'set icons' function has already created hash maps, assign the handlers to the maps,
+				else store the handlers in an array until 'set icons' is called*/
+				
+				if(_buttonObjects){
+					for(var i:int = 0;i < ac.length; i++){
+						_buttonObjects.getItemAt(i).handler = ac.getItemAt(i) as Function;
+					}
+				}else{
+					_handlers = ac;
+				}
+			}
+			
+			public function set icons(ac:ArrayCollection):void{
+				
+				/*'set icons' created the value objects, since the bitmaps were not assignable to the object through getItemAt*/
+				_buttonObjects = new ArrayCollection();
+					
+					for(var i:int = 0;i < MAX_NUM_BUTTONS;i++){
+						var obj:Object = new Object();
+						obj.label = "";
+						obj.icon = IconFactory.getIcon( ac.getItemAt(i) as String );
+						
+						/*if there are handlers, assign them to the array object*/
+						
+						if(_handlers){
+							obj.handler = _handlers.getItemAt(i) as Function;
+						}
+						
+						_buttonObjects.addItemAt(obj,i);
+					}
+			}
+			
+			private function onClickButtonBar(event:MouseEvent):void{
+				_buttonObjects.getItemAt(buttonBar.selectedIndex).handler();
+				buttonBar.selectedIndex = -1;
+			}
+		]]>
+	</fx:Script>
+	
+	
+		<s:ButtonBar id="buttonBar"
+					 requireSelection="false"
+					 width="400"
+					 dataProvider="{_buttonObjects}"
+					 click="onClickButtonBar(event)"
+					 skinClass="skins.CustomButtonBarSkin.CustomButtonBarSkin"/>
+	
+</s:SkinnableContainer>

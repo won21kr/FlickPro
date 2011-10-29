@@ -19,7 +19,6 @@
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
-			import components.popups.ButtonBarPopUp;
 			import components.popups.MenuPopUp;
 			
 			import helpers.NSIDManager;

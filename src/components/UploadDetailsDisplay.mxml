@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" width="{_componentWidth}" height="70" skinClass="skins.UploadDetailsSkin" 
+					  xmlns:styles="styles.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<styles:GraphicsLib id="graphicsLib"/>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.chewtinfoil.utils.StringUtils;
+			
+			import mx.core.FlexGlobals;
+			
+			[Bindable]private var _setSelection:String;
+			[Bindable]private var _titleSelection:String;
+			[Bindable]private var _descriptionSelection:String;
+			[Bindable]private var _tagsSelection:String;
+			[Bindable]private var _visibility:String;
+			
+			[Bindable]private var _componentWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			[Bindable]private var _halfScreenWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth/2;
+			
+			public function set title(value:String):void{
+				_titleSelection = StringUtils.truncate(value,25);
+				/*
+				if(_titleSelection.length>0){
+					titleLabel.visible = true;
+					titleValue.visible = true;
+				}
+				*/
+			}
+			
+			public function set description(value:String):void{
+				_descriptionSelection = StringUtils.truncate(value,20);
+				/*
+				if(_descriptionSelection.length>0){
+					descLabel.visible = true;
+					descValue.visible = true;
+				}
+				*/
+			}
+			
+			public function set set(value:String):void{
+				_setSelection = StringUtils.truncate(value,20);
+				/*
+				if(_setSelection.length>0){
+					setLabel.visible = true;
+					setValue.visible = true;
+				}
+				*/
+			}
+			
+			public function set tags(value:String):void{
+				_tagsSelection = StringUtils.truncate(value,20);
+				/*
+				if(_tagsSelection.length>0){
+					tagsLabel.visible = true;
+					tagsValue.visible = true;
+				}
+				*/
+			}
+			
+			public function set privacy(value:String):void{
+				_visibility = value;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" height="50" paddingBottom="10" paddingLeft="20" paddingRight="20" paddingTop="10">
+		<s:HGroup width="200">
+			
+			<s:VGroup>
+				<s:Label id="visibility" text="Visibility: " styleName="smallOffWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				<s:Label id="setLabel"  text="Set: " styleName="smallOffWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>			
+				<s:Label id="titleLabel" text="Title: " styleName="smallOffWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				
+			</s:VGroup>
+			<s:VGroup >			
+				<s:Label id="visibilityValue" text="{_visibility}"  styleName="smallWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				<s:Label id="setValue" text="{_setSelection}"  styleName="smallWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				<s:Label id="titleValue" text="{_titleSelection}"  styleName="smallWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+			</s:VGroup>
+		</s:HGroup>
+		
+		<s:HGroup width="200">
+			<s:VGroup>
+				<s:Label id="descLabel" text="Desc: " styleName="smallOffWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				<s:Label id="tagsLabel" text="Tags: "  styleName="smallOffWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				
+			</s:VGroup>
+			<s:VGroup>
+				<s:Label id="descValue" text="{_descriptionSelection}"  styleName="smallWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				<s:Label  id="tagsValue" text="{_tagsSelection}"  styleName="smallWhiteText" filters="{[graphicsLib.getDropShadowFilterClose()]}"/>
+				
+			</s:VGroup>
+		</s:HGroup>
+	</s:HGroup>
+	
+</s:SkinnableContainer>

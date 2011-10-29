@@ -158,7 +158,7 @@
 		<s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" verticalAlign="middle" gap="50"
 				  width="100%" height="100%" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
 			
-			<s:SkinnableContainer skinClass="skins.GreyBoxRoundCornersSkin" width="{_containerWidth}">			
+			<s:SkinnableContainer skinClass="skins.BlueRectangleWithRoundCornersSkin" width="{_containerWidth}">			
 				<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20" gap="10">		
 		
 					<s:VGroup includeIn="setSelectionState" verticalCenter="0" horizontalCenter="0">

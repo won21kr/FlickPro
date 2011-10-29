@@ -29,7 +29,10 @@
 			import com.adobe.webapis.flickr.FlickrService;
 			import com.adobe.webapis.flickr.events.FlickrResultEvent;
 			
-			import components.PopUpQA;
+			import components.popups.HelpWindow;
+			
+			import factories.HelpFactory;
+			import factories.IconFactory;
 			
 			import mx.collections.ArrayCollection;
 			import mx.collections.Sort;
@@ -40,7 +43,6 @@
 			import spark.components.ButtonBarButton;
 			import spark.events.ViewNavigatorEvent;
 			
-			import statics.IconFactory;
 			import statics.NSID;
 			import statics.Service;
 			import statics.ViewTypes;
@@ -189,9 +191,9 @@
 			private function question():void
 			{
 				// TODO Auto Generated method stub
-				var popup:PopUpQA = new PopUpQA();
-				popup.show();
-				
+				var helpWindow:HelpWindow = new HelpWindow();
+				helpWindow.content = HelpFactory.getHelpContent(HelpFactory.BROWSE_SETS);
+				helpWindow.show();
 			}
 			
 		]]>
