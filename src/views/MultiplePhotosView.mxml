@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark"
+		add="onAdd()"
 		creationComplete="init(event)" xmlns:components="components.*" xmlns:styles="styles.*" xmlns:ItemRenderers="ItemRenderers.*">
 	
 	<fx:Declarations>
@@ -40,6 +41,7 @@
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
+			import mx.utils.object_proxy;
 			
 			import queries.PhotoQuery;
 			
@@ -77,6 +79,16 @@
 			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");  
 			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
+			
+			private function onAdd():void{
+				if(navigator.poppedViewReturnedObject && 
+					navigator.poppedViewReturnedObject.object && 
+					navigator.poppedViewReturnedObject.object.title){
+					{
+						_setVO = navigator.poppedViewReturnedObject.object as SetVO;
+					}
+				}
+			}
 			
 			private function init(event:FlexEvent=null):void{
 				

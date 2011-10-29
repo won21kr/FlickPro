@@ -106,6 +106,14 @@
 				currentState = "resultState";
 				_resultTitle = _newTitle;
 				_resultDescription = _newDescription;
+				_setVO.title = _newTitle;
+				_setVO.description = _newDescription;
+			}
+			
+			override public function createReturnObject():Object
+			{
+				
+				return _setVO;
 			}
 
 			/*

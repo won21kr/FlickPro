@@ -31,6 +31,8 @@
 			import com.squidzoo.imageUtils.ImageCache;
 			import com.squidzoo.imageUtils.ImageUtils;
 			
+			import factories.IconFactory;
+			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			
@@ -40,7 +42,6 @@
 			import spark.events.ViewNavigatorEvent;
 			import spark.transitions.SlideViewTransition;
 			
-			import factories.IconFactory;
 			import statics.LatestSearchTag;
 			import statics.Service;
 			import statics.ViewTypes;
@@ -108,7 +109,7 @@
 					navigator.poppedViewReturnedObject.object.removedFromList){
 					if(navigator.poppedViewReturnedObject.object.removedFromList == "removed"){
 						_removedFromSet = true;
-						_completeState = SinglePhotoView.REMOVED_FROM_SET_STATE;
+						//_completeState = SinglePhotoView.REMOVED_FROM_SET_STATE;
 					}
 				}
 			}
@@ -135,9 +136,14 @@
 						_completeState = SinglePhotoView.SET_STATE;
 					}
 				}
-								
+							
 				if(data){
 					parseData();
+					
+					if(_removedFromSet){
+						_completeState = SinglePhotoView.REMOVED_FROM_SET_STATE;
+						_removedFromSet = false;
+					}
 					
 					if(_cache.hasImageData(_imgString)){
 						displayImage();
