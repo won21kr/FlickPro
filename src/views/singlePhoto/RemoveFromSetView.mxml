@@ -104,7 +104,7 @@
 				</s:VGroup>
 				
 				<s:VGroup includeIn="errorState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
-					<s:Label text="error removing set" color="#ffffff"/>
+					<s:Label text="error removing image from set" color="#ffffff"/>
 					<s:Button label="back" click="navigator.popView()" skinClass="skins.SquareButtonSkin"/>
 				</s:VGroup>
 				

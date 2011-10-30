@@ -157,7 +157,7 @@
 	
 	<s:VGroup verticalCenter="0" horizontalCenter="0" includeIn="ConnectionErrorState">
 		<s:Label text="Connection Error"/>
-		<s:Button label="Try Again" click="init()" skinClass="components.TryAgainButtonSkin2"/>
+		<s:Button label="Try Again" click="init()" skinClass="skins.SquareButtonSkin"/>
 	</s:VGroup>	
 	
 	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~StartState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
