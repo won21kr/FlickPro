@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Sets Menu"
+		viewActivate="onViewActivate()"
+		width="100%" height="100%"
+		maxHeight="240">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.ItemRenderers.calloutItemrenderers.MainMenuItemRenderer;
+			import com.squidzoo.ItemRenderers.calloutItemrenderers.SetsMenuItemRenderer;
+			
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			
+			import spark.components.IconItemRenderer;
+			
+			[Bindable]private var _dp:ArrayCollection = new ArrayCollection();
+			
+			private function onViewActivate():void
+			{
+				var showList:Object = new Object();
+				showList.label = "Show as list";
+				showList.type = "showList";
+				if(FlexGlobals.topLevelApplication.isTablet()){
+					showList.icon = "assets/images/v2/list60.png";
+				}else{
+					showList.icon = "assets/images/v2/list40.png";
+				}
+				_dp.addItem(showList);
+				
+				var showGrid:Object = new Object();
+				showGrid.label = "Show as grid";
+				showGrid.type = "showGrid";
+				if(FlexGlobals.topLevelApplication.isTablet()){
+					showGrid.icon = "assets/images/v2/grid60.png";
+				}else{
+					showGrid.icon = "assets/images/v2/grid40.png";
+				}
+				_dp.addItem(showGrid);
+				
+				var fullScreen:Object = new Object();
+				fullScreen.label = "Full Screen";
+				fullScreen.type = "fullScreen";
+				if(FlexGlobals.topLevelApplication.isTablet()){
+					fullScreen.icon = "assets/images/v2/fullScreen60.png";
+				}else{
+					fullScreen.icon = "assets/images/v2/fullScreen40.png";
+				}
+				_dp.addItem(fullScreen);
+				
+			}
+			
+			private function onClick():void
+			{
+				trace("_dp.length: "+_dp.length);
+				
+				if(list.selectedIndex>-1)
+				{					
+					var selection:String = list.selectedItem.type;
+					trace("selection: "+selection);
+					EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.SINGLE_SET_MENU_SELECTION,null,null,selection));
+				}
+			}
+			
+			private function chooseItemRenderer(item:Object):ClassFactory
+			{
+				var ir:Class = SetsMenuItemRenderer;
+				
+				return new ClassFactory(ir);
+			}
+		]]>
+	</fx:Script>	
+	<s:VGroup width="100%" height="100%">
+		<s:List id="list"
+				width="100%"
+				height="100%"
+				dataProvider="{_dp}"
+				itemRendererFunction="chooseItemRenderer"
+				alternatingItemColors="{[0x111111,0x111111]}"
+				selectionColor="#222222"
+				contentBackgroundColor="#111111"
+				click="onClick()"/>
+	</s:VGroup>
+	
+</s:View>
+

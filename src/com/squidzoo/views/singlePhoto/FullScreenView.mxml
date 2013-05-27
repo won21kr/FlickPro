@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		actionBarVisible="false"
+		creationComplete="creationCompleteHandler(event)">
+	
+	<s:states>
+		<s:State name="noState"/>
+		<s:State name="loadingState"/>
+		<s:State name="completeState"/>
+		<s:State name="errorState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.VOs.PhotoVO;
+			
+			import com.squidzoo.imageUtils.ImageCache;
+			import com.squidzoo.imageUtils.ImageUtils;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import spark.transitions.SlideViewTransition;
+			
+			public var forCompiler:FullScreenView;
+			
+			private var _cache:ImageCache;
+			private var _photoVO:PhotoVO;
+			
+			private var _bmd:BitmapData;
+			
+			private var _originState:String;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState="noState"
+				
+				if(navigator.context && navigator.context.state){
+					_originState = navigator.context.state;
+				}
+					
+				if(data)_photoVO = data as PhotoVO;
+				
+				_cache = ImageCache.getInstance();
+				
+				if(_cache.hasImageData(_photoVO.largeImageString)){
+					var image:Bitmap = _cache.getImageData(_photoVO.largeImageString);
+					currentState="completeState";
+					imageComponent.source = fitImageToScreen(image);
+				}else{
+					
+					currentState="loadingState";
+					loadImageFromFlickr();
+				}
+				
+			}
+			
+			private function loadImageFromFlickr():void{
+				var request:URLRequest = new URLRequest(data.largeImageString);
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoadComplete);
+				loader.load(request);
+			}
+			
+			private function onImageLoadComplete(event:Event):void{
+				var image:Bitmap = event.currentTarget.content;
+				currentState="completeState";
+				imageComponent.source = fitImageToScreen(image);
+			}	
+			
+			private function getImageFromCache():Bitmap{
+				var image:Bitmap = _cache.getImageData(_photoVO.imageURL);
+				return image;
+			}
+			
+			private function fitImageToScreen(original:Bitmap):Bitmap
+			{
+				var image:Bitmap;
+				var bmp:Bitmap = new Bitmap(original.bitmapData);
+				
+				if(bmp.width > bmp.height){
+					var rotatedImage:Bitmap = ImageUtils.rotate(bmp,90);
+					image = ImageUtils.scaleToTargetWidth(rotatedImage,FlexGlobals.topLevelApplication.stage.stageWidth);
+				}else{
+					image = ImageUtils.scaleToTargetHeight(bmp,FlexGlobals.topLevelApplication.stage.stageHeight);				
+				}
+				return image;	
+			}
+			
+			private function onChangeToSmallImage():void{
+				var contextObject:Object = new Object();
+				contextObject.state = _originState;
+				navigator.pushView(SinglePhotoView,_photoVO,contextObject);
+			}
+			
+			private function handleSwipe(event:TransformGestureEvent):void
+			{
+				if(imageComponent.source){
+					
+					var contextObj:Object = new Object();
+					contextObj.image = imageComponent.source.bitmapData;
+					contextObj.state = _originState;
+						
+					if (event.offsetX == 1 ) 
+					{
+						if(_photoVO.previousPhoto){
+							var rightSlide:SlideViewTransition = new SlideViewTransition();
+							rightSlide.direction = "right";					
+							navigator.pushView(FullScreenView,_photoVO.previousPhoto,contextObj,rightSlide);	
+						}
+					}
+					
+					if(event.offsetX == -1){
+						if(_photoVO.nextPhoto){
+							var leftSlide:SlideViewTransition = new SlideViewTransition();
+							leftSlide.direction = "left";
+							navigator.pushView(FullScreenView,_photoVO.nextPhoto,contextObj,leftSlide);
+						}
+					}
+					
+				}
+			}
+			
+			protected function imageComponent_doubleClickHandler(event:MouseEvent):void
+			{
+				onChangeToSmallImage();
+			}
+			
+		]]>
+	</fx:Script>
+	
+		<s:VGroup horizontalCenter="0" verticalCenter="0" 
+	verticalAlign="middle" horizontalAlign="center" 
+	includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+		<s:Label text="Loading..." color="#ffffff"/>
+	</s:VGroup>
+	
+	<s:VGroup horizontalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="completeState">
+	<!--<s:Button left="5" top="5" id="notFullScreenButton" click="onChangeToSmallImage()" alpha="0.3" icon="@Embed('assets/images/buttonIcons40x40/shrinkLP.png')" includeIn="completeState"/>-->
+		<s:Image id="imageComponent" smooth="true" gestureSwipe="handleSwipe(event)"
+				 doubleClickEnabled="true" doubleClick="imageComponent_doubleClickHandler(event)"/>
+	</s:VGroup>
+	
+</s:View>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" xmlns:styles="com.squidzoo.styles.*">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("spark.components.SkinnableContainer")]
+	</fx:Metadata>
+
+<fx:Script>
+	<![CDATA[
+	[Bindable]
+	public var forCompiler:BlueBox;
+	]]>
+</fx:Script>
+
+<fx:Declarations>
+	<styles:GraphicsLib id="graphicsLib"/>
+</fx:Declarations>
+
+<!-- states -->
+<s:states>
+	<s:State name="disabled" />
+	<s:State name="normal" />
+</s:states>
+
+<s:Rect width="105%" height="100%" filters="{[graphicsLib.getDropShadowFilter()]}">
+	<s:fill>
+		<s:LinearGradient rotation="90">
+			<s:GradientEntry color="#8ccbf9"/>
+			<s:GradientEntry color="#3fa9f5"/>
+		</s:LinearGradient>
+	</s:fill>
+	<s:stroke>
+		<s:SolidColorStroke color="#222222"/>
+	</s:stroke>
+</s:Rect>
+
+<s:Group id="contentGroup" />
+
+</s:Skin>

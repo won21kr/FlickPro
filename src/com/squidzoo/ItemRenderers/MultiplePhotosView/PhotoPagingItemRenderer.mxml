@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				width="100%"
+				height="100%"
+				creationComplete="creationCompleteHandler(event)"
+				autoDrawBackground="false"
+				contentBackgroundAlpha="0"
+				currentState="loading">
+	
+	<s:states>
+		<s:State name="loading"/>
+		<s:State name="complete"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.VOs.PhotoVO;
+			
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			
+			import spark.components.ActionBar;
+			
+			[Bindable]
+			private var _width:uint;
+			[Bindable]
+			private var _height:uint;
+			
+			private var _dataObject:PhotoVO;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				addEventListener(ResizeEvent.RESIZE, onResize);
+				if(data.hasOwnProperty("largeImage"))
+				{
+					bi.visible = true;
+					EventCentral.getInstance().addEventListener(CustomDataEvent.LARGE_IMAGE_READY,onLargeImageReady);
+					_dataObject = (data as PhotoVO);
+					(data as PhotoVO).getLargeImage();
+				}
+			}
+			
+			protected function onResize(event:ResizeEvent):void
+			{
+				_width=FlexGlobals.topLevelApplication.stage.stageWidth;
+				_height=FlexGlobals.topLevelApplication.stage.stageHeight;
+			}
+			
+			protected function onLargeImageReady(event:Event):void
+			{
+				trace("on large image ready");
+				bi.visible = false;
+				currentState = "complete";
+				image.source = _dataObject.largeImage;
+			}
+			
+		]]>
+	</fx:Script>
+	<!--<s:BusyIndicator id="bi" scaleX="2" scaleY="2" symbolColor="0xffa500" verticalCenter="0" horizontalCenter="0"/>-->
+	
+	
+	<s:VGroup width="100%"
+			  height="100%"
+			  verticalCenter="0"
+			  horizontalCenter="0"
+			  verticalAlign="middle"
+			  horizontalAlign="center">
+		<s:BusyIndicator id="bi" includeIn="loading" symbolColor="0xffffff" scaleX="2" scaleY="2" visible="false"/>
+		<s:Image id="image"
+				 width="100%"
+				 height="100%"
+				 enableLoadingState="true"
+				 includeIn="complete"/>
+	</s:VGroup>
+	
+</s:ItemRenderer>

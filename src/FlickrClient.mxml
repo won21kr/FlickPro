@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
-							xmlns:s="library://ns.adobe.com/flex/spark" 
-							creationComplete="init(event)"
-							splashScreenImage="@Embed('assets/images/splashScreenWithWhite.png')"
-							splashScreenMinimumDisplayTime="1000"
-							splashScreenScaleMode="zoom"
-							>
+<s:ViewNavigatorApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+							xmlns:s="library://ns.adobe.com/flex/spark"
+							creationComplete="init(event)" resize="onResize()"
+							splashScreenImage="FlickrSplashScreen"
+							splashScreenMinimumDisplayTime="1500">
 	
 	<fx:Style source="styles/MainStyle.css"/>
 	
 	<fx:Script>
 		<![CDATA[
-			import VOs.DataObject;
+			import com.squidzoo.VOs.DataObject;
+			
+			import com.squidzoo.callouts.MainMenuCallout;
 			
 			import com.adobe.webapis.flickr.AuthPerm;
 			import com.adobe.webapis.flickr.FlickrService;
@@ -19,103 +19,122 @@
 			import com.squidzoo.eventSystem.events.CustomDataEvent;
 			import com.squidzoo.eventSystem.events.CustomEvent;
 			
-			import components.popups.MenuPopUp;
+			import flash.sampler.NewObjectSample;
 			
-			import helpers.NSIDManager;
-			import helpers.TokenManager;
+			import com.squidzoo.helpers.NSIDManager;
+			import com.squidzoo.helpers.TokenManager;
 			
+			import mx.core.UIComponent;
 			import mx.events.FlexEvent;
 			
+			import spark.components.Application;
+			import spark.events.PopUpEvent;
 			import spark.transitions.ViewTransitionDirection;
 			import spark.transitions.ZoomViewTransition;
 			import spark.transitions.ZoomViewTransitionMode;
 			
-			import statics.Keys;
-			import statics.NSID;
-			import statics.Service;
-			import statics.ViewTypes;
+			import com.squidzoo.statics.Keys;
+			import com.squidzoo.statics.NSID;
+			import com.squidzoo.statics.Service;
+			import com.squidzoo.statics.ViewTypes;
 			
-			import views.BrowseSets;
-			import views.HomeView;
-			import views.MultiplePhotosView;
-			import views.SearchView;
-			import views.login.LoginView;
-			import views.singlePhoto.SinglePhotoView;
-			import views.upload.BatchUploadView;
+			import com.squidzoo.views.AboutView;
+			import com.squidzoo.views.BrowseSets;
+			import com.squidzoo.views.HomeView;
+			import com.squidzoo.views.MultiplePhotosView;
+			import com.squidzoo.views.SearchView;
+			import com.squidzoo.views.login.LoginView;
+			import com.squidzoo.views.singlePhoto.SinglePhotoView;
+			import com.squidzoo.views.upload.BatchUploadView;
 			
-			private var _popup:MenuPopUp;
-		
 			public var _service:FlickrService;
 			
-			private function init(event:FlexEvent):void{
-				addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-				_popup = new MenuPopUp();
-				
+			private var _isTablet:Boolean=false;
 			
+			private var _menuCallout:MainMenuCallout=new MainMenuCallout();
+			
+			public function isTablet():Boolean
+			{
+				return _isTablet;
+			}
+			
+			private function onResize():void
+			{
+				_isTablet=height > 960 || width > 960;
 				
-				_service = new FlickrService();
+				if (_isTablet)
+				{
+					trace("isTablet");
+				}
+				else
+				{
+					trace("isPhone");
+				}
+			}
+			
+			private function init(event:FlexEvent):void
+			{
+				addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+				
+				_service=new FlickrService();
 				
 				Service.setService(_service);
 				
-				_service.api_key = Keys.getApiKey();
-				_service.secret = Keys.getSecretKey();
-				_service.permission = AuthPerm.WRITE;
-			
-				trace("FlickrClient: TokenManager.isValid() :"+TokenManager.isValid());
-				if(TokenManager.isValid()==true){
-					trace("FlickrClient: TokenManager.getToken(): "+TokenManager.getToken());
-					_service.token = TokenManager.getToken();
-					trace("FlickrClient: NSIDManager.getNSID()) "+NSIDManager.getNSID());
+				_service.api_key=Keys.getApiKey();
+				_service.secret=Keys.getSecretKey();
+				_service.permission=AuthPerm.WRITE;
+				
+				if (TokenManager.isValid() == true)
+				{
+					_service.token=TokenManager.getToken();
 					NSID.setNSID(NSIDManager.getNSID());
-					navigator.pushView(views.HomeView);	
-				}else{
-					("FlickrClient: there is no token");
-					navigator.pushView(views.login.LoginView);
+					
+					var dataObject:DataObject=new DataObject();
+					dataObject.viewType=ViewTypes.PHOTO_STREAM;
+					navigator.pushView(MultiplePhotosView, dataObject);
+				}
+				else
+				{
+					navigator.pushView(com.squidzoo.views.login.LoginView);
 				}
 				
-				//this.actionBar.alpha=0;
-				//this.actionBar.visible=false;
-				
-				//var zoomTrans:ZoomViewTransition = new ZoomViewTransition();
-				//zoomTrans.direction = ViewTransitionDirection.RIGHT;
-				//zoomTrans.mode = ZoomViewTransitionMode.IN; //or OUT mode
-				//navigator.pushView(LoginView);
-				//navigator.pushView(LoginView,_service);
 				addMenuListeners();
 			}
 			
 			private function onAddedToStage(event:Event):void
 			{
-				//removes listener
 				removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 				stage.addEventListener(KeyboardEvent.KEY_DOWN, _onKeyDown);
 			}
 			
-			private function addMenuListeners():void{
+			private function addMenuListeners():void
+			{
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_UPLOAD, onUpload);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_BROWSE_SETS, onBrowseSets);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_PHOTOSTREAM, onPhotostream);
 				EventCentral.getInstance().addEventListener(CustomEvent.ACTIONBAR_MENU_ICON_CLICKED_SEARCH, onSearch);
-				
 			}
 			
-			private function onUpload(event:CustomEvent):void{
-				navigator.pushView(BatchUploadView,_service);
+			private function onUpload(event:CustomEvent):void
+			{
+				navigator.pushView(BatchUploadView, _service);
 			}
 			
-			private function onBrowseSets(event:CustomEvent):void{
-				navigator.pushView(BrowseSets,_service);
+			private function onBrowseSets(event:CustomEvent):void
+			{
+				navigator.pushView(BrowseSets, _service);
 			}
 			
-			public function getService():FlickrService{
+			public function getService():FlickrService
+			{
 				return _service;
-			}		
+			}
 			
 			protected function onPhotostream(event:Event):void
 			{
-				var dataObject:DataObject = new DataObject();
-				dataObject.viewType = ViewTypes.PHOTO_STREAM;
-				navigator.pushView(MultiplePhotosView,dataObject);
+				var dataObject:DataObject=new DataObject();
+				dataObject.viewType=ViewTypes.PHOTO_STREAM;
+				navigator.pushView(MultiplePhotosView, dataObject);
 			}
 			
 			protected function onSearch(event:Event):void
@@ -123,35 +142,79 @@
 				navigator.pushView(SearchView);
 			}
 			
-		
-			
 			private function _onKeyDown(event:KeyboardEvent):void
 			{
-				if(event.keyCode == Keyboard.BACK)
+				if (event.keyCode == Keyboard.MENU)
+				{
+					openMainMenuCallout(mainMenuButton, spark.components.ContentBackgroundAppearance.NONE);
+				}
+				else if (event.keyCode == Keyboard.SEARCH)
 				{
 					event.preventDefault();
-					trace("\nBack Pressed");
-				} else if(event.keyCode == Keyboard.MENU)
-				{
-					event.preventDefault();
-					trace("\nMenu Pressed");
-					_popup.show();
-				} else if(event.keyCode == Keyboard.SEARCH)
-				{
-					event.preventDefault();
-					trace("\nSearch Pressed");
 				}
 			}
 			
+			private function openMainMenuCallout(owner:UIComponent, value:String):void
+			{
+				_menuCallout.addEventListener('close', closeMainMenuCalloutHandler);
+				_menuCallout.setStyle('contentBackgroundAppearance', value);
+				_menuCallout.open(owner);
+			}
+			
+			private function closeMainMenuCalloutHandler(event:PopUpEvent):void
+			{
+				if (!event.commit)
+					return;
+				
+				_menuCallout.removeEventListener('close', closeMainMenuCalloutHandler);
+				
+				selectView(event.data.selection);
+			}
+			
+			private function selectView(selection:String):void
+			{
+				switch (selection)
+				{
+					case "upload":
+						navigator.pushView(BatchUploadView, _service);
+						break;
+					case "search":
+						navigator.pushView(SearchView);
+						break;
+					case "photostream":
+						var dataObject:DataObject=new DataObject();
+						dataObject.viewType=ViewTypes.PHOTO_STREAM;
+						navigator.pushView(MultiplePhotosView, dataObject);
+						break;
+					case "sets":
+						navigator.pushView(BrowseSets, _service);
+						break;
+					case "about":
+						navigator.pushView(AboutView);
+						break;
+					case "account":
+						navigator.pushView(LoginView);
+						break;
+					case "exit":
+						NativeApplication.nativeApplication.exit();
+						break;
+				}
+			}
 		]]>
 	</fx:Script>
 	
+	<fx:Declarations>
+		<s:MultiDPIBitmapSource id="mainMenuIcons"
+								source160dpi="@Embed('assets/images/v2/icon72Flickr.png')"
+								source240dpi="@Embed('assets/images/v2/icon48Flickr.png')"/>
+	</fx:Declarations>
+	
 	<s:navigationContent>
-		<s:Button icon="@Embed('assets/images/FastrHome.png')" click="navigator.pushView(HomeView)"/>
+		<s:Button id="mainMenuButton"
+				  click="openMainMenuCallout(mainMenuButton, spark.components.ContentBackgroundAppearance.NONE)"
+				  color="0xffa500" icon="{mainMenuIcons}"/>
 	</s:navigationContent>
 	
-	<s:actionContent>
-		<s:Button id="menuButton" icon="@Embed(source='assets/images/menuLightGrey.png')" click="_popup.show()"/>
-	</s:actionContent>
+	
 	
 </s:ViewNavigatorApplication>

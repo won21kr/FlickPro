@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"  
+		xmlns:components="com.squidzoo.components.*" 
+		xmlns:styles="com.squidzoo.styles.*"
+		creationComplete="creationCompleteHandler(event)" 
+		width="100%" height="100%">
+	
+	<s:states>
+		<s:State name="startState"/>
+		<s:State name="waitState"/>
+		<s:State name="resultState"/>
+		<s:State name="errorState"/>
+	</s:states>
+	
+	<styles:GraphicsLib id="graphicsLib"/>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import spark.transitions.SlideViewTransition;
+			
+			import com.squidzoo.statics.Service;
+			private var _service:FlickrService;
+			private var _photosetId:String;
+			
+			[Bindable]private var _selection:String = "none";
+			
+			[Bindable]private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			
+			[Bindable]private var _containerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*2;
+			[Bindable]private var _contentWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth - 20*4;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				currentState = "startState";
+				
+				_service = Service.getService();
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.SET_SELECTED_IN_SET_LIST, onSetSelectedInSetList);
+				
+			}
+			
+			protected function onSetSelectedInSetList(event:CustomDataEvent):void
+			{
+				_selection = event.setVO.title;
+				_photosetId = event.setVO.id;
+			}
+			
+			protected function onClickDelete(event:MouseEvent):void
+			{
+					currentState = "waitState"
+					_service.addEventListener(FlickrResultEvent.PHOTOSETS_DELETE,onDelete);
+					_service.photosets.deleteSet(_photosetId);			
+			}
+			
+			protected function onDelete(event:FlickrResultEvent):void
+			{
+				currentState = "resultState";
+				setList.reload();
+				confirmationText.text = _selection;
+				_selection = "";
+			}
+			
+			
+			private function slideRight():void{
+				var rightSlide:SlideViewTransition = new SlideViewTransition();
+				rightSlide.direction = "right";					
+				navigator.pushView(BrowseSets,null,null,rightSlide);
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%" gap="0" >
+		
+		<s:TextArea contentBackgroundAlpha="0" borderVisible="false" editable="false" selectable="false"
+					styleName="bodyText" width="100%" height="100" includeIn="startState">
+			<s:text>Deleting a set does not delete the pictures from your photostream.</s:text>
+		</s:TextArea>
+			
+		<s:VGroup paddingLeft="20" includeIn="waitState" height="100" horizontalCenter="0" verticalAlign="middle" verticalCenter="0">
+			<s:BusyIndicator symbolColor="white" scaleX="2" scaleY="2"/>
+		</s:VGroup>	
+			
+		<s:VGroup paddingLeft="20" includeIn="resultState" height="100" verticalAlign="middle" verticalCenter="0">
+			<s:Label text="The following set has been deleted:" color="#ffffff" fontSize="18" fontWeight="bold"/>
+			<s:Label id="confirmationText" color="#ffffff" fontSize="18" fontWeight="bold"/>
+		</s:VGroup>	
+		
+		<s:VGroup width="100%" height="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" horizontalAlign="center">			
+				<s:Label text="Selection: {_selection}"/>	
+				
+				<s:VGroup width="100%" height="100%">				
+					<components:SetList id="setList" width="{_contentWidth}"/>
+				</s:VGroup>
+				
+				<s:HGroup gap="20">		
+					<s:Button label="Delete" width="100%" click="onClickDelete(event)" skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+				</s:HGroup>		  
+		</s:VGroup>
+			
+	</s:VGroup>
+	
+</s:View>

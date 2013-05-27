@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				height="100%" width="100%"
+				autoDrawBackground="false"
+				contentBackgroundAlpha="0"
+				creationComplete="creationCompleteHandler(event)" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="com.squidzoo.components.*">
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.VOs.SettingsVO;
+			
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.events.FlexEvent;
+			
+			import com.squidzoo.statics.LatestUploadSettings;
+			
+			private var _imageFileName:String;
+			[Bindable]
+			private var _image:Bitmap;
+			[Bindable]
+			private var _imageWidth:int = 180;
+			[Bindable]
+			private var _imageHeight:int;
+			
+			[Bindable]
+			private var _photoName:String;
+			[Bindable]
+			private var _set:String;
+			[Bindable]
+			private var _description:String;
+			[Bindable]
+			private var _tags:String;
+			[Bindable]
+			private var _visibility:String;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void{
+				
+				_photoName = LatestUploadSettings.title;
+				_description = LatestUploadSettings.description;
+				_tags = LatestUploadSettings.tags;
+				_set = LatestUploadSettings.photoSet;
+				
+				if(LatestUploadSettings.isFriend==true){
+					_visibility = "Friend";
+				}else if(LatestUploadSettings.isPublic==true){
+					_visibility = "Public";
+				}else{
+					_visibility = "Family";
+				}
+			
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.SETTINGS_SELECTED,onSettingsSelected);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.SET_FROM_SET_SELECTION_VIEW,onSetSelected);
+				_imageFileName = data.fileName;	
+				_image = scaleBitmapData(data.image.bitmapData,_imageWidth);
+				data.ir = this;
+			}
+			
+			private function onSettingsSelected(event:CustomDataEvent):void{
+				var vo:SettingsVO = event.settingsVO;
+				_photoName = vo.title;
+				_description = vo.description;
+				_tags = vo.tags;
+				if(vo.is_friend==true){
+					_visibility = "Friend";
+				}else if(vo.is_public==true){
+					_visibility = "Public";
+				}else{
+					_visibility = "Family";
+				}
+			}
+			
+			private function onSetSelected(event:CustomDataEvent):void{
+				_set = event.setVO.title;
+			}
+			
+			public function update(value:int):void{
+			}
+			
+			private function onClickRemove():void{
+				EventCentral.getInstance().dispatchEvent(new CustomDataEvent(CustomDataEvent.REMOVE_IMAGE_FROM_UPLOAD_LIST,null,null,_imageFileName));
+			}
+			
+			private function scaleBitmapData(_bmd:BitmapData, 
+											 targetContainerWidth:Number, targetContainerHeight:Number=0):Bitmap { 
+				//set matrix sx & sy 
+				var sx:Number = targetContainerWidth / _bmd.width; 
+				var sy:Number = 0;
+				
+				if(targetContainerHeight==0){
+					sy = sx;			
+					targetContainerHeight = _bmd.height * sy;
+
+				}else{
+					sy = targetContainerHeight / _bmd.height; 				
+				}
+
+				//instantiate new matrix, and set scaling 
+				var m:Matrix = new Matrix(); 
+				m.scale(sx, sy); 
+				
+				//create new bitmapdata	
+				var newBmd:BitmapData = new BitmapData(targetContainerWidth, targetContainerHeight); 
+				//draw new bitmapdata with matrix	
+				newBmd.draw(_bmd, m); 
+				//create final bitmap with new bitmapdata 
+				var newBmp:Bitmap = new Bitmap(newBmd); 
+				//set smooting to true 
+				newBmp.smoothing = true; 
+								
+				return newBmp; 
+			}
+			
+			private function onUploadPercentageChange(event:Event):void
+			{
+				bi.visible = true;
+				trace("uploadPercentage: "+data.uploadPercentage);
+				if(data.uploadPercentage == 100)
+				{
+					bi.visible=false;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<!--<s:SkinnableContainer skinClass="skins.UploadListItemRendererSkin">-->
+<s:VGroup width="100%" height="100%">
+	<s:VGroup width="100%" height="100%" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+		<!--<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="#999999"/>
+			</s:stroke>
+		</s:Line>-->
+	<s:HGroup left="5" top="5" bottom="5" right="5" verticalAlign="middle">
+		<s:BitmapImage id="image" scaleMode="zoom" height="100" width="100" source="{_image}" horizontalCenter="0"/>
+			<s:Label id="uploadStatusValue" text="{data.uploadStatus}" fontSize="20" color="0xffffff"/>
+			<s:Label id="percentageUploaded" text="% {data.uploadPercentage}" fontSize="20" color="0xffffff"/>
+			<s:BusyIndicator id="bi" visible="false"/>
+	</s:HGroup>
+		<s:VGroup color="#ffffff">
+			<s:RichEditableText text="Upload to set: {_set}"/>
+			 <s:RichEditableText text="Name: {_photoName}"/>
+			 <s:RichEditableText text="Description: {_description}"/>
+			 <s:RichEditableText text="Tags: {_tags}"/>
+			<s:Button label="remove" click="onClickRemove()" skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+		</s:VGroup>
+	</s:VGroup>
+		<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="#dddddd"/>
+			</s:stroke>
+		</s:Line>		
+	</s:VGroup>
+	<!--</s:SkinnableContainer>-->
+</s:ItemRenderer>

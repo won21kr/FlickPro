@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				width="100%"
+				height="100%"
+				creationComplete="onCreationComplete()">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.core.FlexGlobals;
+			
+			import spark.components.Image;
+
+			[Bindable]
+			private var _image:Image;
+
+			override public function set data(value:Object):void
+			{
+				if (data == value || value == null)
+				{
+					return;
+				}
+				var request:URLRequest=new URLRequest(value.largeImageString);
+				var loader:Loader=new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoadComplete);
+				loader.load(request);
+			}
+			
+			private function onCreationComplete():void
+			{
+				FlexGlobals.topLevelApplication.stage.addEventListener(StageOrientationEvent.ORIENTATION_CHANGE,onOrientationChange)
+			}
+
+			private function onImageLoadComplete(event:Event):void
+			{
+				var imageBmp:Bitmap=event.currentTarget.content;
+				
+				if(imageBmp.width >  FlexGlobals.topLevelApplication.stage.stageWidth)
+				{
+					image.width = FlexGlobals.topLevelApplication.stage.stageWidth;
+				}
+				
+				image.source=imageBmp;
+			}
+			
+			protected function onOrientationChange(event:StageOrientationEvent):void
+			{
+				if(FlexGlobals.topLevelApplication.stage.stageWidth > FlexGlobals.topLevelApplication.stage.stageHeight)
+				{
+					image.height = FlexGlobals.topLevelApplication.stage.stageHeight;
+				}
+				else
+				{
+					image.width = FlexGlobals.topLevelApplication.stage.stageWidth;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	<s:VGroup width="100%"
+			  height="100%"
+			  verticalAlign="middle"
+			  horizontalAlign="center">
+		<s:Image id="image"
+				 smooth="true"/>
+	</s:VGroup>
+
+</s:ItemRenderer>

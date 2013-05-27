@@ -1,0 +1,133 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+
+global{
+	modalTransparency: 0.1;
+	modalTransparencyBlur: 2;
+	modalTransparencyColor: #777777;
+	modalTransparencyDuration: 0;
+}
+
+s|IconItemRenderer
+{
+	fontSize: 24;
+	color: #ffffff;/*#fcbe7a*/;/*#ffa500;*/
+}
+
+s|ActionBar
+{
+	chromeColor: #333333;
+	color: #333333;
+	titleAlign: center;
+	fontSize: 20;
+	skinClass: ClassReference("com.squidzoo.skins.CustomActionBarSkin");
+}
+
+s|ActionBar #titleDisplay
+{
+	color: #ffffff;
+	fontSize: 20;
+}
+
+s|TabbedViewNavigator #tabBar
+{
+	chromeColor: #888888;
+	color: #ffffff;
+	fontSize: 16;
+	titleAlign: center
+}
+
+s|View{
+	backgroundColor: #000000;
+}
+
+@media (application-dpi: 240)
+{
+	s|Button
+	{
+		fontSize: 16;
+		color: #000000;
+	}
+
+	s|Label
+	{
+		fontSize: 16;
+		color: #ffffff;
+	}
+	
+	s|RichEditableText
+	{
+		fontSize: 16;
+		color: #ffffff;
+	}
+
+}
+
+@media (application-dpi: 160)
+{
+
+	s|Label
+	{
+		fontSize: 20;
+		color: #ffffff;
+	}
+	
+	s|RichEditableText
+	{
+		fontSize: 20;
+		color: #ffffff;
+	}
+	
+	s|Button
+	{
+		fontSize: 20;
+		color: #000000;
+	}
+	
+	s|TextInput
+	{
+		height: 200;
+		width: 500;
+	}
+}
+
+.bodyText 
+{
+	color:#dddddd;
+	fontSize: 18;
+}
+
+.headerTextGrey
+{
+	color:#222222;
+	fontSize: 24;
+	fontWeight: bold;
+}
+
+.headerTextWhite
+{
+	color:#ffffff;
+	fontSize: 22;
+	fontWeight: bold;
+}
+
+.smallBlackText
+{
+	color: #222222;
+	fontSize: 14;
+	fontWeight: bold;
+}
+
+.smallWhiteText
+{
+	color: #ffffff;
+	fontSize: 14;
+	fontWeight: bold;
+}
+
+.smallOffWhiteText
+{
+	color: #eeeeee;
+	fontSize: 14;
+	fontWeight: bold;
+}

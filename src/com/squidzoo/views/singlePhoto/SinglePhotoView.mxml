@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:styles="com.squidzoo.styles.*"
+		xmlns:components="com.squidzoo.components.*"
+		xmlns:mx="library://ns.adobe.com/flex/mx"
+		add="onAdd()"
+		viewActivate="viewActivateHandler(event)">
+
+	<!-- the states must have same name string value as the corresponding state constants-->
+	<s:states>
+		<s:State name="NoState"/>
+		<!--initial state-->
+		<s:State name="LoadingState"/>
+		<!--loading image-->
+		<s:State name="SetState"/>
+		<!-- if we came from a set view-->
+		<s:State name="SearchState"/>
+		<!--if we came from a search view-->
+		<s:State name="StreamState"/>
+		<!--if we came from a stream view-->
+		<s:State name="RemovedFromSetState"/>
+		<!--if we return from a removal from a set-->
+	</s:states>
+
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+		<s:MultiDPIBitmapSource id="plusIcon"
+								source160dpi="@Embed('assets/images/v2/plus60.png')"
+								source240dpi="@Embed('assets/images/v2/plus40.png')"/>
+	</fx:Declarations>
+
+	<s:actionContent>
+		<s:Button id="photoMenuButton"
+				  includeInLayout="false"
+				  visible="false"
+				  icon="{plusIcon}"
+				  fontSize="40"
+				  color="#ffa500"
+				  click="openMenuCallout(photoMenuButton, spark.components.ContentBackgroundAppearance.NONE)"/>
+	</s:actionContent>
+
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.ItemRenderers.ItemIconRenderer;
+			import com.squidzoo.ItemRenderers.SinglePhotoImageItemRenderer;
+			
+			import com.squidzoo.VOs.IconItemRendererVO;
+			import com.squidzoo.VOs.IconItemRendererWithImageVO;
+			import com.squidzoo.VOs.PhotoVO;
+			
+			import com.squidzoo.callouts.SinglePhotoCallout;
+			import com.squidzoo.callouts.SinglePhotoCalloutWithEdit;
+			
+			import com.chewtinfoil.utils.StringUtils;
+			import com.squidzoo.imageUtils.ImageCache;
+			import com.squidzoo.imageUtils.ImageUtils;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			
+			import spark.components.Image;
+			import spark.events.PopUpEvent;
+			import spark.events.ViewNavigatorEvent;
+
+			public var forCompiler:SinglePhotoView;
+
+			[Bindable]
+			private var _containerWidth:int=FlexGlobals.topLevelApplication.stage.stageWidth - 20 * 2;
+			[Bindable]
+			private var _contentWidth:int=FlexGlobals.topLevelApplication.stage.stageWidth - 20 * 4;
+
+
+			/* These constants must have same string value as corresponding state */
+			public static const REMOVED_FROM_SET_STATE:String="RemovedFromSetState";
+			public static const PHOTO_STREAM_STATE:String="StreamState";
+			public static const SET_STATE:String="SetState";
+			public static const SEARCH_STATE:String="SearchState";
+			public static const LOADING_STATE:String="LoadingState";
+
+			[Bindable]
+			private var _headerWidth:int=FlexGlobals.topLevelApplication.stage.stageWidth;
+			private var _maxImageWidth:int=420;
+			private var _maxImageHeight:int=450;
+
+			private var _previousPhoto:PhotoVO;
+			private var _nextPhoto:PhotoVO;
+
+			private var _completeState:String=SinglePhotoView.REMOVED_FROM_SET_STATE;
+
+			[Bindable]
+			private var _setTitle:String;
+			[Bindable]
+			private var _setId:String;
+			private var _imgString:String;
+
+			[Bindable]
+			private var _image:Bitmap;
+			[Bindable]
+			private var _photoVO:PhotoVO;
+			private var _orginalBitmapData:BitmapData;
+			private var _removedFromSet:Boolean=false;
+
+			private var _cache:ImageCache;
+
+			private var _photoImage:Bitmap;
+
+			[Bindable]
+			private var _description:String;
+			[Bindable]
+			private var _ownerName:String;
+			[Bindable]
+			private var _viewHeight:int=FlexGlobals.topLevelApplication.stage.stageHeight - 100;
+
+			private var _context:String="";
+
+			private var _callOutWithEdit:SinglePhotoCalloutWithEdit=new SinglePhotoCalloutWithEdit();
+			private var _callOut:SinglePhotoCallout=new SinglePhotoCallout();
+
+			[Bindable]
+			private var _dp:ArrayCollection=new ArrayCollection();
+			[Bindable]
+			private var _photoTitle:String;
+			[Bindable]
+			private var _photoDescription:String;
+			[Bindable]
+			private var _photoTags:String;
+			[Bindable]
+			private var photo:Image=new Image();
+
+			private var _isImageRequested:Boolean=false;
+
+			/*
+			* onAdd() handles case where image is removed from a Flickr set in RemoveFromSetView with subsequent popView to this
+			*/
+
+			private function onAdd():void
+			{
+				if (navigator.poppedViewReturnedObject && navigator.poppedViewReturnedObject.object && navigator.poppedViewReturnedObject.object.removedFromList)
+				{
+					if (navigator.poppedViewReturnedObject.object.removedFromList == "removed")
+					{
+						_removedFromSet=true;
+					}
+				}
+			}
+
+			private function viewActivateHandler(event:ViewNavigatorEvent=null):void
+			{
+				currentState=SinglePhotoView.LOADING_STATE;
+				_cache=ImageCache.getInstance();
+
+				if (navigator.context)
+				{
+					if (navigator.context.state == SinglePhotoView.SEARCH_STATE)
+					{
+						_completeState=SinglePhotoView.SEARCH_STATE;
+					}
+					else if (navigator.context.state == SinglePhotoView.PHOTO_STREAM_STATE)
+					{
+						_completeState=SinglePhotoView.PHOTO_STREAM_STATE;
+						photoMenuButton.visible=true;
+						photoMenuButton.includeInLayout=true;
+					}
+					else if (navigator.context.state == SinglePhotoView.SET_STATE)
+					{
+						_completeState=SinglePhotoView.SET_STATE;
+						photoMenuButton.visible=true;
+						photoMenuButton.includeInLayout=true;
+					}
+				}
+
+				if (data)
+				{
+					parseData();
+
+					if (_removedFromSet)
+					{
+						_completeState=SinglePhotoView.REMOVED_FROM_SET_STATE;
+						_removedFromSet=false;
+					}
+
+					//check if image has image already been loaded
+					if (_isImageRequested == false)
+					{
+						_isImageRequested=true;
+						//check whether to get image from cache or download from Flickr
+						if (_cache.hasImageData(_imgString))
+						{
+							addImageAndMetaDataToView();
+						}
+						else
+						{
+							loadImageFromFlickr();
+						}
+					}
+				}
+
+			}
+
+			/*
+			* check of we have already cached image
+			*/
+
+			private function addImageAndMetaDataToView():void
+			{
+				setCompleteState();
+				addImageToView(changeImageSize(_cache.getImageData(_imgString)));
+				addTextItemsToView();
+			}
+
+			private function changeImageSize(image:Bitmap):Bitmap
+			{
+				_orginalBitmapData=image.bitmapData.clone();
+				if (image.width > image.height)
+				{
+					image=ImageUtils.scaleToTargetWidth(image, _maxImageWidth);
+				}
+				else
+				{
+					image=ImageUtils.scaleToTargetHeight(image, _maxImageHeight);
+				}
+				image=ImageUtils.addBorder(image, 10, 0xffffff);
+
+				return image;
+			}
+
+			private function addImageToView(image:Bitmap):void
+			{
+				var imageVO:IconItemRendererWithImageVO=new IconItemRendererWithImageVO;
+				imageVO.largeImageString=data.largeImageString;
+				_dp.addItem(imageVO);
+				
+				
+			}
+				
+				
+			private function addTextItemsToView():void{	
+				if (_photoVO.title != null && _photoVO.title != "")
+				{
+					var titleVO:IconItemRendererVO=new IconItemRendererVO();
+					titleVO.label="Title";
+					titleVO.message=_photoVO.title;
+					if(FlexGlobals.topLevelApplication.isTablet()){					
+						titleVO.icon = "assets/images/v2/choosePhoto60.png";
+					}else{
+						titleVO.icon = "assets/images/v2/choosePhoto40.png";
+					}
+					_dp.addItem(titleVO);
+				}
+				if (_photoVO.description != null && _photoVO.description != "")
+				{
+					var descVO:IconItemRendererVO=new IconItemRendererVO;
+					descVO.label="Description";
+					descVO.message=_photoVO.description;
+					if(FlexGlobals.topLevelApplication.isTablet()){
+						descVO.icon = "assets/images/v2/description60.png";
+					}else{
+						descVO.icon = "assets/images/v2/description40.png";
+					}
+					_dp.addItem(descVO);
+				}
+
+				if (_photoVO.tags.length > 0)
+				{
+					var tagsVO:IconItemRendererVO=new IconItemRendererVO;
+					tagsVO.label="Tags";
+					for (var i:int=0; i < _photoVO.tags.length; i++)
+					{
+						tagsVO.message+=_photoVO.tags[i].name + " ";
+					}
+					if(FlexGlobals.topLevelApplication.isTablet()){
+						tagsVO.icon = "assets/images/v2/tag60.png";
+					}else{
+						tagsVO.icon = "assets/images/v2/tag40.png";
+					}
+					_dp.addItem(tagsVO);
+				}
+				if (_photoVO.ownerName != null && _photoVO.ownerName != "")
+				{
+					var ownerName:IconItemRendererVO=new IconItemRendererVO();
+					ownerName.label="Owner name";
+					ownerName.message=_photoVO.ownerName;
+					if(FlexGlobals.topLevelApplication.isTablet()){
+						ownerName.icon = "assets/images/v2/owner60.png";
+					}else{
+						ownerName.icon = "assets/images/v2/owner40.png";
+					}
+					_dp.addItem(ownerName);
+				}
+
+				if (_photoVO.privacySetting != null && _photoVO.privacySetting != "")
+				{
+					var visibility:IconItemRendererVO=new IconItemRendererVO();
+					visibility.label="Visibility";
+					visibility.message=_photoVO.privacySetting;
+					if(FlexGlobals.topLevelApplication.isTablet()){
+						visibility.icon = "assets/images/v2/visibility60.png";
+					}else{
+						visibility.icon = "assets/images/v2/visibility40.png";
+					}
+					_dp.addItem(visibility);
+				}
+
+				if (_photoVO.truncatedDateTaken != null && _photoVO.truncatedDateTaken != "")
+				{
+					var date:IconItemRendererVO=new IconItemRendererVO();
+					date.label="Date taken";
+					date.message=_photoVO.truncatedDateTaken;
+					if(FlexGlobals.topLevelApplication.isTablet()){
+						date.icon = "assets/images/v2/time60.png";
+					}else{
+						date.icon = "assets/images/v2/time40.png";
+					}
+					_dp.addItem(date);
+				}
+			}
+
+			private function setCompleteState():void
+			{
+
+				currentState=_completeState
+			}
+
+			/*
+			*if imaged wasn't cached yet, load it
+			*/
+
+			private function loadImageFromFlickr():void
+			{
+				var request:URLRequest=new URLRequest(data.largeImageString);
+				var loader:Loader=new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoadComplete);
+				loader.load(request);
+			}
+
+			private function onImageLoadComplete(event:Event):void
+			{
+
+				var image:Bitmap=event.currentTarget.content;
+				_image=image;
+
+				saveInCache(image);
+				
+				setCompleteState();
+				addImageToView(changeImageSize(image));
+				addTextItemsToView();
+			}
+
+			private function saveInCache(image:Bitmap):void
+			{
+				if (_cache.hasImageData(_imgString) == false)
+				{
+					_cache.putImageData(_imgString, image);
+				}
+			}
+
+
+			private function parseData():void
+			{
+				_photoVO=data as PhotoVO;
+
+				if (data.setTitle && (_removedFromSet == false))
+					_completeState=SinglePhotoView.SET_STATE;
+				if (data.setId)
+					_setId=data.setId;
+				if (data.largeImageString)
+					_imgString=data.largeImageString;
+
+			}
+
+			private function onFullScreenSelection():void
+			{
+				var imageObject:Object=new Object();
+				imageObject.image=_orginalBitmapData;
+				imageObject.state=_completeState;
+				navigator.pushView(FullScreenView, _photoVO, imageObject);
+			}
+
+			private function onDownloadOriginal(event:MouseEvent=null):void
+			{
+				navigator.pushView(SaveSinglePhotoView, _photoVO);
+			}
+
+			private function removeFromSet():void
+			{
+				var dataObject:Object=new Object();
+
+				if (_setId)
+				{
+					dataObject.setId=_setId;
+					dataObject.setTitle=_setTitle;
+					dataObject.photoId=_photoVO.id;
+
+				}
+				else
+				{
+					dataObject.isNotInSet=true
+				}
+				navigator.pushView(com.squidzoo.views.singlePhoto.RemoveFromSetView, dataObject);
+			}
+
+			private function addToSet():void
+			{
+				var dataObject:Object=new Object();
+				dataObject.photoId=_photoVO.id;
+				navigator.pushView(AddToSetView, dataObject);
+			}
+
+			private function editDetails():void
+			{
+				navigator.pushView(EditPhotoView, _photoVO);
+			}
+
+			private function openMenuCallout(owner:UIComponent, value:String):void
+			{
+				if (currentState == "SetState" || currentState == "StreamState")
+				{
+					_callOutWithEdit.addEventListener('close', closeMainMenuCalloutHandler);
+					_callOutWithEdit.setStyle('contentBackgroundAppearance', value);
+					_callOutWithEdit.open(owner);
+				}
+				else if (currentState == "SearchState")
+				{
+					_callOut.addEventListener('close', closeMainMenuCalloutHandler);
+					_callOut.setStyle('contentBackgroundAppearance', value);
+					_callOut.open(owner);
+				}
+			}
+
+			private function closeMainMenuCalloutHandler(event:PopUpEvent):void
+			{
+				if (!event.commit)
+					return;
+
+				_callOutWithEdit.removeEventListener('close', closeMainMenuCalloutHandler);
+
+				selectView(event.data.selection);
+			}
+
+			private function selectView(selection:String):void
+			{
+				switch (selection)
+				{
+					case "save":
+						onDownloadOriginal();
+						break;
+					case "edit":
+						editDetails();
+						break;
+					case "addToSet":
+						addToSet();
+						break;
+					case "deleteFromSet":
+						removeFromSet();
+						break;
+					case "fullScreen":
+						onFullScreenSelection();
+						break;
+					case "comments":
+						var vo:Object=new Object();
+						vo.photoVO=_photoVO;
+						navigator.pushView(CommentsView, vo);
+				}
+			}
+
+			private function chooseItemRenderer(item:Object):ClassFactory
+			{
+				var ir:Class=ItemIconRenderer;
+
+				if (item.hasOwnProperty("largeImageString"))
+				{
+					ir=SinglePhotoImageItemRenderer;
+				}
+
+				return new ClassFactory(ir);
+			}
+
+			protected function list1_doubleClickHandler(event:MouseEvent):void
+			{
+				if (list.selectedIndex == 0)
+				{
+					onFullScreenSelection();
+				}
+			}
+		]]>
+	</fx:Script>
+
+	<!--Loadingstate-->
+
+	<s:VGroup horizontalCenter="0"
+			  verticalCenter="0"
+			  horizontalAlign="center"
+			  verticalAlign="middle"
+			  includeIn="LoadingState">
+		<s:BusyIndicator scaleX="3"
+						 scaleY="3"
+						 symbolColor="white"/>
+	</s:VGroup>
+
+
+	<!--whole view below actionbar-->
+	<s:VGroup id="vGroup"
+			  width="100%"
+			  height="100%"
+			  verticalAlign="top"
+			  excludeFrom="LoadingState,NoState">
+
+		<s:List id="list"
+				width="100%"
+				height="100%"
+				contentBackgroundAlpha="0"
+				alternatingItemColors="{[0x000000,0x000000]}"
+				itemRendererFunction="chooseItemRenderer"
+				dataProvider="{_dp}"
+				useVirtualLayout="false"
+				horizontalScrollPolicy="off"
+				doubleClickEnabled="true"
+				doubleClick="list1_doubleClickHandler(event)">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="top"/>
+			</s:layout>
+		</s:List>
+
+
+	</s:VGroup>
+
+</s:View>

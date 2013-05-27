@@ -18,23 +18,10 @@ package com.squidzoo.imageUtils
 			matrix.rotate(degrees*(Math.PI/180));
 			matrix.translate(image.bitmapData.height/2,image.bitmapData.width/2);
 			var matrixImage:BitmapData = new BitmapData(image.bitmapData.height,image.bitmapData.width,false,0x00000000);
-			matrixImage.draw(image,matrix);
+			matrixImage.draw(image,matrix,null,null,null,true);
 			var newBmp:Bitmap = new Bitmap(matrixImage);
-			//newBmp.smoothing = true;
 			return newBmp;
 			
-			/*
-			var angleInRadians:Number = Math.PI * 2 * (degrees / 360);
-			var m:Matrix = new Matrix();
-			m.translate(-image.bitmapData.width*0.5,-image.bitmapData.height*0.5);
-			m.rotate(angleInRadians);
-			m.translate(image.bitmapData.width*0.5,image.bitmapData.height*0.5);
-			var newBmd:BitmapData = new BitmapData(image.height,image.width,false,0x000000);
-			newBmd.draw(image.bitmapData,m);
-			var newBmp:Bitmap = new Bitmap(newBmd);
-			newBmp.smoothing = true; 
-			return newBmp
-			*/ 
 		}
 		
 		public static function addBorder(image:Bitmap,borderSize:int,borderColor:int):Bitmap{
@@ -44,7 +31,6 @@ package com.squidzoo.imageUtils
 			m.translate(borderSize,borderSize);
 			newBmd.draw(image.bitmapData,m);
 			var newBmp:Bitmap = new Bitmap(newBmd);
-			//newBmp.smoothing = true; 
 			
 			return newBmp; 
 		}
@@ -61,9 +47,7 @@ package com.squidzoo.imageUtils
 			//draw new bitmapdata with matrix	
 			newBmd.draw(image.bitmapData, scaleParams,null,null,null,true);
 			//create final bitmap with new bitmapdata 
-			var newBmp:Bitmap = new Bitmap(newBmd); 
-			//set smooting to true 
-			//newBmp.smoothing = true;
+			var newBmp:Bitmap = new Bitmap(newBmd);
 			
 			return newBmp; 
 		}
@@ -81,8 +65,6 @@ package com.squidzoo.imageUtils
 			newBmd.draw(image.bitmapData, scaleParams,null,null,null,true); 
 			//create final bitmap with new bitmapdata 
 			var newBmp:Bitmap = new Bitmap(newBmd); 
-			//set smooting to true 
-			//newBmp.smoothing = true; 
 		
 			return newBmp; 
 		}

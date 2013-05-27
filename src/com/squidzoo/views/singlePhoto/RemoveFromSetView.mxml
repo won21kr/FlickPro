@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		creationComplete="creationCompleteHandler(event)" xmlns:components="com.squidzoo.components.*">
+	
+	<s:states>
+		<s:State name = "askState"/>
+		<s:State name = "callState"/>
+		<s:State name = "completeState"/>
+		<s:State name = "errorState"/>
+		<s:State name = "isNotInSetState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.components.supportClasses.ViewReturnObject;
+			
+			import com.squidzoo.statics.Service;
+			
+			[Bindable]public var forCompiler:RemoveFromSetView;
+			
+			private var _photoId:String;
+			private var _setId:String;
+			private var _service:FlickrService;
+			[Bindable] private var _setTitle:String;
+			[Bindable]private var _returnObject:Object = new Object();
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				
+				if(data.hasOwnProperty("isNotInSet")){
+					isPartOfSetLayout.includeInLayout = false;
+					isPartOfSetLayout.visible = false;
+					
+					isNotPartOfSetLayout.includeInLayout = true;
+					isNotPartOfSetLayout.visible = true;
+				}else{
+				
+				_service = Service.getService();				
+				if(data.photoId)_photoId = data.photoId;
+				if(data.setId) _setId = data.setId;
+				if(data.setTitle)_setTitle = data.setTitle;
+				currentState = "askState";
+				}
+			}
+			
+			private function callFlickr():void{
+				currentState = "callState"
+				_service.addEventListener(FlickrResultEvent.PHOTOSETS_REMOVE_PHOTO,onPhotoRemoved);
+				_service.photosets.removePhoto(_setId,_photoId);
+			}
+			
+			protected function onPhotoRemoved(event:FlickrResultEvent):void
+			{
+				if(event.success){
+					currentState = "completeState";
+					_returnObject.removedFromList = "removed";
+				}else{
+					currentState = "errorState";
+				}
+			}
+			
+			override public function createReturnObject():Object
+			{
+				
+				return _returnObject;
+			}
+			
+			private function onClickYourPhotoBreadCrumb():void{
+				navigator.popView();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup id="isNotPartOfSetLayout" includeInLayout="false" visible="false" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" verticalCenter="0" horizontalCenter="0">
+		<s:Label text="This photo is not in a set"/>
+	</s:VGroup>
+	
+	<s:VGroup id="isPartOfSetLayout" width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" verticalCenter="0" horizontalCenter="0">
+		
+		<s:VGroup paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+			<s:SkinnableContainer width="100%" skinClass="com.squidzoo.skins.BlueRectangleWithRoundCornersSkin">
+				
+				<s:VGroup includeIn="askState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:TextArea text="Do you want to remove the photo from set {_setTitle} ?"  
+								color="#ffffff" borderVisible="false" contentBackgroundAlpha="0"
+								/>
+					<s:HGroup>
+						<s:Button label="OK,remove it" click="callFlickr()" skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+						<s:Button label="No, go back" click="navigator.popView()" skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+					</s:HGroup>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="callState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+					<s:Label text="Calling Flickr..." color="#ffffff"/>
+					<s:Label text="Requesting removal of photo" color="#ffffff"/>
+					<s:Label text="from set {_setTitle}" color="#ffffff"/>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="completeState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:Label text="your photo was removed" color="#ffffff"/>
+					<s:Label text="from set {_setTitle}" color="#ffffff"/>
+					<s:Button label="back" click="navigator.popView()" skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+				</s:VGroup>
+				
+				<s:VGroup includeIn="errorState" paddingBottom="20" paddingLeft="20" paddingRight="20" paddingTop="20">
+					<s:Label text="error removing image from set" color="#ffffff"/>
+					<s:Button label="back" click="navigator.popView()" skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+				</s:VGroup>
+				
+			</s:SkinnableContainer>
+		</s:VGroup>
+
+	</s:VGroup>
+	
+</s:View>

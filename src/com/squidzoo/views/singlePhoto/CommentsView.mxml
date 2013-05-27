@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="CommentsView"
+		creationComplete="onCreationComplete()">
+	
+	<s:states>
+		<s:State name="loadingState"/>
+		<s:State name="errorState"/>
+		<s:State name="completeState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.ItemRenderers.CommentsHeaderItemRenderer;
+			import com.squidzoo.ItemRenderers.CommentsItemRenderer;
+			
+			import com.squidzoo.VOs.CommentsHeaderVO;
+			import com.squidzoo.VOs.PhotoVO;
+			
+			import com.adobe.webapis.flickr.FlickrError;
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			
+			import mx.collections.ArrayCollection;
+			
+			import com.squidzoo.statics.Service;
+			
+			private var _photoVO:PhotoVO;
+			
+			[Bindable]private var _service:FlickrService = Service.getService();
+			[Bindable]private var _dp:ArrayCollection = new ArrayCollection;
+			
+			private function onCreationComplete():void{
+				if(data && data.hasOwnProperty("photoVO")){
+					_photoVO = data.photoVO;
+					getCommentsList();
+				}
+			}
+			
+			private function getCommentsList():void{
+				_service.photos.getCommentsList(_photoVO.id);
+				_service.addEventListener(FlickrResultEvent.COMMENTS_GET_LIST,onCommmentsGetList);
+
+			}
+			
+			private function onCommmentsGetList(event:FlickrResultEvent):void{
+				var header:CommentsHeaderVO = new CommentsHeaderVO();
+				header.imageUrl = _photoVO.imageURL;
+				header.title = _photoVO.title;
+				_dp.source = event.data.commentsGetList;	
+				_dp.addItemAt(header,0);
+				
+				
+				currentState="completeState";
+			}
+			
+			private function chooseItemRenderer(item:Object):ClassFactory{
+				var ir:Class = CommentsItemRenderer;
+				
+				if(item.type == "header"){
+					ir = CommentsHeaderItemRenderer;
+				}
+				
+				return new ClassFactory(ir);
+			}
+		]]>
+	</fx:Script>
+			
+			<s:VGroup horizontalCenter="0"
+			verticalCenter="0"
+			horizontalAlign="center"
+			verticalAlign="middle"
+			includeIn="loadingState">
+				<s:BusyIndicator scaleX="3"
+								 scaleY="3"
+								 symbolColor="white"/>
+			</s:VGroup>
+		
+		
+			<!--whole view below actionbar-->
+			<s:VGroup id="vGroup" width="100%"
+					  height="100%"
+					  verticalAlign="top"
+					  includeIn="completeState">
+		
+				<s:List id="list"
+						width="100%"
+						height="100%"
+						contentBackgroundAlpha="0"
+						alternatingItemColors="{[0x222222,0x222222]}"
+						itemRendererFunction="chooseItemRenderer"
+						dataProvider="{_dp}"
+						useVirtualLayout="false"
+						horizontalScrollPolicy="off">
+					<s:layout>
+						<s:VerticalLayout verticalAlign="top"/>
+					</s:layout>
+				</s:List>
+		
+		
+			</s:VGroup>
+
+			
+	
+</s:View>

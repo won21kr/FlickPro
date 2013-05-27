@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:IconItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark"  
+					width="100%"
+					color="#ffffff"
+					iconField="image"
+					labelField="title"
+					minHeight="80"
+					messageField="getMoreLabel"
+					alternatingItemColors="{[0x111111,0x111111]}"
+					downColor="#222222"
+					decorator="assets/images/v2/rightArrow40.png"
+					messageStyleName="myFontStyle">
+	<fx:Style>
+		.myFontStyle { 
+			color: #ffffff;
+			fontSize: 20;
+		}
+	</fx:Style>
+	
+	<fx:Script>
+		<![CDATA[
+			[Bindable]public var forCompiler:PhotoListVerticalIR;
+			
+		]]>
+	</fx:Script>
+</s:IconItemRenderer>

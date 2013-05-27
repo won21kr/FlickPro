@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				xmlns:s="library://ns.adobe.com/flex/spark"
+				xmlns:mx="library://ns.adobe.com/flex/mx"
+				xmlns:styles="com.squidzoo.styles.*"
+				autoDrawBackground="false"
+				contentBackgroundAlpha="0"
+				creationComplete="creationCompleteHandler(event)"
+				currentState="imageState">
+
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicLib"/>
+		<s:Animate id="animation" target="{photo}" duration="1000">
+			<s:SimpleMotionPath property="rotationX" valueFrom="0" valueTo="-90"/>
+		</s:Animate>
+	</fx:Declarations>
+
+	<s:states>
+		<s:State name="imageState"/>
+		<s:State name="getMoreStateTablet"/>
+		<s:State name="getMoreStatePhone"/>
+	</s:states>
+
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.VOs.PhotoVO;
+			
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			import com.squidzoo.eventSystem.events.CustomEvent;
+			import com.squidzoo.imageUtils.ImageUtils;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+
+			private var _data:PhotoVO;
+
+			private var _width:int;
+
+			private var _isAnimationPlaying:Boolean = false;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				if (data.hasOwnProperty("getMoreLabel"))
+				{
+					if(FlexGlobals.topLevelApplication.isTablet()){
+						currentState="getMoreStateTablet";
+					}else{
+						currentState="getMoreStatePhone";
+					}
+				}
+				
+				if(FlexGlobals.topLevelApplication.isTablet()){
+					photo.maxWidth = 400;
+				}else{
+					maxWidth = 200;
+				}
+			}
+			
+			private function onRender():void{
+				bi.includeInLayout = false;
+				bi.visible = false;
+			}
+			
+	]]>
+	</fx:Script>
+	<s:BusyIndicator id="bi" symbolColor="white" verticalCenter="0" horizontalCenter="0"/>
+	<s:Image id="photo"
+			 includeIn="imageState"
+			 enableLoadingState="true"
+			 width="100%"
+			 smooth="true"
+			 smoothingQuality="high"
+			 source="{data.image}"
+			 height="100%"
+			 verticalCenter="0"
+			 horizontalCenter="0"
+			 render="onRender()"/>
+	<s:VGroup 
+			  verticalAlign="middle"
+			  horizontalAlign="center"
+			  verticalCenter="0" horizontalCenter="0"
+			  includeIn="getMoreStatePhone,getMoreStateTablet">
+		<s:Image id="getMoreIconPhone" includeIn="getMoreStatePhone" source="assets/images/v2/moreArrow100.png" render="onRender()"/>
+		<s:Image id="getMoreIconTablet" includeIn="getMoreStateTablet" source="assets/images/v2/moreArrow200.png" render="onRender()"/>
+	</s:VGroup>
+
+</s:ItemRenderer>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SplashScreenImage xmlns:fx="http://ns.adobe.com/mxml/2009"
+					 xmlns:s="library://ns.adobe.com/flex/spark">
+	
+	<!-- no settings, so this acts as default -->
+	<s:SplashScreenImageSource source="@Embed('assets/images/splashScreens/ss240Portrait.png')"/>
+	
+	<!-- specific settings -->
+	<s:SplashScreenImageSource source="@Embed('assets/images/splashScreens/ss240Landscape.png')"
+							   dpi="240" aspectRatio="landscape"/>
+	
+	<s:SplashScreenImageSource source="@Embed('assets/images/splashScreens/ss160Portrait.png')"
+							   dpi="160" aspectRatio="portrait" minResolution="590"/>
+	
+	<s:SplashScreenImageSource source="@Embed('assets/images/splashScreens/ss160Landscape.png')"
+							   dpi="160" aspectRatio="landscape" minResolution="590"/>
+	
+</s:SplashScreenImage>

@@ -1,11 +1,11 @@
 
 package com.squidzoo.eventSystem.events
 {
-	import VOs.PhotoVO;
-	import VOs.SetVO;
-	import VOs.SettingsVO;
-	import VOs.SizeVO;
-	import VOs.TagVO;
+	import com.squidzoo.VOs.PhotoVO;
+	import com.squidzoo.VOs.SetVO;
+	import com.squidzoo.VOs.SettingsVO;
+	import com.squidzoo.VOs.SizeVO;
+	import com.squidzoo.VOs.TagVO;
 	
 	import flash.display.Bitmap;
 	import flash.events.Event;
@@ -34,6 +34,16 @@ package com.squidzoo.eventSystem.events
 		public static const TAG_REMOVED:String = "Tag removed";
 		public static const VISIBILITY_CHANGED:String = "visibility changed";
 		public static const SIZE_SELECTED:String = "size selected";
+		public static const MAIN_MENU_SELECTION:String = "main menu selection";
+		public static const SET_MENU_SELECTION:String = "set menu selection";
+		public static const SINGLE_SET_MENU_SELECTION:String = "single set menu selection";
+		public static const SINGLE_PHOTO_MENU_SELECTION:String = "single photo menu selection";
+		public static const UPLOAD_MENU_SELECTION:String = "upload menu selection";
+		public static const KILL_FUNCTION:String = "Kill function";
+		public static const LARGE_IMAGE_READY:String = "Large image read";
+		public static const NEW_SET_CREATED:String = "new set created";
+		public static const SET_DELETED:String = "set deleted";
+		public static const SET_CALLOUTCLOSED:String ="set callout closed";
 		
 		private var _image:Bitmap;
 		private var _fileReference:FileReference

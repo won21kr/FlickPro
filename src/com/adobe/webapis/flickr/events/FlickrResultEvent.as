@@ -39,6 +39,9 @@ package com.adobe.webapis.flickr.events {
 	*/
 	public class FlickrResultEvent extends ServiceEvent
 	{
+		//added by Gunnar Karlsson
+		public static const COMMENTS_GET_LIST:String = "commentsGetList";
+		
 		/** Constant for the authCheckToken event type. */
 		public static const AUTH_CHECK_TOKEN:String = "authCheckToken";
 		

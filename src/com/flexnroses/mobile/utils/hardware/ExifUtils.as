@@ -34,29 +34,15 @@ package com.flexnroses.mobile.utils.hardware
 
 			var angle:int = 0;
 			
-			//EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"ExifUtils 1.5"));
-			//EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"ExifUtils 1.75"));
-			
-			//var o:Object = ObjectUtil.getClassInfo(set);
-			//var myText:String = ObjectUtil.toString(o)
-			//myText += "was the message";
-			//if(!myText){
 			if(!set){
 				EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"does not have property 'Orientation'"));
 				return -1;
 			}else{
 				EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"does have property 'Orientation'"));
 			}
-			//}
-			
-			//EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,myText));
-			
-			//if(set.primary["Orientation"]==null)EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"Orientation==null"));
-			//if(set.primary["Orientation"]=="")EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"Orientation==empty string"));
 			
 			if( set.primary[ "Orientation" ] )
 			{
-				//EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"ExifUtils 2"));
 				
 				switch( set.primary[ "Orientation" ] )
 				{	
@@ -66,8 +52,6 @@ package com.flexnroses.mobile.utils.hardware
 					case PORTRAIT_REVERSE: angle = -90; break;
 				}
 			}
-			
-			//EventCentral.getInstance().dispatchEvent(new DebugEvent(DebugEvent.DEBUG_MESSAGE,"ExifUtils 3"));
 			
 			return angle;
 		}

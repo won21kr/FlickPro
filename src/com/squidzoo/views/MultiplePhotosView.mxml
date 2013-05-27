@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		add="onAdd()"
+		creationComplete="init(event)"
+		xmlns:components="com.squidzoo.components.*"
+		xmlns:styles="com.squidzoo.styles.*"
+		xmlns:ItemRenderers="com.squidzoo.ItemRenderers.*"
+		cacheAsBitmap="true"
+		actionBarVisible="{_actionBarVisible}"
+		xmlns:MultiplePhotosView="com.squidzoo.ItemRenderers.MultiplePhotosView.*"
+		viewActivate="view1_viewActivateHandler(event)"
+		viewDeactivate="view1_viewDeactivateHandler(event)">
+
+	<s:actionContent>
+		<s:Button id="rightMenuButton"
+				  includeInLayout="false"
+				  fontSize="40"
+				  color="#ffa500"
+				  icon="{plusIcon}"
+				  click="openCommentsCallout(rightMenuButton, spark.components.ContentBackgroundAppearance.NONE)"/>
+	</s:actionContent>
+	<fx:Declarations>
+		<s:MultiDPIBitmapSource id="plusIcon"
+								source160dpi="@Embed('assets/images/v2/plus60.png')"
+								source240dpi="@Embed('assets/images/v2/plus40.png')"/>
+		<styles:GraphicsLib id="graphicsLib"/>
+		<MultiplePhotosView:PhotoListIGridItemRenderer id="gridIr"/>
+		<MultiplePhotosView:PhotoListVerticalIR id="listIr"/>
+		<MultiplePhotosView:PhotoListVerticalIR id="vertIR"/>
+		<s:VerticalLayout id="verticalLayout"
+						  gap="0"
+						  paddingTop="0"/>
+		<s:HorizontalLayout id="horizontalLayout"/>
+		<s:TileLayout id="tileLayout"
+					  columnAlign="justifyUsingWidth"
+					  paddingLeft="5"
+					  paddingRight="5"
+					  paddingTop="5"
+					  paddingBottom="5"
+					  horizontalGap="5"
+					  verticalGap="5"
+					  rowAlign="top"/>
+		<s:TileLayout id="pagingTileLayout"
+					  orientation="rows"
+					  requestedRowCount="1"
+					  columnWidth="{photoList.width}"
+					  rowHeight="{photoList.height}"
+					  verticalGap="0"
+					  horizontalGap="0"/>
+	</fx:Declarations>
+
+	<s:states>
+		<s:State name="loadingState"/>
+		<s:State name="errorState"/>
+		<s:State name="completeStateSet"/>
+		<s:State name="completeStateSearch"/>
+		<s:State name="completeStateStream"/>
+	</s:states>
+
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.ItemRenderers.MultiplePhotosView.PhotoListIGridItemRenderer;
+			import com.squidzoo.ItemRenderers.MultiplePhotosView.PhotoPagingItemRenderer;
+			
+			import com.squidzoo.VOs.DataObject;
+			import com.squidzoo.VOs.GetMoreVO;
+			import com.squidzoo.VOs.SetVO;
+			
+			import com.squidzoo.callouts.SingleSetMenuCallout;
+			import com.squidzoo.callouts.StreamMenuCallout;
+			
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.chewtinfoil.utils.StringUtils;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			import com.squidzoo.eventSystem.events.CustomEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import com.squidzoo.queries.PhotoQuery;
+			
+			import spark.events.PopUpEvent;
+			import spark.events.ViewNavigatorEvent;
+			import spark.layouts.VerticalLayout;
+			import spark.transitions.SlideViewTransition;
+			
+			import com.squidzoo.statics.ViewTypes;
+			
+			import com.squidzoo.views.singlePhoto.SinglePhotoView;
+			import com.squidzoo.views.singleSet.SingleSetAddMeta;
+			import com.squidzoo.views.singleSet.SingleSetDeleteSet;
+
+			[Bindable]
+			private var _setTitle:String;
+			[Bindable]
+			private var _photoVOs:ArrayCollection=new ArrayCollection();
+			private var _photoQuery:PhotoQuery;
+			private var _service:FlickrService;
+			private var _viewType:String;
+			private var _completeStateType:String;
+			[Bindable]
+			private var _setVO:SetVO;
+			private var _pageIndex:int=1;
+
+			private var _singleSetMenuCallout:SingleSetMenuCallout=new SingleSetMenuCallout();
+
+			private var _streamMenuCallout:StreamMenuCallout=new StreamMenuCallout();
+
+			private var _isFullScreen:Boolean=false;
+
+			[Bindable]
+			private var _vertScrollPolicy:String="on";
+			[Bindable]
+			private var _horizontalScrollPolicy:String="off";
+
+			[Bindable]
+			private var _actionBarVisible:Boolean=true;
+
+			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");
+			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");
+			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");
+			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
+
+			private function onAdd():void
+			{
+				if (navigator.poppedViewReturnedObject && navigator.poppedViewReturnedObject.object && navigator.poppedViewReturnedObject.object.title)
+				{
+					{
+						_setVO=navigator.poppedViewReturnedObject.object as SetVO;
+					}
+				}
+			}
+
+			private function init(event:FlexEvent=null):void
+			{
+
+				if (data)
+				{
+					if (data.pageIndex > 0)
+					{
+						_pageIndex=data.pageIndex;
+					}
+				}
+
+				photoList=new List();
+
+				currentState="loadingState";
+
+				EventCentral.getInstance().addEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR, onPhotosRetrieved);
+				EventCentral.getInstance().addEventListener(CustomEvent.ERROR_RETRIEVING_PHOTOS, onError);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.IMAGE_IN_LIST_CLICKED, onImageInListClicked);
+
+				if (data && data.hasOwnProperty("viewType") && data.viewType != null)
+				{
+					_viewType=(data as DataObject).viewType;
+				}
+				else
+				{
+					_viewType=ViewTypes.PHOTO_STREAM;
+				}
+
+				requestPhotosFromFlickr();
+
+			}
+
+			private function requestPhotosFromFlickr():void
+			{
+				var type:String="";
+
+				_photoQuery=new PhotoQuery();
+
+				switch (_viewType)
+				{
+
+					case ViewTypes.PHOTO_STREAM:
+						if (data)
+						{
+							_photoQuery.setParams(data as DataObject);
+						}
+						else
+						{
+							_photoQuery.setParams(new DataObject());
+						}
+						type=ViewTypes.PHOTO_STREAM;
+						_completeStateType="completeStateStream";
+						title="Photostream";
+						break;
+
+					case ViewTypes.SET:
+						_setTitle=StringUtils.truncate((data as DataObject).selectedSet.title, 30);
+						_photoQuery.setParams(data as DataObject);
+						_setVO=(data as DataObject).selectedSet;
+						type=ViewTypes.SET;
+						_completeStateType="completeStateSet";
+						title="Set: " + _setTitle;
+						break;
+
+					case ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR:
+						_photoQuery.setParams(data as DataObject);
+						type=ViewTypes.SEARCH_ALL_PUBLIC_PHOTOS_ON_FLICKR;
+						_completeStateType="completeStateSearch";
+						title="Search Result";
+						break;
+
+					case ViewTypes.SEARCH_ONLY_OWN_PHOTOS:
+						_photoQuery.setParams(data as DataObject);
+						type=ViewTypes.SEARCH_ONLY_OWN_PHOTOS;
+						_completeStateType="completeStateSearch";
+						title="Search Result";
+						break;
+				}
+				_photoQuery.execute(type);
+			}
+
+			private function onPhotosRetrieved(event:CustomDataEvent):void
+			{
+				for (var i:int=_photoVOs.length - 1; i >= 0; i--)
+				{
+					if (_photoVOs[i].hasOwnProperty("getMoreLabel"))
+					{
+						_photoVOs.removeItemAt(i);
+					}
+				}
+
+				currentState=_completeStateType;
+				rightMenuButton.includeInLayout=true;
+				_photoVOs.addAll(event.list);
+
+				if (_photoQuery.getNumPages() > _photoQuery.getPage())
+				{
+					var getMoreVO:GetMoreVO=new GetMoreVO();
+					getMoreVO.getMoreLabel="Get More";
+					_photoVOs.addItem(getMoreVO);
+				}
+
+
+			}
+
+			private function onListClick(event:MouseEvent):void
+			{
+				if (_isFullScreen)
+				{
+					setViewByGrid();
+				}
+				else
+				{
+
+					if (photoList.selectedItem)
+					{
+
+						var contextObject:Object=new Object();
+
+						if (photoList.selectedItem.hasOwnProperty("getMoreLabel"))
+						{
+							onClickNext();
+						}
+						//Handle photo click
+						else
+						{
+							switch (currentState)
+							{
+								case "completeStateSet":
+									contextObject.state=SinglePhotoView.SET_STATE;
+									navigator.pushView(SinglePhotoView, photoList.selectedItem, contextObject);
+									break;
+								case "completeStateSearch":
+									contextObject.state=SinglePhotoView.SEARCH_STATE;
+									navigator.pushView(SinglePhotoView, photoList.selectedItem, contextObject);
+									break;
+								case "completeStateStream":
+									contextObject.state=SinglePhotoView.PHOTO_STREAM_STATE;
+									navigator.pushView(SinglePhotoView, photoList.selectedItem, contextObject);
+									break;
+							}
+						}
+					}
+				}
+			}
+
+			private function onError(event:Event):void
+			{
+				currentState="errorState";
+			}
+
+			private function onClickYourSets():void
+			{
+				var slideEffect:SlideViewTransition=new SlideViewTransition();
+				slideEffect.direction="right";
+				navigator.pushView(BrowseSets, null, null, slideEffect);
+			}
+
+			protected function onImageInListClicked(event:CustomDataEvent):void
+			{
+			}
+
+			/*
+			* ButtonBar handlers
+			*/
+
+			private function editSet():void
+			{
+				navigator.pushView(SingleSetAddMeta, _setVO);
+			}
+
+			private function setViewByLine():void
+			{
+				_isFullScreen=false;
+				_actionBarVisible = true;
+				_vertScrollPolicy="on";
+				_horizontalScrollPolicy="off";
+				photoList.layout=verticalLayout;
+				photoList.itemRenderer=new ClassFactory(PhotoListVerticalIR);
+			}
+
+			private function setViewByGrid():void
+			{
+				_isFullScreen=false;
+				_actionBarVisible = true;
+				_vertScrollPolicy="on";
+				_horizontalScrollPolicy="off";
+				photoList.layout=tileLayout;
+				photoList.itemRenderer=new ClassFactory(PhotoListIGridItemRenderer);
+			}
+
+			private function makeFullScreen(event:Event=null):void
+			{
+				photoList.doubleClickEnabled=true
+				photoList.addEventListener(MouseEvent.DOUBLE_CLICK, onDoubleClick);
+
+				_isFullScreen=true;
+				_actionBarVisible=false;
+				photoList.layout=pagingTileLayout;
+				_vertScrollPolicy="off";
+				_horizontalScrollPolicy="on";
+				photoList.itemRenderer=new ClassFactory(PhotoPagingItemRenderer);
+				photoList.pageScrollingEnabled=true;
+			}
+
+			private function onDoubleClick():void
+			{
+				setViewByGrid();
+			}
+
+			private function deleteSet():void
+			{
+				navigator.pushView(SingleSetDeleteSet, _setVO);
+			}
+
+
+
+			/*
+			* prev/next
+			*/
+
+			private function onClickPrevious():void
+			{
+				if (_pageIndex > 1)
+				{
+					this.data.pageIndex--;
+
+					var slideEffect:SlideViewTransition=new SlideViewTransition();
+					slideEffect.direction="right";
+
+
+					navigator.pushView(MultiplePhotosView, this.data, null, slideEffect);
+				}
+			}
+
+			private function onClickNext():void
+			{
+				this.data.pageIndex++;
+
+				requestPhotosFromFlickr();
+			}
+
+			private function openCommentsCallout(owner:UIComponent, value:String):void
+			{
+				if (currentState == "completeStateStream" || currentState == "completeStateSearch")
+				{
+					_streamMenuCallout.addEventListener('close', closeMainMenuCalloutHandler);
+					_streamMenuCallout.setStyle('contentBackgroundAppearance', value);
+					_streamMenuCallout.open(owner);
+				}
+				else if (currentState == "completeStateSet")
+				{
+					_singleSetMenuCallout.addEventListener('close', closeMainMenuCalloutHandler);
+					_singleSetMenuCallout.setStyle('contentBackgroundAppearance', value);
+					_singleSetMenuCallout.open(owner);
+				}
+			}
+
+			private function closeMainMenuCalloutHandler(event:PopUpEvent):void
+			{
+				if (!event.commit)
+					return;
+
+				_singleSetMenuCallout.removeEventListener('close', closeMainMenuCalloutHandler);
+
+				selectView(event.data.selection);
+			}
+
+			private function selectView(selection:String):void
+			{
+				switch (selection)
+				{
+					case "showList":
+						setViewByLine();
+						break;
+					case "showGrid":
+						setViewByGrid();
+						break;
+					case "fullScreen":
+						makeFullScreen();
+						break;
+					case "editSet":
+						editSet();
+						break;
+					case "deleteSet":
+						deleteSet();
+						break;
+				}
+			}
+
+			protected function view1_viewDeactivateHandler(event:ViewNavigatorEvent):void
+			{
+				EventCentral.getInstance().removeEventListener(CustomDataEvent.PHOTOS_RETRIEVED_FROM_FLICKR, onPhotosRetrieved);
+				FlexGlobals.topLevelApplication.stage.removeEventListener(KeyboardEvent.KEY_DOWN,onKeyDown);
+			}
+			
+			protected function view1_viewActivateHandler(event:ViewNavigatorEvent):void
+			{
+				// TODO Auto-generated method stub
+				FlexGlobals.topLevelApplication.stage.addEventListener(KeyboardEvent.KEY_DOWN,onKeyDown);
+			
+			}
+			
+			private function onKeyDown(event:KeyboardEvent):void
+			{
+				if(event.keyCode == Keyboard.BACK)
+				{
+					event.stopImmediatePropagation();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	<!--errorState-->
+
+	<s:VGroup horizontalCenter="0"
+			  verticalCenter="0"
+			  includeIn="errorState">
+		<s:Label text="Error loading list"/>
+		<s:Button label="Try again"
+				  click="init()"
+				  skinClass="com.squidzoo.skins.SquareButtonSkin"/>
+	</s:VGroup>
+
+	<!--loadingState-->
+
+	<s:VGroup horizontalCenter="0"
+			  verticalCenter="0"
+			  includeIn="loadingState">
+		<s:BusyIndicator scaleX="3"
+						 scaleY="3"
+						 symbolColor="white"/>
+		<s:Label text="Loading..."/>
+	</s:VGroup>
+
+	<!--completeState-->
+
+	<s:VGroup width="100%"
+			  height="100%"
+			  gap="0"
+			  includeIn="completeStateSet,completeStateStream, completeStateSearch">
+
+		<s:List width="100%"
+				height="100%"
+				id="photoList"
+				includeIn="completeStateSet,completeStateSearch,completeStateStream"
+				left="10"
+				right="10"
+				top="10"
+				bottom="0"
+				dataProvider="{_photoVOs}"
+				click="onListClick(event)"
+				itemRenderer="com.squidzoo.ItemRenderers.MultiplePhotosView.PhotoListIGridItemRenderer"
+				contentBackgroundAlpha="0"
+				useVirtualLayout="false"
+				horizontalScrollPolicy="{_horizontalScrollPolicy}"
+				verticalScrollPolicy="{_vertScrollPolicy}"
+				layout="{tileLayout}">
+
+		</s:List>
+
+	</s:VGroup>
+
+</s:View>

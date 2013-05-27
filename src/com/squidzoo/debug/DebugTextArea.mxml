@@ -15,7 +15,6 @@
 			
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
-				// TODO Auto-generated method stub
 				EventCentral.getInstance().addEventListener(DebugEvent.DEBUG_MESSAGE,onDebugMessage);
 			}
 			

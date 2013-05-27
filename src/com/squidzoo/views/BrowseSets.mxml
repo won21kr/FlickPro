@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		title="Your sets"
+		viewActivate="viewActivateHandler(event)" xmlns:components="com.squidzoo.components.*" xmlns:styles="com.squidzoo.styles.*"
+		>
+
+	<fx:Declarations>
+		<styles:GraphicsLib id="graphicsLib"/>
+		<s:MultiDPIBitmapSource id="plusIcon"
+								source160dpi="@Embed('assets/images/v2/plus60.png')"
+								source240dpi="@Embed('assets/images/v2/plus40.png')"/>
+	</fx:Declarations>
+	
+	<s:actionContent>
+		<s:Button id="setMenuButton"   
+				  icon="{plusIcon}"
+				  fontSize="40"
+				  color="#ffa500" click="openCommentsCallout(setMenuButton, spark.components.ContentBackgroundAppearance.NONE)"/>
+	</s:actionContent>
+	
+	<s:states>
+			<s:State name="loadingState"/>
+			<s:State name="errorState"/>
+			<s:State name="completeState"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.squidzoo.VOs.DataObject;
+			import com.squidzoo.VOs.SetVO;
+			
+			import com.squidzoo.callouts.SetMenuCallout;
+			
+			import com.adobe.webapis.flickr.FlickrError;
+			import com.adobe.webapis.flickr.FlickrService;
+			import com.adobe.webapis.flickr.events.FlickrResultEvent;
+			import com.squidzoo.eventSystem.EventCentral;
+			import com.squidzoo.eventSystem.events.CustomDataEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			
+			import spark.events.PopUpEvent;
+			import spark.events.ViewNavigatorEvent;
+			
+			import com.squidzoo.statics.NSID;
+			import com.squidzoo.statics.Service;
+			import com.squidzoo.statics.ViewTypes;
+			
+			[Bindable]public var forCompiler:BrowseSets;
+			
+			[Bindable]
+			private var _listHeight:int = FlexGlobals.topLevelApplication.stage.stageHeight - 130; 
+			[Bindable]
+			private var _headerWidth:int = FlexGlobals.topLevelApplication.stage.stageWidth;
+			[Bindable]
+			private var _service:FlickrService;
+			[Bindable]
+			private var _setsData:ArrayCollection;
+			[Bindable]
+			private var _setVOs:ArrayCollection = new ArrayCollection();
+			
+			private var _setVOsByTime:ArrayCollection = new ArrayCollection();
+			private var _setVOsByAZ:ArrayCollection = new ArrayCollection();
+			
+			private var _setsMenuCallout:SetMenuCallout = new SetMenuCallout();
+			
+			Security.loadPolicyFile("http://farm1.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm2.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm3.static.flickr.com/crossdomain.xml");  
+			Security.loadPolicyFile("http://farm4.static.flickr.com/crossdomain.xml");
+			
+			private function viewActivateHandler(event:ViewNavigatorEvent):void{
+				
+				EventCentral.getInstance().addEventListener(CustomDataEvent.NEW_SET_CREATED,getSetList);
+				EventCentral.getInstance().addEventListener(CustomDataEvent.SET_DELETED,getSetList);
+				
+				_service = Service.getService();
+				if(_setVOs.length<1){
+					getSetList();
+				}
+			}
+			
+			private function onClickTryAgain():void{
+				getSetList();
+			}
+			
+			private function getSetList(event:Event=null):void{
+					currentState = "loadingState";
+					if(!_service)_service = Service.getService();
+					
+					var id:String = NSID.getNSID();
+					_service.addEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList); 
+					_service.photosets.getList(id);
+					
+			} 
+			
+			private function onError(event:FlickrError):void{
+				currentState = "errorState";
+			}
+				
+			private function handleSetList(event:FlickrResultEvent):void{ 
+				
+				if(event.success){
+					var setData:Array = event.data.photoSets as Array; 
+					
+					_setVOs = new ArrayCollection();
+					_setVOsByAZ = new ArrayCollection();
+					_setVOsByTime = new ArrayCollection();
+					
+					trace("_setVOs.length :"+_setVOs.length);
+					
+					for(var i:uint = 0; i < setData.length; i ++){ 
+						var vo:SetVO = new SetVO();
+						vo.id = setData[i].id;
+						vo.title = setData[i].title;
+						vo.description = setData[i].description;
+						vo.service = _service;
+						_setVOs.addItem(vo);
+					
+					}
+					
+					for(var j:uint = 0; j < _setVOs.length; j++)
+					{
+						_setVOsByTime.addItem(_setVOs.getItemAt(j));
+					}
+					
+					_setVOs.sort = null;
+					var sort:Sort = new Sort();
+					sort.fields = [new SortField("title")]
+					_setVOs.sort = sort;
+					_setVOs.refresh();
+					for(var k:uint = 0; k < _setVOs.length;k++)
+					{
+						_setVOsByAZ.addItem(_setVOs.getItemAt(k));
+					}
+					
+					_setVOs = _setVOsByTime;
+					_setVOs.refresh();
+					
+					currentState = "completeState";
+					_service.removeEventListener(FlickrResultEvent.PHOTOSETS_GET_LIST, handleSetList);
+				
+				}else{
+					
+					currentState = "errorState";
+				
+				}
+			} 
+			
+			private function onClickList():void{
+				var dataObject:DataObject = new DataObject();
+				dataObject.selectedSet = setList.selectedItem;
+				dataObject.viewType = ViewTypes.SET;
+				navigator.pushView(MultiplePhotosView,dataObject);
+			}
+						
+			private function sortAlphabetically():void
+			{	
+				_setVOs = _setVOsByAZ;
+				_setVOs.refresh();
+			}
+			
+			private function sortByTime():void
+			{
+				_setVOs = _setVOsByTime;
+				_setVOs.refresh();	
+			}
+			
+			private function addSet():void
+			{
+				navigator.pushView(CreateSetView);
+			}
+			
+			private function removeSet():void
+			{
+				navigator.pushView(DeleteSetView);
+			}
+			
+			private function openCommentsCallout(owner:UIComponent, value:String):void
+			{
+				_setsMenuCallout.addEventListener('close', closeMainMenuCalloutHandler);
+				_setsMenuCallout.setStyle('contentBackgroundAppearance', value);
+				_setsMenuCallout.open(owner);
+			}
+			
+			private function closeMainMenuCalloutHandler(event:PopUpEvent):void
+			{
+				if (!event.commit)
+					return;
+				
+				_setsMenuCallout.removeEventListener('close', closeMainMenuCalloutHandler);
+				
+				selectAction(event.data.selection);
+			}
+			
+			private function selectAction(selection:String):void
+			{
+				switch(selection)
+				{
+					case "sortAZ":
+						sortAlphabetically();
+						break;
+					case "sortTime":
+						sortByTime();
+						break;
+					case "createSet":
+						break;
+					case "deleteSet":
+						navigator.pushView(DeleteSetView);
+						break;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~State~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle" horizontalAlign="center" includeIn="loadingState">
+		<s:BusyIndicator scaleX="3" scaleY="3" symbolColor="white"/>
+		<s:Label text="Loading"/>
+		<s:Label text="set list"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~errorState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="errorState">
+		<s:Label text="Error loading list"/>
+		<s:Button label="Try again" click="onClickTryAgain()"/>
+	</s:VGroup>
+	
+	<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~completeState~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+	
+
+	
+	<s:VGroup width="100%" height="100%"
+			  includeIn="completeState,loadingState" gap="0">
+
+	<s:List id="setList" height="100%" width="100%"
+			change="onClickList()" 
+			dataProvider="{_setVOs}"
+			contentBackgroundAlpha="0"
+			includeIn="completeState">
+		<s:itemRenderer>
+			<fx:Component>
+				<s:IconItemRenderer alternatingItemColors="{[0x111111,0x111111]}" color="#ffffff" downColor="#333333" labelField="title" height="80" fontSize="24" decorator="@Embed('assets/images/v2/rightArrow40.png')"/>
+			</fx:Component>
+		</s:itemRenderer>
+
+	</s:List>
+	</s:VGroup>
+	
+</s:View>

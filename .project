@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>FlickrClient</name>
+	<name>FlickrClient2</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -22,11 +22,4 @@
 		<nature>com.adobe.flexbuilder.project.flexnature</nature>
 		<nature>com.adobe.flexbuilder.project.actionscriptnature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>src/[source path] ExifInfo</name>
-			<type>2</type>
-			<location>C:/Users/Gunnar Karlsson/Documents/ActionScript/Libraries/ExifInfo</location>
-		</link>
-	</linkedResources>
 </projectDescription>

@@ -36,6 +36,13 @@ package com.adobe.webapis.flickr.methodgroups {
 	import flash.events.Event;
 	import flash.net.URLLoader;
 	
+	import com.squidzoo.statics.Keys;
+	
+	
+		//added by Gunnar Karlsson
+	[Event(name="commentsGetList",
+			type="com.adobe.webapis.flickr.events.FlickrResultEvent")]
+	
 	
 		/**
 		 * Broadcast as a result of the addTags method being called
@@ -446,6 +453,35 @@ package com.adobe.webapis.flickr.methodgroups {
 			return _upload;	
 		}
 	
+		//added by Gunnar Karlsson
+		public function getCommentsList(photo_id:String,secret:String = ""):void{
+			
+			var testKey:String = "65821468@N03"
+			
+			trace("Photos photo_id: "+photo_id);
+			trace("Keys.getAPiKey: "+ Keys.getApiKey());
+			MethodGroupHelper.invokeMethod(_service,getCommentsList_result,"flickr.photos.comments.getList",
+				true,new NameValuePair("photo_id",photo_id),new NameValuePair( "secret", secret ));
+		}
+		
+		private function getCommentsList_result( event:Event ):void {
+			trace("get comments list result");
+			
+			
+			
+			// Create a PHOTOS_GET_ALL_CONTEXTS event
+			var result:FlickrResultEvent = new FlickrResultEvent( FlickrResultEvent.COMMENTS_GET_LIST);
+			
+			// Have the Helper handle parsing the result from the server - get the data
+			// from the URLLoader which correspondes to the result from the API call
+			MethodGroupHelper.processAndDispatch( _service, 
+				URLLoader( event.target ).data, 
+				result,
+				"commentsGetList",
+				MethodGroupHelper.parseCommentsList);
+		}
+		
+		
 		/**
 		 * Add tags to a photo.
 		 *

@@ -39,7 +39,6 @@ package com.squidzoo.imageUtils
 			if(imageId != null && imageData != null) {				
 				_bitmapDataRepository[imageId] = imageData;
 				
-				//dispatchEvent(new ImageDataCacheEvent(ImageDataCacheEvent.IMAGE_DATA_ADDED, imageId));
 			}
 		}
 		
