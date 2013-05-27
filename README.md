@@ -27,7 +27,7 @@ The project was written in ActionScript 3.0 and mxml. It requires the Adobe air 
 
 ## Licenses
 
-    Copyright � 2011 - 2013 Gunnar Karlsson
+    Copyright © 2011 - 2013 Gunnar Karlsson
 
     Source code:
 
@@ -45,15 +45,15 @@ The project was written in ActionScript 3.0 and mxml. It requires the Adobe air 
     
     Artwork:
     
-    Artwork assets (png files): Copyright � Gunnar Karlsson 2011 - 2013 and are not covered by the Apache License.
+    Artwork assets (png files): Copyright © Gunnar Karlsson 2011 - 2013 and are not covered by the Apache License.
 
     Other libraries:
 
-    String Utilities Copyright (c) 2006 Ryan Matsikas
+    String Utilities Copyright © 2006 Ryan Matsikas
     Licensed under the Apache License, Version 2.0. 
 
-    ExifUtil Copyright (c) 2008 shichiseki.jp
+    ExifUtil Copyright © 2008 shichiseki.jp
     Licensed under the Apache License, Version 2.0. 
 
-    ExifUtil Copyright (c) 2011 Juan Mendez
+    ExifUtil Copyright © 2011 Juan Mendez
     Licensed under the Apache License, Version 2.0.
