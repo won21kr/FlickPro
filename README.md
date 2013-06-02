@@ -23,8 +23,6 @@ FlickPro was launched on Google Play (then Android Market) in January 2012. It w
 
 The project was written in ActionScript 3.0 and mxml. It requires the Adobe air flash plugin to run on Android devices. The FlickPro source was built with Air 2.6. 
 
-[![Get it on Google Play](http://www.android.com/images/brand/get_it_on_play_logo_small.png)](http://play.google.com/store/apps/details?id=air.com.squidzoo.FlickPro)
-
 ## Licenses
 
     Copyright © 2011 - 2013 Gunnar Karlsson
